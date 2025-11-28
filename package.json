@@ -1,0 +1,50 @@
+{
+  "name": "deform",
+  "version": "0.1.0",
+  "description": "An open-source form builder that renders forms from structured config",
+  "type": "module",
+  "main": "dist/index.js",
+  "exports": {
+    ".": {
+      "development": "./src/index.js",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "scripts": {
+    "build": "parcel build src/index.js --dist-dir dist",
+    "build:watch": "parcel watch src/index.js --dist-dir dist",
+    "dev": "npm run build:watch",
+    "type-check": "tsc --project tsconfig.check.json --noEmit",
+    "lint": "eslint src/**/*.{js,ts}",
+    "lint:fix": "eslint src/**/*.{js,ts} --fix",
+    "clean": "rm -rf dist .parcel-cache",
+    "prebuild": "npm run clean",
+    "test": "npm run type-check && npm run lint"
+  },
+  "keywords": [
+    "form",
+    "builder",
+    "renderer",
+    "web-components",
+    "typescript"
+  ],
+  "author": "DeForm Team",
+  "license": "MIT",
+  "devDependencies": {
+    "@parcel/transformer-typescript-types": "^2.16.0",
+    "@typescript-eslint/eslint-plugin": "^6.15.0",
+    "@typescript-eslint/parser": "^6.15.0",
+    "esbuild": "^0.25.9",
+    "eslint": "^8.56.0",
+    "parcel": "^2.16.0",
+    "typescript": "^5.3.3"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
