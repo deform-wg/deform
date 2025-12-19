@@ -1,4 +1,4 @@
-import { LitElement, html, classMap, css } from "./vendor/@lit/all@3.1.2/lit-all.min.js";
+import { LitElement, html, classMap, css } from "lit";
 import * as methods from './core/index.js';
 import * as renders from './renders/index.js';
 import { bindToClass } from "./utils/class-bind.js";
@@ -8,9 +8,9 @@ import { onceThenDebounce } from "./utils/debounce.js";
 import { asyncTimeout } from "./utils/timeout.ts";
 
 // Add shoelace once. Use components anywhere.
-import { setBasePath } from "./vendor/@shoelace/cdn@2.19.1/utilities/base-path.js";
-import "./vendor/@shoelace/cdn@2.19.1/shoelace.js";
-setBasePath("./vendor/@shoelace/cdn@2.19.1/");
+import { setBasePath } from "@shoelace-style/shoelace/dist/utilities/base-path.js";
+import "@shoelace-style/shoelace/dist/shoelace.js";
+setBasePath("https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.19.1/cdn/");
 
 class DeForm extends LitElement {
   static get properties() {

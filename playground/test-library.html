@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>DeForm Library Test</title>
+    <meta charset="utf-8">
+</head>
+<body>
+    <h1>DeForm Library Test</h1>
+    
+    <!-- Test the library import -->
+    <de-form id="testForm"></de-form>
+    
+    <script type="module">
+        try {
+            // Test importing the library
+            import('../src/index.js')
+            console.log("✅ Library import successful");
+            
+            // Test if the custom element is defined
+            setTimeout(() => {
+                if (customElements.get('de-form')) {
+                    console.log("✅ Custom element registered successfully");
+                    document.getElementById('testForm').innerHTML = "Library loaded successfully!";
+                } else {
+                    console.error("❌ Custom element not registered");
+                    document.getElementById('testForm').innerHTML = "Library failed to load";
+                }
+            }, 1000);
+            
+        } catch (error) {
+            console.error("❌ Library import failed:", error);
+            document.getElementById('testForm').innerHTML = "Import failed: " + error.message;
+        }
+    </script>
+</body>
+</html>

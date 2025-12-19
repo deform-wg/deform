@@ -1,4 +1,4 @@
-import { css } from "../vendor/@lit/all@3.1.2/lit-all.min.js";
+import { css } from "lit";
 
 export const accents = css`
   :host {

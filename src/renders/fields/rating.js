@@ -1,4 +1,5 @@
-import { css, html, ifDefined } from '../../vendor/@lit/all@3.1.2/lit-all.min.js';
+import { css, html } from 'lit';
+import { ifDefined } from 'lit/directives/if-defined.js';
 
 const ifd = ifDefined
 

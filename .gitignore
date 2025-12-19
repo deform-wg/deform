@@ -5,6 +5,8 @@ npm-debug.log*
 # Build outputs
 dist/
 .parcel-cache/
+playground/dist/
+playground/.parcel-cache/
 
 # Misc
 *DS_Store

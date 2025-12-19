@@ -1,4 +1,4 @@
-import { getFormControls } from '../vendor/@shoelace/cdn@2.14.0/utilities/form.js';
+import { getFormControls } from '@shoelace-style/shoelace/dist/utilities/form.js';
 
 export function checkValidity(form) {
   if (!form) {

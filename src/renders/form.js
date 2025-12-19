@@ -1,4 +1,6 @@
-import { html, nothing, repeat, classMap } from "../vendor/@lit/all@3.1.2/lit-all.min.js";
+import { html, nothing } from "lit";
+import { repeat } from "lit/directives/repeat.js";
+import { classMap } from "lit/directives/class-map.js";
 import { generateActionLabel } from "./action.js";
 
 export function _generateOneOrManyForms(data) {

@@ -1,4 +1,4 @@
-import { html } from '../../vendor/@lit/all@3.1.2/lit-all.min.js';
+import { html } from 'lit';
 
 export function _render_checkbox(field) {
   const { currentKey, isDirtyKey } = this.propKeys(field.name);

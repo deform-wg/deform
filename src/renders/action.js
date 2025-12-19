@@ -1,4 +1,4 @@
-import { html, nothing } from "../vendor/@lit/all@3.1.2/lit-all.min.js";
+import { html, nothing } from "lit";
 
 export function generateActionLabel(formInstance, fieldName, actionName, actionLabel) {
   const { labelKey } = formInstance.propKeys(fieldName);
