@@ -6,13 +6,17 @@
   "alias": {
     "deform": "./src/index.js"
   },
-  "targets": {
-    "lib": {
-      "source": "src/index.js",
-      "distDir": "dist",
-      "outputFormat": "esmodule"
-    }
+"targets": {
+  "lib": {
+    "source": "src/index.js",
+    "distDir": "dist",
+    "outputFormat": "esmodule"
   },
+  "playground": {
+    "source": "playground/index.html",
+    "distDir": "playground/dist"
+  }
+},
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
@@ -31,8 +35,8 @@
     "build:types": "tsc --emitDeclarationOnly --outDir dist",
     "build:watch": "parcel watch --target lib",
     "dev": "npm run build:watch",
-    "playground": "parcel playground/index.html --port 8000",
-    "playground:build": "parcel build playground/index.html --dist-dir playground/dist --public-url ./",
+    "playground": "parcel serve --target playground --port 8000 --no-source-maps",
+    "playground:build": "parcel build playground/index.html --dist-dir playground/dist --public-url ./ --no-source-maps",
     "type-check": "tsc --project tsconfig.check.json --noEmit",
     "lint": "eslint src/**/*.{js,ts}",
     "lint:fix": "eslint src/**/*.{js,ts} --fix",
@@ -50,12 +54,13 @@
   "author": "DeForm Team",
   "license": "MIT",
   "devDependencies": {
+    "@parcel/transformer-typescript-tsc": "^2.16.3",
     "@parcel/transformer-typescript-types": "^2.16.0",
     "@typescript-eslint/eslint-plugin": "^6.15.0",
     "@typescript-eslint/parser": "^6.15.0",
     "esbuild": "^0.25.9",
     "eslint": "^8.56.0",
-    "parcel": "^2.16.0",
+    "parcel": "^2.16.3",
     "typescript": "^5.3.3"
   },
   "engines": {
