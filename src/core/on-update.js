@@ -1,4 +1,4 @@
-import { customElementsReady } from '../utils/custom-elements-ready.js';
+import { customElementsReady } from '../utils/custom-elements-ready.ts';
 
 export async function _onUpdate(changedProperties) {
   if (changedProperties.has("fields") || changedProperties.has("values")) {

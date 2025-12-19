@@ -1,10 +1,10 @@
 import { LitElement, html, classMap, css } from "lit";
 import * as methods from './core/index.js';
 import * as renders from './renders/index.js';
-import { bindToClass } from "./utils/class-bind.js";
+import { bindToClass } from "./utils/class-bind.ts";
 import { styles } from "./theme/styles.js";
 import { accents, supportedAccents } from "./theme/accents.js";
-import { onceThenDebounce } from "./utils/debounce.js";
+import { onceThenDebounce } from "./utils/debounce.ts";
 import { asyncTimeout } from "./utils/timeout.ts";
 
 // Add shoelace once. Use components anywhere.
