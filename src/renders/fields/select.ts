@@ -2,6 +2,7 @@ import { html } from 'lit';
 import type { TemplateResult } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import type { DeForm, SelectFieldConfig, SelectOption } from '../../typedefs/index.js';
+import { getDynBoolean, getDynFormValue } from '../../utils/dynamic-props.js';
 
 const ifd = ifDefined;
 
@@ -17,16 +18,16 @@ export function _render_select(this: DeForm, field: SelectFieldConfig, options: 
   return html`
     <sl-select
       name=${field.name}
-      .value=${(this as any)[currentKey]}
+      .value=${getDynFormValue(this, currentKey)}
       placeholder=${ifd(field.placeholder)}
       ?multiple=${field.multiple}
-      size=${ifd((field as any).size)}
-      maxOptionsVisible=${ifd((field as any).maxOptionsVisible)}
-      ?hoist=${(field as any).hoist}
+      size=${ifd(field.size)}
+      maxOptionsVisible=${ifd(field.maxOptionsVisible)}
+      ?hoist=${field.hoist}
       ?required=${field.required}
       ?clearable=${field.clearable}
-      ?disabled=${(field as any).disabled}
-      ?data-dirty-field=${(this as any)[isDirtyKey]}
+      ?disabled=${field.disabled}
+      ?data-dirty-field=${getDynBoolean(this, isDirtyKey)}
       @sl-change=${this._handleChoice}
       @sl-hide=${(e: Event) => e.stopPropagation()}
       >

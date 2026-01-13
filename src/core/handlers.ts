@@ -1,23 +1,56 @@
-import type { DeForm, ChangePayload } from '../typedefs/index.js';
+import type { ChangePayload, DeForm, FormValue } from '../typedefs/index.js';
 import {
   emitChangeEvent,
   emitTabChangeEvent,
   emitDiscardEvent
 } from './events.js';
+import { isNamedElement } from '../utils/dom-guards.js';
+import { getDynFormValue, setDynFormValue } from '../utils/dynamic-props.js';
+
+function isObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null;
+}
+
+function readName(target: unknown): string | null {
+  if (!isObject(target)) return null;
+  const n = target['name'];
+  return typeof n === 'string' ? n : null;
+}
+
+function readValue(target: unknown): FormValue | null {
+  if (!isObject(target)) return null;
+  const v = target['value'];
+  if (v === null || v === undefined) return v;
+  if (typeof v === 'string') return v;
+  if (typeof v === 'number') return v;
+  if (typeof v === 'boolean') return v;
+  if (Array.isArray(v) && v.every((x) => typeof x === 'string')) return v;
+  if (Array.isArray(v) && v.every((x) => typeof x === 'number')) return v;
+  if (Array.isArray(v) && v.every((x) => typeof x === 'string' || typeof x === 'number')) return v;
+  return null;
+}
+
+function readChecked(target: unknown): boolean | null {
+  if (!isObject(target)) return null;
+  const c = target['checked'];
+  return typeof c === 'boolean' ? c : null;
+}
 
 /**
  * Handles input events for text-based form controls.
  */
 export function _handleInput(this: DeForm, event: Event): void {
-  const target = event.target as HTMLInputElement;
-  const { currentKey, originalKey } = this.propKeys(target.name);
+  const name = readName(event.target);
+  const value = readValue(event.target);
+  if (!name || typeof value !== 'string') return;
+  const { currentKey, originalKey } = this.propKeys(name);
 
-  const fieldName = target.name;
-  const originalValue = (this as any)[originalKey];
-  const priorValue = (this as any)[currentKey];
-  const newValue = target.value;
+  const fieldName = name;
+  const originalValue = getDynFormValue(this, originalKey);
+  const priorValue = getDynFormValue(this, currentKey);
+  const newValue: FormValue = value;
 
-  (this as any)[currentKey] = newValue;
+  setDynFormValue(this, currentKey, newValue);
   this._checkForChanges(fieldName, newValue);
 
   const changePayload: ChangePayload = {
@@ -37,15 +70,17 @@ export function _handleInput(this: DeForm, event: Event): void {
  * Handles toggle/checkbox events for boolean form controls.
  */
 export function _handleToggle(this: DeForm, event: Event): void {
-  const target = event.target as HTMLInputElement;
-  const { currentKey, originalKey } = this.propKeys(target.name);
+  const name = readName(event.target);
+  const checked = readChecked(event.target);
+  if (!name || checked === null) return;
+  const { currentKey, originalKey } = this.propKeys(name);
 
-  const fieldName = target.name;
-  const originalValue = (this as any)[originalKey];
-  const priorValue = (this as any)[currentKey];
-  const newValue = target.checked;
+  const fieldName = name;
+  const originalValue = getDynFormValue(this, originalKey);
+  const priorValue = getDynFormValue(this, currentKey);
+  const newValue: FormValue = checked;
 
-  (this as any)[currentKey] = newValue;
+  setDynFormValue(this, currentKey, newValue);
   this._checkForChanges(fieldName, newValue);
 
   const changePayload: ChangePayload = {
@@ -53,6 +88,7 @@ export function _handleToggle(this: DeForm, event: Event): void {
     originalValue,
     priorValue,
     newValue,
+    timestamp: Date.now(),
     deForm: this
   };
 
@@ -64,15 +100,17 @@ export function _handleToggle(this: DeForm, event: Event): void {
  * Handles choice events for select/radio form controls.
  */
 export function _handleChoice(this: DeForm, event: Event): void {
-  const target = event.target as HTMLSelectElement;
-  const { currentKey, originalKey } = this.propKeys(target.name);
+  const name = readName(event.target);
+  const value = readValue(event.target);
+  if (!name || value === null) return;
+  const { currentKey, originalKey } = this.propKeys(name);
 
-  const fieldName = target.name;
-  const originalValue = (this as any)[originalKey];
-  const priorValue = (this as any)[currentKey];
-  const newValue = target.value;
+  const fieldName = name;
+  const originalValue = getDynFormValue(this, originalKey);
+  const priorValue = getDynFormValue(this, currentKey);
+  const newValue: FormValue = value;
 
-  (this as any)[currentKey] = newValue;
+  setDynFormValue(this, currentKey, newValue);
   this._checkForChanges(fieldName, newValue);
 
   const changePayload: ChangePayload = {
@@ -80,6 +118,7 @@ export function _handleChoice(this: DeForm, event: Event): void {
     originalValue,
     priorValue,
     newValue,
+    timestamp: Date.now(),
     deForm: this
   };
 
@@ -91,15 +130,20 @@ export function _handleChoice(this: DeForm, event: Event): void {
  * Handles rating control events.
  */
 export function _handleRating(this: DeForm, event: Event): void {
-  const target = event.target as HTMLElement & { value: number; dataset: DOMStringMap };
-  const { currentKey, originalKey } = this.propKeys(target.dataset['name']!);
+  const target = event.target;
+  if (!isObject(target)) return;
+  const dataset = target['dataset'];
+  const name = isObject(dataset) ? dataset['name'] : undefined;
+  const value = target['value'];
+  if (typeof name !== 'string' || typeof value !== 'number') return;
+  const { currentKey, originalKey } = this.propKeys(name);
 
-  const fieldName = target.dataset['name']!;
-  const originalValue = (this as any)[originalKey];
-  const priorValue = (this as any)[currentKey];
-  const newValue = target.value;
+  const fieldName = name;
+  const originalValue = getDynFormValue(this, originalKey);
+  const priorValue = getDynFormValue(this, currentKey);
+  const newValue: FormValue = value;
 
-  (this as any)[currentKey] = newValue;
+  setDynFormValue(this, currentKey, newValue);
   this._checkForChanges(fieldName, newValue);
 
   const changePayload: ChangePayload = {
@@ -107,6 +151,7 @@ export function _handleRating(this: DeForm, event: Event): void {
     originalValue,
     priorValue,
     newValue,
+    timestamp: Date.now(),
     deForm: this
   };
 
@@ -118,11 +163,13 @@ export function _handleRating(this: DeForm, event: Event): void {
  * Handles tab change events for multi-section forms.
  */
 export function _handleTabChange(this: DeForm, _event: Event, tabName: string): void {
+  const priorTabName = this._activeFormId;
   this._activeFormId = tabName;
 
   emitTabChangeEvent({
-    priorTabName: 'todo..',
+    ...(priorTabName ? { priorTabName } : {}),
     newTabName: tabName,
+    timestamp: Date.now(),
     deForm: this
   });
 }
@@ -135,14 +182,17 @@ export function _handleDiscardChanges(this: DeForm, event: Event): void {
   event.preventDefault();
 
   // Reset fields of active form to initial data state
-  const modifiedFieldNodes = (this as any).shadowRoot.querySelectorAll(
+  const shadowRoot = (this as unknown as { shadowRoot?: ShadowRoot | null }).shadowRoot ?? null;
+  const modifiedFieldNodes = shadowRoot?.querySelectorAll(
     `#${this._activeFormId} [data-dirty-field]`,
-  );
-  Array.from(modifiedFieldNodes as NodeListOf<HTMLElement>)
-    .map((node) => (node as any).name)
+  ) ?? [];
+  Array.from(modifiedFieldNodes)
+    .filter(isNamedElement)
+    .map((node) => node.name)
     .forEach((fieldName: string) => {
       const { currentKey, originalKey } = this.propKeys(fieldName);
-      (this as any)[currentKey] = (this as any)[originalKey];
+      const orig = getDynFormValue(this, originalKey);
+      setDynFormValue(this, currentKey, orig);
     });
 
   this._checkForChanges();
@@ -164,15 +214,16 @@ function onChangeCallback(options: ChangePayload): void {
     deForm,
   } = options;
 
-  if ((deForm as any).onChange && typeof (deForm as any).onChange === 'function') {
+  if (deForm.onChange && typeof deForm.onChange === 'function') {
     try {
-      (deForm as any).onChange({
+      const change = {
         fieldName,
         originalValue,
         priorValue,
         newValue,
-        timestamp
-      }, deForm);
+        ...(timestamp !== undefined ? { timestamp } : {}),
+      };
+      deForm.onChange(change, deForm);
     } catch (onChangeErr) {
       console.error('An error occured when executing the provided onChange function', onChangeErr);
     }

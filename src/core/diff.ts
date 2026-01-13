@@ -1,11 +1,12 @@
-import type { DeForm, FormDataModel, FormSection, FieldConfig, ValidationRule } from '../typedefs/index.js';
+import type { DeForm, FormDataModel, FormSection, FieldConfig, FormStateModel, FormValue, ValidationRule } from '../typedefs/index.js';
+import { getDynFormValue, setDynBoolean, setDynNumber } from '../utils/dynamic-props.js';
 
 /**
  * Checks all form fields for changes and updates dirty state.
  * Also triggers evaluation of reveal conditions.
  */
 export function _checkForChanges(this: DeForm): void {
-  const fields = (this as any).fields as { sections?: FormSection[] } | undefined;
+  const fields = this.fields;
   if (!fields?.sections) return;
   let dirty = 0;
 
@@ -16,10 +17,8 @@ export function _checkForChanges(this: DeForm): void {
 
     section.fields.forEach((field: FieldConfig) => {
       flattenedFields.push(field);
-      if (field.type === 'toggleField' && 'fields' in field) {
-        ((field as any).fields as FieldConfig[]).forEach((f: FieldConfig) => {
-          flattenedFields.push(f);
-        });
+      if (field.type === 'toggleField') {
+        flattenedFields.push(...field.fields);
       }
     });
 
@@ -30,7 +29,7 @@ export function _checkForChanges(this: DeForm): void {
       }
     });
 
-    (this as any)[`_form_${section.name}_count`] = sectionChangeCount;
+    setDynNumber(this, `_form_${section.name}_count`, sectionChangeCount);
   });
 
   this._dirty = dirty;
@@ -38,8 +37,8 @@ export function _checkForChanges(this: DeForm): void {
   // [HACK] Process rules on next tick
   // Secondly, test whether any rule targeted fields have condition changes.
   setTimeout(() => {
-    const currentState = (this as any).getState();
-    const currentValues = (this as any).getFormValues();
+    const currentState = this.getState();
+    const currentValues = this.getFormValues();
     this._rules.forEach((rule: ValidationRule) => {
       if (rule.self) {
         this._checkAndSetConditionMetFlags(rule, currentState, currentValues);
@@ -54,7 +53,7 @@ export function _checkForChanges(this: DeForm): void {
 export function _checkAndSetConditionMetFlags(
   this: DeForm,
   rule: ValidationRule,
-  currentState: FormDataModel,
+  currentState: FormStateModel,
   currentValues: FormDataModel
 ): void {
   if (!rule.self) return;
@@ -62,7 +61,7 @@ export function _checkAndSetConditionMetFlags(
 
   if (!rule.fn) {
     // Obtain targets current value
-    const targetValue = rule.target ? (this as any)[this.propKeys(rule.target).currentKey] : undefined;
+    const targetValue = rule.target ? getDynFormValue(this, this.propKeys(rule.target).currentKey) : undefined;
     const desiredValue = rule.value;
 
     // Test the rule
@@ -72,19 +71,19 @@ export function _checkAndSetConditionMetFlags(
         newState = targetValue == desiredValue;
         break;
       case "!=":
-        newState = targetValue && targetValue != desiredValue;
+        newState = targetValue !== undefined && targetValue != desiredValue;
         break;
       default:
         newState = false;
     }
 
     // Toggle field flag (and being a reactive property, the UI will update);
-    (this as any)[revealKey] = newState;
+    setDynBoolean(this, revealKey, newState);
   }
 
   if (rule.fn) {
     const shouldReveal = !!rule.fn(currentState, currentValues);
-    (this as any)[revealKey] = shouldReveal;
+    setDynBoolean(this, revealKey, shouldReveal);
   }
 }
 
@@ -97,11 +96,11 @@ export function _checkAndSetFieldDirtyStatus(this: DeForm, fieldName: string): b
 
   // Replace undefined with an empty string for comparison
   // to handle the situation where a user has backspaced an input to "".
-  const curr = (this as any)[currentKey] ?? "";
-  const orig = (this as any)[originalKey] ?? "";
+  const curr = (getDynFormValue(this, currentKey) ?? "") as FormValue | "";
+  const orig = (getDynFormValue(this, originalKey) ?? "") as FormValue | "";
   const isDirty = curr !== orig;
 
   // Update the isDirty flag and return its value
-  (this as any)[isDirtyKey] = isDirty;
+  setDynBoolean(this, isDirtyKey, isDirty);
   return isDirty;
 }

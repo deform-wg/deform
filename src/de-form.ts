@@ -6,22 +6,30 @@ import { bindToClass } from "./utils/class-bind.js";
 import { styles } from "./theme/styles.js";
 import { accents, supportedAccents } from "./theme/accents.js";
 import { asyncTimeout } from "./utils/timeout.js";
+import { getDynBoolean, getDynFormValue, setDynBoolean, setDynFormValue } from "./utils/dynamic-props.js";
 import type { 
   FormConfig, 
   FieldConfig, 
   FormDataModel, 
+  FormStateModel,
+  FormValue,
+  SelectOption,
   PropKeys, 
   ValidationRule,
 } from './typedefs/index.js';
 
 // Add shoelace once. Use components anywhere.
-import { setBasePath } from "@shoelace-style/shoelace/dist/utilities/base-path.js";
+import { getBasePath, setBasePath } from "@shoelace-style/shoelace/dist/utilities/base-path.js";
 import "@shoelace-style/shoelace/dist/shoelace.js";
-setBasePath("https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.19.1/cdn/");
+// Prefer a consumer-provided base path (e.g. via data-shoelace attribute). Fall back to CDN.
+const shoelaceBasePath = getBasePath();
+if (!shoelaceBasePath || shoelaceBasePath === '/') {
+  setBasePath("https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.19.1/cdn/");
+}
 
 interface AccentInfo {
   name: string;
-  [key: string]: any;
+  [key: string]: string | number | boolean | null | undefined;
 }
 
 class DeForm extends LitElement {
@@ -29,7 +37,7 @@ class DeForm extends LitElement {
   declare values: FormDataModel;
   declare theme: 'light' | 'dark';
   declare orientation: string;
-  declare onSubmit: ((changes: FormDataModel, form: HTMLFormElement, deform: DeForm) => Promise<any>) | undefined;
+  declare onSubmit: ((changes: FormDataModel, form: HTMLFormElement, deform: DeForm) => Promise<unknown>) | undefined;
   declare requireCommit: boolean;
   declare markModifiedFields: boolean;
   declare showModifiedCount: boolean;
@@ -39,6 +47,13 @@ class DeForm extends LitElement {
   declare _initializing: boolean;
   declare _rules: ValidationRule[];
   declare _celebrate: boolean;
+
+  // Methods bound in at runtime via bindToClass()
+  declare _initializeFormFieldProperties: (newValue: FormConfig) => void;
+  declare _dispatchEvent: (name: string, detail: Record<string, unknown>) => void;
+  declare _generateOneOrManyForms: (data: FormConfig) => unknown;
+  declare _onUpdate: (changedProperties: PropertyValues) => Promise<void>;
+  declare _checkForChanges: (fieldName?: string, newValue?: unknown) => void;
 
   // Internal state
   private _fields: FormConfig | undefined;
@@ -118,7 +133,7 @@ class DeForm extends LitElement {
     if (!newValue?.sections) return;
 
     // Create a reactive property for every form field.
-    (this as any)._initializeFormFieldProperties(newValue);
+    this._initializeFormFieldProperties(newValue);
   }
 
   get fields(): FormConfig | undefined {
@@ -129,7 +144,7 @@ class DeForm extends LitElement {
     // Adjust only if incoming value differs, also emit change event.
     if (this.__dirty !== value) {
       this.__dirty = value;
-      (this as any)._dispatchEvent("dirty-change", { dirty: this._dirty });
+      this._dispatchEvent("dirty-change", { dirty: this._dirty });
     }
   }
 
@@ -141,7 +156,7 @@ class DeForm extends LitElement {
     // Adjust only if incoming value differs, also emit change event.
     if (this.__loading !== value) {
       this.__loading = value;
-      (this as any)._dispatchEvent("loading-change", { loading: this._loading });
+      this._dispatchEvent("loading-change", { loading: this._loading });
     }
   }
 
@@ -163,7 +178,7 @@ class DeForm extends LitElement {
 
   toggleLabelLoader(fieldName: string): void {
     const { labelKey } = this.propKeys(fieldName);
-    (this as any)[labelKey] = !(this as any)[labelKey];
+    setDynBoolean(this, labelKey, !getDynBoolean(this, labelKey));
     this.requestUpdate();
   }
 
@@ -173,21 +188,27 @@ class DeForm extends LitElement {
     // eg. { colour: '#0000FF' }
     const out: FormDataModel = {};
     this._flattenedFields.forEach(field => {
-      out[field.name] = (this as any)[`_${field.name}`];
+      out[field.name] = getDynFormValue(this, `_${field.name}`);
     });
     return out;
   };
 
-  getState = (): FormDataModel => {
+  getState = (): FormStateModel => {
     // Extending getFormValues, this does the same except for any field that has
     // an options property, it will supply the selected option object as the value.
     // eg. { colour: { value: '#0000FF', label: 'Blue', primary: true } }
-    const out: FormDataModel = {};
+    const out: FormStateModel = {};
     this._flattenedFields.forEach(field => {
       if ('options' in field && field.options) {
-        out[field.name] = (field as any).options.find((option: any) => option.value === (this as any)[`_${field.name}`]);
+        const raw = getDynFormValue(this, `_${field.name}`);
+        if (typeof raw === 'string' || typeof raw === 'number') {
+          out[field.name] = field.options.find((option: SelectOption) => option.value === raw);
+        } else {
+          out[field.name] = undefined;
+        }
       } else {
-        out[field.name] = (this as any)[`_${field.name}`];
+        const v = getDynFormValue(this, `_${field.name}`);
+        out[field.name] = v;
       }
     });
     return out;
@@ -200,10 +221,10 @@ class DeForm extends LitElement {
     };
   }
 
-  setValue(fieldName: string, newValue: any): void {
+  setValue(fieldName: string, newValue: FormValue): void {
     const { currentKey } = this.propKeys(fieldName);
-    (this as any)[currentKey] = newValue;
-    (this as any)._checkForChanges();
+    setDynFormValue(this, currentKey, newValue);
+    this._checkForChanges();
   }
 
   propKeys(fieldName: string): PropKeys {
@@ -225,7 +246,7 @@ class DeForm extends LitElement {
     if (form) {
       this._activeFormId = form.id;
     }
-    (this as any)._checkForChanges();
+    this._checkForChanges();
   }
 
   override render() {
@@ -237,7 +258,7 @@ class DeForm extends LitElement {
 
     return html`
       <div class="dynamic-form-wrapper">
-        ${(this as any)._generateOneOrManyForms(this.fields)}
+        ${this._generateOneOrManyForms(this.fields)}
       </div>
     `;
   }
@@ -246,7 +267,7 @@ class DeForm extends LitElement {
     if (changedProperties.has('theme')) {
       this._updateThemeStylesheet(this.theme);
     }
-    await (this as any)._onUpdate(changedProperties);
+    await this._onUpdate(changedProperties);
   }
 }
 

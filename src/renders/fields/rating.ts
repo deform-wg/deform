@@ -2,6 +2,7 @@ import { html } from 'lit';
 import type { TemplateResult } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import type { DeForm, RatingFieldConfig } from '../../typedefs/index.js';
+import { getDynBoolean, getDynFormValue } from '../../utils/dynamic-props.js';
 
 const ifd = ifDefined;
 
@@ -15,13 +16,13 @@ export function _render_rating(this: DeForm, field: RatingFieldConfig): Template
   return html`
     <sl-rating
       name=${field.name}
-      value=${(this as any)[currentKey]}
+      value=${Number(getDynFormValue(this, currentKey) ?? 0)}
       label=${ifd(field.label)}
       max=${ifd(field.max)}
-      precision=${ifd((field as any).precision)}
-      ?disabled=${(field as any).disabled}
-      ?readonly=${(field as any).readonly}
-      ?data-dirty-field=${(this as any)[isDirtyKey]}
+      precision=${ifd(field.precision)}
+      ?disabled=${field.disabled}
+      ?readonly=${field.readonly}
+      ?data-dirty-field=${getDynBoolean(this, isDirtyKey)}
       @sl-change=${this._handleRating}>
     </sl-rating>
   `;

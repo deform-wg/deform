@@ -2,6 +2,7 @@ import { html } from 'lit';
 import type { TemplateResult } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import type { DeForm, SeedphraseFieldConfig } from '../../typedefs/index.js';
+import { getDynBoolean, getDynFormValue } from '../../utils/dynamic-props.js';
 
 const ifd = ifDefined;
 
@@ -13,27 +14,27 @@ export function _render_seedphrase(this: DeForm, field: SeedphraseFieldConfig): 
   return html`
     <sl-textarea
       name=${field.name}
-      .value=${ifd((this as any)[currentKey] || "")}
-      size=${ifd((field as any).size)}
-      ?filled=${(field as any).filled}
+      .value=${ifd(String(getDynFormValue(this, currentKey) ?? ""))}
+      size=${ifd(field.size)}
+      ?filled=${field.filled}
       label=${ifd(field.label)}
       help-text=${ifd(field.help)}
       placeholder=${ifd(field.placeholder)}
-      rows=${ifd((field as any).rows)}
-      resize=${ifd((field as any).resize)}
-      ?disabled=${(field as any).disabled}
-      ?readonly=${(field as any).readonly}
+      rows=${ifd(field.rows)}
+      resize=${ifd(field.resize)}
+      ?disabled=${field.disabled}
+      ?readonly=${field.readonly}
       ?required=${field.required}
-      minlength=${ifd((field as any).minlength)}
-      maxlength=${ifd((field as any).maxlength)}
-      autocapitalize=${ifd((field as any).autocapitalize)}
-      autocorrect=${ifd((field as any).autocorrect)}
-      autocomplete=${ifd((field as any).autocomplete)}
-      ?autofocus=${(field as any).autofocus}
-      enterkeyhint=${ifd((field as any).enterkeyhint)}
-      ?spellcheck=${(field as any).spellcheck}
-      inputmode=${ifd((field as any).inputmode)}
-      ?data-dirty-field=${(this as any)[isDirtyKey]}
+      minlength=${ifd(field.minlength)}
+      maxlength=${ifd(field.maxlength)}
+      autocapitalize=${ifd(field.autocapitalize)}
+      autocorrect=${ifd(field.autocorrect)}
+      autocomplete=${ifd(field.autocomplete)}
+      ?autofocus=${field.autofocus}
+      enterkeyhint=${ifd(field.enterkeyhint)}
+      ?spellcheck=${field.spellcheck}
+      inputmode=${ifd(field.inputmode)}
+      ?data-dirty-field=${getDynBoolean(this, isDirtyKey)}
       @input=${this._handleInput}
     ></sl-textarea>
   `;

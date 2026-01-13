@@ -2,8 +2,11 @@ import { html, nothing } from 'lit';
 import type { TemplateResult } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import type { DeForm, TextFieldConfig } from '../../typedefs/index.js';
+import { getDynBoolean, getDynFormValue } from '../../utils/dynamic-props.js';
 
 const ifd = ifDefined;
+
+type CustomValidatable = HTMLElement & { setCustomValidity: (message: string) => void };
 
 /**
  * Renders a password input field with optional confirmation.
@@ -13,8 +16,13 @@ export function _render_password(this: DeForm, field: TextFieldConfig): Template
 
   // Custom validation to check if both passwords match
   const validatePasswordsMatch = (_event: Event): void => {
-    const passwordEl = (this as any).shadowRoot.querySelector(`[name=${field.name}]`) as any;
-    (this as any)[currentKey] !== (this as any)[repeatKey]
+    const shadowRoot = (this as unknown as { shadowRoot?: ShadowRoot | null }).shadowRoot ?? null;
+    const passwordEl = shadowRoot?.querySelector<CustomValidatable>(`[name=${field.name}]`) ?? null;
+    if (!passwordEl) return;
+
+    const curr = String(getDynFormValue(this, currentKey) ?? '');
+    const rep = String(getDynFormValue(this, repeatKey) ?? '');
+    curr !== rep
       ? passwordEl.setCustomValidity('Passwords do not match')
       : passwordEl.setCustomValidity('');
   };
@@ -30,12 +38,12 @@ export function _render_password(this: DeForm, field: TextFieldConfig): Template
       maxlength=${ifd(field.maxlength)}
       pattern=${ifd(field.pattern)}
       size=${ifd(field.size)}
-      .value=${ifd((this as any)[currentKey] || "")}
+      .value=${ifd(String(getDynFormValue(this, currentKey) ?? ""))}
       ?clearable=${field.clearable}
       ?required=${field.required}
-      ?disabled=${(field as any).disabled}
+      ?disabled=${field.disabled}
       ?password-toggle=${field.passwordToggle}
-      ?data-dirty-field=${(this as any)[isDirtyKey]}
+      ?data-dirty-field=${getDynBoolean(this, isDirtyKey)}
       @input=${(event: Event) => {
           this._handleInput(event);
           field.requireConfirmation && validatePasswordsMatch(event);
@@ -50,9 +58,9 @@ export function _render_password(this: DeForm, field: TextFieldConfig): Template
         help-text="Just to be sure you know your password"
         size=${ifd(field.size)}
         ?clearable=${field.clearable}
-        ?disabled=${(field as any).disabled}
+        ?disabled=${field.disabled}
         data-repeat-field
-        .value=${ifd((this as any)[repeatKey])}
+        .value=${ifd(String(getDynFormValue(this, repeatKey) ?? ""))}
         required
         password-toggle
         @input=${(event: Event) => {

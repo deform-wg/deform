@@ -2,6 +2,7 @@ import { html } from 'lit';
 import type { TemplateResult } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import type { DeForm, RadioButtonFieldConfig, SelectOption } from '../../typedefs/index.js';
+import { getDynBoolean, getDynFormValue } from '../../utils/dynamic-props.js';
 
 const ifd = ifDefined;
 
@@ -15,18 +16,18 @@ export function _render_radioButton(this: DeForm, field: RadioButtonFieldConfig)
       label=${ifd(field.label)}
       help-text=${ifd(field.help)}
       name=${field.name}
-      size=${ifd((field as any).size)}
-      .value=${(this as any)[currentKey]}
-      ?disabled=${(field as any).disabled}
+      size=${ifd(field.size)}
+      .value=${String(getDynFormValue(this, currentKey) ?? '')}
+      ?disabled=${field.disabled}
       ?required=${field.required}
-      ?data-dirty-field=${(this as any)[isDirtyKey]}
+      ?data-dirty-field=${getDynBoolean(this, isDirtyKey)}
       @sl-change=${this._handleChoice}
     >
       ${field.options.map(
         (option: SelectOption) => html`
           <sl-radio-button
             value=${option.value}
-            ?checked=${(option as any).checked}
+            ?checked=${option.checked}
             ?disabled=${option.disabled}
           >
             ${option.label}

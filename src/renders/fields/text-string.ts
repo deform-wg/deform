@@ -2,6 +2,7 @@ import { html } from 'lit';
 import type { TemplateResult } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import type { DeForm, TextFieldConfig } from '../../typedefs/index.js';
+import { getDynBoolean, getDynFormValue } from '../../utils/dynamic-props.js';
 
 const ifd = ifDefined;
 
@@ -25,10 +26,10 @@ export function _render_text(this: DeForm, field: TextFieldConfig, options: Rend
       maxlength=${ifd(field.maxlength)}
       pattern=${ifd(field.pattern)}
       size=${ifd(field.size)}
-      .value=${ifd((this as any)[currentKey] || "")}
+      .value=${ifd(String(getDynFormValue(this, currentKey) ?? ""))}
       ?clearable=${field.clearable}
       ?required=${field.required}
-      ?data-dirty-field=${(this as any)[isDirtyKey]}
+      ?data-dirty-field=${getDynBoolean(this, isDirtyKey)}
       @input=${this._handleInput}
       >
       ${options.labelEl}

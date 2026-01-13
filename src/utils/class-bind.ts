@@ -6,10 +6,16 @@ import type { BindableFunction, FunctionMap } from '../typedefs/index.js';
  * @param mapOfFunctions - Object containing functions to bind
  * @param that - Class instance to bind the functions to
  */
-export const bindToClass = function (mapOfFunctions: FunctionMap, that: any): void {
+type BindTarget = object;
+
+export const bindToClass = function <TTarget extends BindTarget>(
+  mapOfFunctions: FunctionMap,
+  that: TTarget
+): void {
   Object.keys(mapOfFunctions).forEach((key) => {
-    if (typeof mapOfFunctions[key] === 'function') {
-      that[key] = (mapOfFunctions[key] as BindableFunction).bind(that);
+    const fn = mapOfFunctions[key];
+    if (typeof fn === 'function') {
+      (that as Record<string, unknown>)[key] = (fn as BindableFunction).bind(that);
     }
   });
 };

@@ -2,6 +2,7 @@ import { html } from 'lit';
 import type { TemplateResult } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import type { DeForm, RangeFieldConfig } from '../../typedefs/index.js';
+import { getDynBoolean, getDynFormValue } from '../../utils/dynamic-props.js';
 
 const ifd = ifDefined;
 
@@ -14,13 +15,13 @@ export function _render_range(this: DeForm, field: RangeFieldConfig): TemplateRe
     <sl-range
       name=${field.name}
       label=${ifd(field.label)}
-      .value=${ifd((this as any)[currentKey])}
+      .value=${getDynFormValue(this, currentKey) ?? 0}
       min=${ifd(field.min)}
       max=${ifd(field.max)}
       step=${ifd(field.step)}
-      ?disabled=${(field as any).disabled}
-      ?showTooltip=${(field as any).showTooltip}
-      ?data-dirty-field=${(this as any)[isDirtyKey]}
+      ?disabled=${field.disabled}
+      ?showTooltip=${field.showTooltip}
+      ?data-dirty-field=${getDynBoolean(this, isDirtyKey)}
       @sl-change=${this._handleChoice}>
     </sl-range>
   `;

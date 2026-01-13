@@ -1,6 +1,7 @@
 import { html } from 'lit';
 import type { TemplateResult } from 'lit';
 import type { DeForm, CheckboxFieldConfig } from '../../typedefs/index.js';
+import { getDynBoolean, getDynFormValue } from '../../utils/dynamic-props.js';
 
 /**
  * Renders a checkbox field.
@@ -9,12 +10,12 @@ export function _render_checkbox(this: DeForm, field: CheckboxFieldConfig): Temp
   const { currentKey, isDirtyKey } = this.propKeys(field.name);
   return html`<sl-checkbox
     name=${field.name}
-    ?checked=${(this as any)[currentKey]}
-    .value=${(this as any)[currentKey]}
-    ?disabled=${(field as any).disabled}
-    ?indeterminate=${(field as any).indeterminate}
+    ?checked=${getDynFormValue(this, currentKey) === true}
+    .value=${getDynFormValue(this, currentKey)}
+    ?disabled=${field.disabled}
+    ?indeterminate=${field.indeterminate}
     ?required=${field.required}
-    ?data-dirty-field=${(this as any)[isDirtyKey]}
+    ?data-dirty-field=${getDynBoolean(this, isDirtyKey)}
     @sl-change=${this._handleToggle}>
     ${field.label}
   </sl-checkbox>

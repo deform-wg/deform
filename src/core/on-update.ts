@@ -3,6 +3,11 @@ import { customElementsReady } from '../utils/custom-elements-ready.js';
 
 type PropertyKey = string;
 
+function getShadowRoot(host: DeForm): ShadowRoot | null {
+  const maybe = host as unknown as { shadowRoot?: ShadowRoot | null };
+  return maybe.shadowRoot ?? null;
+}
+
 /**
  * Handles property updates and triggers form initialization when needed.
  */
@@ -48,7 +53,7 @@ export function _getTargetForm(this: DeForm, changedProperties: Map<PropertyKey,
     ? 'form'
     : `form#${this._activeFormId}`;
 
-  return (this as any).shadowRoot.querySelector(formSelector);
+  return getShadowRoot(this)?.querySelector<HTMLFormElement>(formSelector) ?? null;
 }
 
 /**

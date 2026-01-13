@@ -6,15 +6,15 @@
  * @param wait - The time period in milliseconds to wait before executing the function.
  * @returns A debounced function that delays execution until calls stop.
  */
-export default function debounce<T extends (...args: any[]) => any>(
-  func: T,
+export default function debounce<This, Args extends unknown[], R>(
+  func: (this: This, ...args: Args) => R,
   wait: number
-): (...args: Parameters<T>) => void {
+): (this: This, ...args: Args) => void {
   let timeout: ReturnType<typeof setTimeout> | undefined;
-  return function executedFunction(...args: Parameters<T>): void {
+  return function executedFunction(this: This, ...args: Args): void {
     const later = () => {
       clearTimeout(timeout);
-      func(...args);
+      func.apply(this, args);
     };
     clearTimeout(timeout);
     timeout = setTimeout(later, wait);
@@ -30,12 +30,12 @@ export default function debounce<T extends (...args: any[]) => any>(
  * @param wait - The time period in milliseconds to wait before allowing another execution.
  * @returns A debounced function that executes immediately on first call, then waits.
  */
-export function onceThenDebounce<T extends (...args: any[]) => any>(
-  func: T,
+export function onceThenDebounce<This, Args extends unknown[], R>(
+  func: (this: This, ...args: Args) => R,
   wait: number
-): (...args: Parameters<T>) => void {
+): (this: This, ...args: Args) => void {
   let timeout: ReturnType<typeof setTimeout> | undefined;
-  return function executedFunction(this: any, ...args: Parameters<T>): void {
+  return function executedFunction(this: This, ...args: Args): void {
     const later = () => {
       timeout = undefined;
     };

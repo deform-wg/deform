@@ -2,6 +2,7 @@ import { html } from 'lit';
 import type { TemplateResult } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import type { DeForm, DateFieldConfig } from '../../typedefs/index.js';
+import { getDynBoolean, getDynFormValue } from '../../utils/dynamic-props.js';
 
 const ifd = ifDefined;
 
@@ -19,12 +20,12 @@ export function _render_date(this: DeForm, field: DateFieldConfig): TemplateResu
       help-text=${ifd(field.help)}
       min=${ifd(field.min)}
       max=${ifd(field.max)}
-      size=${ifd((field as any).size)}
-      .value=${(this as any)[currentKey]}
-      ?clearable=${(field as any).clearable}
+      size=${ifd(field.size)}
+      .value=${String(getDynFormValue(this, currentKey) ?? '')}
+      ?clearable=${field.clearable}
       ?required=${field.required}
-      ?disabled=${(field as any).disabled}
-      ?data-dirty-field=${(this as any)[isDirtyKey]}
+      ?disabled=${field.disabled}
+      ?data-dirty-field=${getDynBoolean(this, isDirtyKey)}
       @input=${this._handleInput}
       >
     </sl-input>

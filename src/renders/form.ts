@@ -4,6 +4,8 @@ import { repeat } from "lit/directives/repeat.js";
 import { classMap } from "lit/directives/class-map.js";
 import { generateActionLabel } from "./action.js";
 import type { DeForm, FormConfig, FormSection, FieldConfig } from '../typedefs/index.js';
+import type { RenderOptions } from '../typedefs/index.js';
+import { getDynBoolean, getDynNumber } from '../utils/dynamic-props.js';
 
 interface FormControlOptions {
   formId: string;
@@ -18,7 +20,7 @@ interface FormControlOptions {
  */
 export function _generateOneOrManyForms(this: DeForm, data: FormConfig): TemplateResult {
   const tabs = data.sections.map((section) => {
-    const changeCount = (this as any)[`_form_${section.name}_count`];
+    const changeCount = getDynNumber(this, `_form_${section.name}_count`);
     return html`
       <sl-tab
         @click=${(event: Event) => this._handleTabChange(event, section.name)}
@@ -58,10 +60,10 @@ export function _generateOneOrManyForms(this: DeForm, data: FormConfig): Templat
     const formFields = repeat(
       section.fields,
       (field) => field.name,
-      (field) => (this as any)._generateField(field),
+      (field) => this._generateField(field),
     );
 
-    const formControls = (this as any)._generateFormControls({
+    const formControls = this._generateFormControls({
       formId: section.name,
       submitLabel: section.submitLabel || "Save",
       submitLabelSuccess: section.submitLabelSuccess || ""
@@ -112,7 +114,7 @@ export function _generateField(this: DeForm, field: FieldConfig): TemplateResult
     if ('hidden' in field && field.hidden) return nothing;
 
     // Fields with reveal rules render HTML if rule conditions are met
-    if ('revealOn' in field && field.revealOn && !(this as any)[this.propKeys(field.name).revealKey]) return nothing;
+    if ('revealOn' in field && field.revealOn && !getDynBoolean(this, this.propKeys(field.name).revealKey)) return nothing;
 
     // Stylistic
     const formControlClasses = classMap({
@@ -135,7 +137,10 @@ export function _generateField(this: DeForm, field: FieldConfig): TemplateResult
       </span>
     ` : nothing;
 
-    const fieldElement = (this as any)[`_render_${field.type}`](field, { labelEl });
+    const renderFn = (this as unknown as Record<string, unknown>)[`_render_${field.type}`];
+    const fieldElement = typeof renderFn === 'function'
+      ? (renderFn as (field: FieldConfig, options: RenderOptions) => unknown)(field, { labelEl })
+      : this._generateErrorField(field);
 
     return html`
       <div class=${formControlClasses}>
@@ -144,7 +149,7 @@ export function _generateField(this: DeForm, field: FieldConfig): TemplateResult
     `;
   } catch (fieldRenderError) {
     console.error("Dynamic form field error:", { field, fieldRenderError });
-    return (this as any)._generateErrorField(field);
+    return this._generateErrorField(field);
   }
 }
 
@@ -169,7 +174,7 @@ export function _generateErrorField(this: DeForm, field: FieldConfig): TemplateR
  * Generates the form control buttons (submit, discard).
  */
 export function _generateFormControls(this: DeForm, options: FormControlOptions = { formId: '' }): TemplateResult {
-  const changeCount = (this as any)[`_form_${options.formId}_count`];
+  const changeCount = getDynNumber(this, `_form_${options.formId}_count`);
   return html`
     <div class="footer-controls">
       ${this.allowDiscardChanges && changeCount
@@ -177,7 +182,7 @@ export function _generateFormControls(this: DeForm, options: FormControlOptions 
             <sl-button
               variant="text"
               id="${options.formId}__reset_button"
-              @click=${(this as any)._handleDiscardChanges}
+              @click=${this._handleDiscardChanges}
             >
               Discard changes
             </sl-button>
@@ -190,10 +195,10 @@ export function _generateFormControls(this: DeForm, options: FormControlOptions 
           variant="primary"
           type="submit"
           ?loading=${this._loading}
-          ?disabled=${!changeCount || (this as any)._celebrate}
+          ?disabled=${!changeCount || this._celebrate}
           form=${options.formId}
         >
-          ${(this as any)._celebrate ? html`
+          ${this._celebrate ? html`
             <sl-icon name="check-lg" slot=${options.submitLabelSuccess ? "prefix" : ""}></sl-icon>
             ${options.submitLabelSuccess}
             ` : (options.submitLabel || "Save")}

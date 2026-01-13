@@ -1,8 +1,25 @@
-import type { DeForm, FieldConfig, FormConfig, PropKeys } from '../typedefs/index.js';
+import type { DeForm, FieldConfig, FormConfig, FormDataModel, FormValue, PropKeys, ValidationRule } from '../typedefs/index.js';
+import { getDynBoolean, getDynFormValue, setDyn, setDynFormValue, setDynNumber } from '../utils/dynamic-props.js';
 
 // Type for LitElement constructor with createProperty
 interface LitElementConstructor {
   createProperty: (name: string, options: object) => void;
+}
+
+type FieldPropertyType = StringConstructor | NumberConstructor | BooleanConstructor | ArrayConstructor;
+
+function getFieldPropertyType(field: FieldConfig): FieldPropertyType {
+  // Multi-select values must be arrays.
+  if (field.type === 'select' && field.multiple) return Array;
+
+  // Boolean controls.
+  if (field.type === 'checkbox' || field.type === 'toggle') return Boolean;
+
+  // Numeric-ish controls.
+  if (field.type === 'range' || field.type === 'rating') return Number;
+
+  // Default to string for text-ish controls and everything else.
+  return String;
 }
 
 /**
@@ -16,7 +33,7 @@ export function _initializeFormFieldProperties(this: DeForm, newValue: FormConfi
     constructor.createProperty(`_form_${section.name}_count`, {
       type: Number,
     });
-    (this as any)[`_form_${section.name}_count`] = 0;
+    setDynNumber(this, `_form_${section.name}_count`, 0);
 
     this._flattenedFields = this._flattenedFields || [];
     section.fields.forEach((field) => {
@@ -24,8 +41,8 @@ export function _initializeFormFieldProperties(this: DeForm, newValue: FormConfi
       this._flattenedFields.push(field);
 
       // Additionally, for toggleFields push nested fields.
-      if (field.type === "toggleField" && 'fields' in field) {
-        (field as any).fields.forEach((f: FieldConfig) => {
+      if (field.type === "toggleField") {
+        field.fields.forEach((f: FieldConfig) => {
           this._flattenedFields.push(f);
         });
       }
@@ -43,8 +60,8 @@ export function _initializeFormFieldProperties(this: DeForm, newValue: FormConfi
       } = this.propKeys(field.name);
 
       // Determine property type based on field configuration
-      const isMultiSelect = field.type === 'select' && 'multiple' in field && (field as any).multiple;
-      const propertyType = isMultiSelect ? Array : String;
+      const propertyType = getFieldPropertyType(field);
+      const isMultiSelect = propertyType === Array;
 
       // Create the standard property
       constructor.createProperty(currentKey, { type: propertyType });
@@ -54,14 +71,16 @@ export function _initializeFormFieldProperties(this: DeForm, newValue: FormConfi
 
       // Initialize multi-select fields with empty array to prevent Shoelace errors
       if (isMultiSelect) {
-        (this as any)[currentKey] = (this as any)[currentKey] || [];
-        (this as any)[originalKey] = (this as any)[originalKey] || [];
+        const curr = getDynFormValue(this, currentKey);
+        const orig = getDynFormValue(this, originalKey);
+        setDynFormValue(this, currentKey, Array.isArray(curr) ? curr : []);
+        setDynFormValue(this, originalKey, Array.isArray(orig) ? orig : []);
       }
 
       // Initialize with default value from field config if provided
       if ('value' in field && field.value !== undefined) {
-        (this as any)[currentKey] = field.value;
-        (this as any)[originalKey] = field.value;
+        setDynFormValue(this, currentKey, field.value);
+        setDynFormValue(this, originalKey, field.value);
       }
 
       // Create a property for dirty tracking
@@ -74,11 +93,11 @@ export function _initializeFormFieldProperties(this: DeForm, newValue: FormConfi
       // Create a property to track field visibility (for A/B fields)
       if (field.type === "toggleField") {
         constructor.createProperty(variantIndexKey, { type: Number });
-        (this as any)[variantIndexKey] = parseInt(String((field as any).defaultTo)) || 0;
+        setDynNumber(this, variantIndexKey, typeof field.defaultTo === 'number' ? field.defaultTo : 0);
       }
 
       // Create a property to track reveal condition
-      if ('revealOn' in field && field.revealOn) {
+      if (field.revealOn) {
         const exists = this._rules.find(r => r.self === field.name);
         if (exists) return;
 
@@ -86,23 +105,22 @@ export function _initializeFormFieldProperties(this: DeForm, newValue: FormConfi
         constructor.createProperty(labelKey, { type: Boolean });
 
         try {
-          let rule: any = {};
-
           if (typeof field.revealOn === 'function') {
-            rule = {
+            const rule: ValidationRule = {
               self: field.name,
               fn: field.revealOn
             };
+            this._rules.push(rule);
           } else {
-            rule = {
+            const [target, operator, value] = field.revealOn;
+            const rule: ValidationRule = {
               self: field.name,
-              target: (field.revealOn as any)[0],
-              operator: (field.revealOn as any)[1],
-              value: (field.revealOn as any)[2],
+              target,
+              operator,
+              value,
             };
+            this._rules.push(rule);
           }
-
-          this._rules.push(rule);
         } catch (ruleErr) {
           console.warn('Error with field rule', ruleErr, field.revealOn);
         }
@@ -116,26 +134,28 @@ export function _initializeFormFieldProperties(this: DeForm, newValue: FormConfi
  * When new values come from external sources (parent component, websocket),
  * dirty fields keep their current values.
  */
-export function _initializeValuesPreservingEdits(this: DeForm, newValue: Record<string, any>): void {
-  const _newValue: Record<string, any> = {};
+export function _initializeValuesPreservingEdits(this: DeForm, newValue: FormDataModel): void {
+  const _newValue: FormDataModel = {};
   // When dynamic-form is provided new values via an external actor
   // We should not immediately adopt them as the user may have edits.
   // Preserve edits.
   Object.keys(newValue).forEach((key) => {
     const { currentKey, originalKey, isDirtyKey } = this.propKeys(key);
 
-    if ((this as any)[isDirtyKey]) {
+    if (getDynBoolean(this, isDirtyKey)) {
       // If the field is dirty, retain the current value
-      _newValue[key] = (this as any)[currentKey];
+      const curr = getDynFormValue(this, currentKey);
+      _newValue[key] = curr;
     } else {
       // If the field is not dirty, update it with the new value
-      (this as any)[currentKey] = newValue[key];
-      (this as any)[originalKey] = newValue[key];
-      _newValue[key] = newValue[key];
+      const v = newValue[key] as FormValue;
+      setDynFormValue(this, currentKey, v);
+      setDynFormValue(this, originalKey, v);
+      _newValue[key] = v;
     }
   });
 
-  (this as any)._values = _newValue;
+  setDyn(this, '_values', _newValue);
 }
 
 /**

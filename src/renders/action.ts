@@ -1,6 +1,7 @@
 import { html } from "lit";
 import type { TemplateResult } from "lit";
 import type { DeForm } from '../typedefs/index.js';
+import { getDynBoolean } from '../utils/dynamic-props.js';
 
 /**
  * Generates an action button label for a form field.
@@ -18,7 +19,7 @@ export function generateActionLabel(
       class="label-action"
       size="small"
       data-action-name=${actionName}
-      ?loading=${(formInstance as any)[labelKey]}
+      ?loading=${getDynBoolean(formInstance, labelKey)}
       @click=${(e: Event) => {
         e.preventDefault();
         formInstance.dispatchEvent(new CustomEvent(

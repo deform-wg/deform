@@ -1,5 +1,7 @@
 import type { DeForm, ChangePayload } from '../typedefs/index.js';
 
+type EventDetail = Record<string, string | number | boolean | null | undefined | object>;
+
 interface TabChangeOptions {
   priorTabName?: string;
   newTabName: string;
@@ -36,7 +38,7 @@ function validateTabChangeEvent(options: Partial<TabChangeOptions>): void {
 /**
  * Dispatches an internal form event.
  */
-export function _dispatchEvent(this: DeForm, name: string, detail: Record<string, any>): void {
+export function _dispatchEvent(this: DeForm, name: string, detail: EventDetail): void {
   this.dispatchEvent(new CustomEvent(
     `form-${name}`, {
       detail,
@@ -48,7 +50,7 @@ export function _dispatchEvent(this: DeForm, name: string, detail: Record<string
 /**
  * Dispatches a public deform event.
  */
-export const _dispatchPublicEvent = (name: string, detail: Record<string, any>, deForm: DeForm): void => {
+export const _dispatchPublicEvent = (name: string, detail: EventDetail, deForm: DeForm): void => {
   if (!name) {
     throw new Error('Event name is required');
   }

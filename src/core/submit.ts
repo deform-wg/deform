@@ -1,5 +1,7 @@
 import type { DeForm, FormDataModel } from '../typedefs/index.js';
 import { getFormControls } from '@shoelace-style/shoelace/dist/utilities/form.js';
+import { isNamedElement, isValidatableElement } from '../utils/dom-guards.js';
+import { getDynFormValue, setDynFormValue } from '../utils/dynamic-props.js';
 
 /**
  * Validates all form controls within a form element.
@@ -10,7 +12,7 @@ export function checkValidity(this: DeForm, form: HTMLFormElement): boolean {
     throw new Error('dynamic-form checkValidity called without providing form Node');
   }
   const formControls = getFormControls(form);
-  const isValid = [...formControls].every((control: any) => control.checkValidity());
+  const isValid = [...formControls].every((control) => !isValidatableElement(control) || control.checkValidity());
   return isValid;
 }
 
@@ -29,10 +31,12 @@ export function getChanges(this: DeForm, form: HTMLFormElement): FormDataModel {
   const formData: FormDataModel = {};
   Array
     .from(modifiedFieldNodes)
-    .map((node) => (node as any).name)
+    .filter((node): node is Element => node instanceof Element)
+    .filter(isNamedElement)
+    .map((node) => node.name)
     .forEach((fieldName: string) => {
       const { currentKey } = this.propKeys(fieldName);
-      formData[fieldName] = (this as any)[currentKey];
+      formData[fieldName] = getDynFormValue(this, currentKey);
     });
 
   return formData;
@@ -56,7 +60,7 @@ export async function _handleSubmit(this: DeForm, event: Event): Promise<void> {
   this._loading = true;
   const res = await this.onSubmit?.(stagedChanges, formEl, this);
 
-  if (!res || (res as any).error) {
+  if (!res || (typeof res === 'object' && res !== null && 'error' in res)) {
     // console.warn('Error submitting changes, changes not saved.', { res });
   }
 
@@ -82,7 +86,8 @@ export function commitChanges(this: DeForm, form: HTMLFormElement): void {
   // Sync the prefixed properties
   Object.keys(stagedChanges).forEach((fieldName) => {
     const { currentKey, originalKey } = this.propKeys(fieldName);
-    (this as any)[originalKey] = (this as any)[currentKey];
+    const v = getDynFormValue(this, currentKey);
+    setDynFormValue(this, originalKey, v);
   });
 
   // Reset dirty flags on fields

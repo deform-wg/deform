@@ -64,14 +64,20 @@ export interface BaseFieldConfig {
   help?: string;
   /** Whether the field is required */
   required?: boolean;
+  /** Whether the field is disabled */
+  disabled?: boolean;
   /** Whether the field should be hidden */
   hidden?: boolean;
   /** Whether to break to new line after this field */
   breakline?: boolean;
   /** Placeholder text for input fields */
   placeholder?: string;
+  /** Visual size hint for Shoelace controls */
+  size?: 'small' | 'medium' | 'large';
+  /** Initial/default value (type depends on field) */
+  value?: FormValue;
   /** Condition for revealing this field */
-  revealOn?: string;
+  revealOn?: RevealOn;
   /** Action button associated with the label */
   labelAction?: LabelAction;
 }
@@ -95,6 +101,16 @@ export interface TextFieldConfig extends BaseFieldConfig {
   requireConfirmation?: boolean;
   /** Whether to show password toggle */
   passwordToggle?: boolean;
+  /** Min value (primarily for number/date-like inputs) */
+  min?: number;
+  /** Max value (primarily for number/date-like inputs) */
+  max?: number;
+  /** Step increment (primarily for number inputs) */
+  step?: number;
+  /** Hide spin buttons (Shoelace sl-input) */
+  noSpinButtons?: boolean;
+  /** Autofocus the control */
+  autofocus?: boolean;
 }
 
 /**
@@ -108,6 +124,10 @@ export interface SelectFieldConfig extends BaseFieldConfig {
   multiple?: boolean;
   /** Whether the field can be cleared */
   clearable?: boolean;
+  /** Max options visible in the dropdown before scrolling */
+  maxOptionsVisible?: number;
+  /** Hoist dropdown to avoid clipping in overflow containers */
+  hoist?: boolean;
 }
 
 /**
@@ -135,15 +155,33 @@ export interface CheckboxFieldConfig extends BaseFieldConfig {
   type: 'checkbox';
   /** Default checked state */
   defaultTo?: boolean;
+  /** Whether the checkbox is indeterminate */
+  indeterminate?: boolean;
 }
 
 /**
  * Toggle field configuration
  */
+/**
+ * Toggle/switch field configuration (boolean).
+ */
+export interface ToggleConfig extends BaseFieldConfig {
+  type: 'toggle';
+  /** Default checked state */
+  defaultTo?: boolean;
+}
+
+/**
+ * Toggle field configuration that swaps between multiple field variants.
+ */
 export interface ToggleFieldConfig extends BaseFieldConfig {
-  type: 'toggle' | 'toggleField';
-  /** Default value (0 or 1) */
+  type: 'toggleField';
+  /** Default variant index (0 or 1) */
   defaultTo?: 0 | 1;
+  /** Alternate field variants */
+  fields: FieldConfig[];
+  /** Labels for the toggle button corresponding to variants */
+  labels: string[];
 }
 
 /**
@@ -157,6 +195,8 @@ export interface RangeFieldConfig extends BaseFieldConfig {
   max: number;
   /** Step increment */
   step?: number;
+  /** Show tooltip while dragging */
+  showTooltip?: boolean;
 }
 
 /**
@@ -166,6 +206,10 @@ export interface RatingFieldConfig extends BaseFieldConfig {
   type: 'rating';
   /** Maximum rating value */
   max?: number;
+  /** Rating precision */
+  precision?: number;
+  /** Read-only mode */
+  readonly?: boolean;
 }
 
 /**
@@ -177,6 +221,8 @@ export interface DateFieldConfig extends BaseFieldConfig {
   min?: string;
   /** Maximum allowed date */
   max?: string;
+  /** Whether the field can be cleared */
+  clearable?: boolean;
 }
 
 /**
@@ -186,6 +232,18 @@ export interface ColorFieldConfig extends BaseFieldConfig {
   type: 'color';
   /** Default color value */
   defaultTo?: string;
+  /** Render inline instead of a popover */
+  inline?: boolean;
+  /** Enable opacity slider */
+  opacity?: boolean;
+  /** Disable format toggle button */
+  noFormatToggle?: boolean;
+  /** Uppercase hex values */
+  uppercase?: boolean;
+  /** Color format */
+  format?: string;
+  /** Swatches list */
+  swatches?: string;
 }
 
 /**
@@ -199,6 +257,26 @@ export interface TextareaFieldConfig extends BaseFieldConfig {
   maxlength?: number;
   /** Number of visible rows */
   rows?: number;
+  /** Filled style */
+  filled?: boolean;
+  /** Resize mode */
+  resize?: string;
+  /** Read-only mode */
+  readonly?: boolean;
+  /** Autocapitalize setting */
+  autocapitalize?: string;
+  /** Autocorrect setting */
+  autocorrect?: string;
+  /** Autocomplete setting */
+  autocomplete?: string;
+  /** Autofocus the control */
+  autofocus?: boolean;
+  /** Enter key hint */
+  enterkeyhint?: string;
+  /** Spellcheck setting */
+  spellcheck?: boolean;
+  /** Input mode */
+  inputmode?: string;
 }
 
 /**
@@ -208,6 +286,32 @@ export interface SeedphraseFieldConfig extends BaseFieldConfig {
   type: 'seedphrase';
   /** Number of words in the seed phrase */
   words?: number;
+  /** Minimum character length */
+  minlength?: number;
+  /** Maximum character length */
+  maxlength?: number;
+  /** Number of visible rows */
+  rows?: number;
+  /** Filled style */
+  filled?: boolean;
+  /** Resize mode */
+  resize?: string;
+  /** Read-only mode */
+  readonly?: boolean;
+  /** Autocapitalize setting */
+  autocapitalize?: string;
+  /** Autocorrect setting */
+  autocorrect?: string;
+  /** Autocomplete setting */
+  autocomplete?: string;
+  /** Autofocus the control */
+  autofocus?: boolean;
+  /** Enter key hint */
+  enterkeyhint?: string;
+  /** Spellcheck setting */
+  spellcheck?: boolean;
+  /** Input mode */
+  inputmode?: string;
 }
 
 /**
@@ -219,6 +323,7 @@ export type FieldConfig =
   | RadioFieldConfig
   | RadioButtonFieldConfig
   | CheckboxFieldConfig
+  | ToggleConfig
   | ToggleFieldConfig
   | RangeFieldConfig
   | RatingFieldConfig
@@ -241,6 +346,8 @@ export interface SelectOption {
   label: string;
   /** Whether this option is disabled */
   disabled?: boolean;
+  /** Whether this option is initially checked (radio/radio-button convenience) */
+  checked?: boolean;
 }
 
 /**
@@ -264,18 +371,37 @@ export interface ValidationRule {
   /** Validation message */
   message?: string;
   /** Additional validation parameters */
-  params?: Record<string, any>;
+  params?: Record<string, string | number | boolean | null | undefined>;
   /** Self field name (for reveal rules) */
   self?: string;
   /** Target field name (for reveal rules) */
   target?: string;
   /** Operator for comparison (for reveal rules) */
-  operator?: string;
+  operator?: RevealOperator;
   /** Value to compare against (for reveal rules) */
-  value?: any;
+  value?: FormValue;
   /** Custom function for reveal rules */
-  fn?: (currentState: FormDataModel, currentValues: FormDataModel) => boolean;
+  fn?: RevealFunction;
 }
+
+// ============================================================================
+// Reveal / Conditional Rendering Types
+// ============================================================================
+
+/** Supported operators for reveal rules. */
+export type RevealOperator = '=' | '!=';
+
+/**
+ * Tuple form of reveal rules:
+ * `[targetFieldName, operator, desiredValue]`
+ */
+export type RevealTuple = readonly [target: string, operator: RevealOperator, value: FormValue];
+
+/** Function form of reveal rules. */
+export type RevealFunction = (currentState: FormStateModel, currentValues: FormDataModel) => boolean;
+
+/** Union of supported reveal rule definitions. */
+export type RevealOn = RevealTuple | RevealFunction;
 
 // ============================================================================
 // Form Data and State Types
@@ -284,9 +410,24 @@ export interface ValidationRule {
 /**
  * Form data model - key-value pairs for field values
  */
-export interface FormDataModel {
-  [key: string]: any;
-}
+export type FormValue =
+  | string
+  | number
+  | boolean
+  | null
+  | undefined
+  | string[]
+  | number[]
+  | Array<string | number>;
+
+export type FormDataModel = Record<string, FormValue>;
+
+/**
+ * Form state model, used by `getState()`.
+ * Option-based fields return the selected option object rather than the raw value.
+ */
+export type FormStateValue = FormValue | SelectOption | undefined;
+export type FormStateModel = Record<string, FormStateValue>;
 
 /**
  * Change tracking payload for field updates
@@ -295,11 +436,11 @@ export interface ChangePayload {
   /** Name of the field that changed */
   fieldName: string;
   /** Original value from form initialization */
-  originalValue: any;
+  originalValue: FormValue;
   /** Previous value before the change */
-  priorValue: any;
+  priorValue: FormValue;
   /** New value after the change */
-  newValue: any;
+  newValue: FormValue;
   /** Timestamp of the change */
   timestamp?: number;
   /** Reference to the DeForm instance */
@@ -329,14 +470,14 @@ export interface SubmitPayload {
 /**
  * Field renderer function signature
  */
-export type FieldRenderer = (field: FieldConfig, options: RenderOptions) => any;
+export type FieldRenderer = (field: FieldConfig, options: RenderOptions) => unknown;
 
 /**
  * Render options passed to field renderers
  */
 export interface RenderOptions {
   /** Label element to include */
-  labelEl?: any;
+  labelEl?: import('lit').TemplateResult | typeof import('lit').nothing;
   /** Additional CSS classes */
   classes?: string;
 }
@@ -348,13 +489,18 @@ export interface DeForm {
   /** Current form values */
   values: FormDataModel;
   /** Field configurations */
-  fields: Record<string, FieldConfig>;
+  fields: FormConfig | undefined;
   /** Theme setting */
   theme: 'light' | 'dark';
   /** Orientation setting */
   orientation: string;
   /** Submit handler function */
-  onSubmit?: (changes: FormDataModel, form: HTMLFormElement, deForm: DeForm) => Promise<any>;
+  onSubmit?: (changes: FormDataModel, form: HTMLFormElement, deForm: DeForm) => Promise<unknown>;
+  /**
+   * Optional change handler invoked after value-change events.
+   * Kept for backward compatibility with prior JS API.
+   */
+  onChange?: (change: Omit<ChangePayload, 'deForm'>, deForm: DeForm) => void;
   /** Whether to require commit of changes */
   requireCommit: boolean;
   /** Whether to mark modified fields */
@@ -373,17 +519,37 @@ export interface DeForm {
   _loading: boolean;
   _rules: ValidationRule[];
   _flattenedFields: FieldConfig[];
+  _celebrate: boolean;
   
   // Methods
+  // Core lifecycle / helpers (bound at runtime)
+  _initializeFormFieldProperties: (newValue: FormConfig) => void;
+  _initializeValuesPreservingEdits: (newValue: FormDataModel) => void;
+  _dispatchEvent: (name: string, detail: Record<string, unknown>) => void;
+  _onUpdate: (changedProperties: Map<string, unknown>) => Promise<void>;
+
+  // Render helpers (bound at runtime)
+  _generateOneOrManyForms: (data: FormConfig) => import('lit').TemplateResult;
+  _generateField: (field: FieldConfig) => import('lit').TemplateResult | typeof import('lit').nothing;
+  _generateErrorField: (field: FieldConfig) => import('lit').TemplateResult;
+  _generateFormControls: (options: { formId: string; submitLabel?: string; submitLabelSuccess?: string }) => import('lit').TemplateResult;
+
+  // State helpers
+  getFormValues: () => FormDataModel;
+  getState: () => FormStateModel;
+  setValue: (fieldName: string, newValue: FormValue) => void;
+  toggleLabelLoader: (fieldName: string) => void;
+
   _handleInput: (event: Event) => void;
   _handleToggle: (event: Event) => void;
   _handleChoice: (event: Event) => void;
   _handleRating: (event: Event) => void;
   _handleTabChange: (event: Event, tabName: string) => void;
   _handleSubmit: (event: Event) => void;
-  _checkForChanges: (fieldName?: string, newValue?: any) => void;
+  _handleDiscardChanges: (event: Event) => void;
+  _checkForChanges: (fieldName?: string, newValue?: FormValue) => void;
   _checkAndSetFieldDirtyStatus: (fieldName: string) => boolean;
-  _checkAndSetConditionMetFlags: (rule: any, currentState: FormDataModel, currentValues: FormDataModel) => void;
+  _checkAndSetConditionMetFlags: (rule: ValidationRule, currentState: FormStateModel, currentValues: FormDataModel) => void;
   _shouldUpdateForm: (changedProperties: Map<string, unknown>) => boolean;
   _getTargetForm: (changedProperties: Map<string, unknown>) => HTMLFormElement | null;
   _updateActiveFormId: (form: HTMLFormElement, changedProperties: Map<string, unknown>) => void;
@@ -391,6 +557,7 @@ export interface DeForm {
   checkValidity: (form: HTMLFormElement) => boolean;
   getChanges: (form: HTMLFormElement) => FormDataModel;
   commitChanges: (form: HTMLFormElement) => void;
+  retainChanges: () => void;
   dispatchEvent: (event: Event) => boolean;
 }
 
@@ -421,35 +588,27 @@ export interface PropKeys {
 /**
  * Form change event
  */
-export interface FormChangeEvent extends CustomEvent {
-  detail: ChangePayload;
-}
+export type FormChangeEvent = CustomEvent<ChangePayload>;
 
 /**
  * Tab change event
  */
-export interface TabChangeEvent extends CustomEvent {
-  detail: {
-    tabName: string;
-    deForm: DeForm;
-  };
-}
+export type TabChangeEvent = CustomEvent<{
+  tabName: string;
+  deForm: DeForm;
+}>;
 
 /**
  * Form submit event
  */
-export interface FormSubmitEvent extends CustomEvent {
-  detail: SubmitPayload;
-}
+export type FormSubmitEvent = CustomEvent<SubmitPayload>;
 
 /**
  * Discard changes event
  */
-export interface DiscardEvent extends CustomEvent {
-  detail: {
-    deForm: DeForm;
-  };
-}
+export type DiscardEvent = CustomEvent<{
+  deForm: DeForm;
+}>;
 
 // ============================================================================
 // Utility Types
@@ -458,7 +617,7 @@ export interface DiscardEvent extends CustomEvent {
 /**
  * Function that can be bound to a class instance
  */
-export type BindableFunction = (...args: any[]) => any;
+export type BindableFunction = (...args: never[]) => unknown;
 
 /**
  * Map of functions that can be bound to a class
@@ -468,7 +627,7 @@ export type FunctionMap = Record<string, BindableFunction>;
 /**
  * Debounced function type
  */
-export type DebouncedFunction<T extends (...args: any[]) => any> = T & {
+export type DebouncedFunction<T extends (...args: unknown[]) => unknown> = T & {
   cancel: () => void;
   flush: () => void;
 };

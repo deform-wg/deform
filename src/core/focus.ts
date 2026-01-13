@@ -6,7 +6,8 @@ import type { DeForm } from '../typedefs/index.js';
  */
 export function focus(this: DeForm, fieldName: string): void {
   if (!fieldName) return;
-  const node = (this as any).shadowRoot.querySelector(`[name=${fieldName}]`) as HTMLElement | null;
+  const shadowRoot = (this as unknown as { shadowRoot?: ShadowRoot | null }).shadowRoot ?? null;
+  const node = shadowRoot?.querySelector<HTMLElement>(`[name=${fieldName}]`) ?? null;
 
   if (!node) {
     console.warn(`field focus issue: ${fieldName} not found`);
