@@ -1,4 +1,4 @@
-import type { BindableFunction, FunctionMap } from '../types/index.js';
+import type { BindableFunction, FunctionMap } from '../typedefs/index.js';
 
 /**
  * Binds all functions from a map to a class instance

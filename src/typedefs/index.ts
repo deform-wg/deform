@@ -258,13 +258,23 @@ export interface LabelAction {
  */
 export interface ValidationRule {
   /** Field name to validate */
-  field: string;
+  field?: string;
   /** Validation type */
-  type: 'required' | 'min' | 'max' | 'pattern' | 'custom';
+  type?: 'required' | 'min' | 'max' | 'pattern' | 'custom';
   /** Validation message */
-  message: string;
+  message?: string;
   /** Additional validation parameters */
   params?: Record<string, any>;
+  /** Self field name (for reveal rules) */
+  self?: string;
+  /** Target field name (for reveal rules) */
+  target?: string;
+  /** Operator for comparison (for reveal rules) */
+  operator?: string;
+  /** Value to compare against (for reveal rules) */
+  value?: any;
+  /** Custom function for reveal rules */
+  fn?: (currentState: FormDataModel, currentValues: FormDataModel) => boolean;
 }
 
 // ============================================================================
@@ -344,7 +354,7 @@ export interface DeForm {
   /** Orientation setting */
   orientation: string;
   /** Submit handler function */
-  onSubmit?: (payload: SubmitPayload) => void;
+  onSubmit?: (changes: FormDataModel, form: HTMLFormElement, deForm: DeForm) => Promise<any>;
   /** Whether to require commit of changes */
   requireCommit: boolean;
   /** Whether to mark modified fields */
@@ -371,8 +381,17 @@ export interface DeForm {
   _handleRating: (event: Event) => void;
   _handleTabChange: (event: Event, tabName: string) => void;
   _handleSubmit: (event: Event) => void;
-  _checkForChanges: (fieldName: string, newValue: any) => void;
+  _checkForChanges: (fieldName?: string, newValue?: any) => void;
+  _checkAndSetFieldDirtyStatus: (fieldName: string) => boolean;
+  _checkAndSetConditionMetFlags: (rule: any, currentState: FormDataModel, currentValues: FormDataModel) => void;
+  _shouldUpdateForm: (changedProperties: Map<string, unknown>) => boolean;
+  _getTargetForm: (changedProperties: Map<string, unknown>) => HTMLFormElement | null;
+  _updateActiveFormId: (form: HTMLFormElement, changedProperties: Map<string, unknown>) => void;
   propKeys: (fieldName: string) => PropKeys;
+  checkValidity: (form: HTMLFormElement) => boolean;
+  getChanges: (form: HTMLFormElement) => FormDataModel;
+  commitChanges: (form: HTMLFormElement) => void;
+  dispatchEvent: (event: Event) => boolean;
 }
 
 /**
@@ -385,6 +404,14 @@ export interface PropKeys {
   originalKey: string;
   /** Key for dirty state */
   isDirtyKey: string;
+  /** Key for password repeat field */
+  repeatKey: string;
+  /** Key for toggle field variant index */
+  variantIndexKey: string;
+  /** Key for reveal condition state */
+  revealKey: string;
+  /** Key for label loading state */
+  labelKey: string;
 }
 
 // ============================================================================

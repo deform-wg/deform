@@ -1,15 +1,20 @@
 import { html, nothing } from 'lit';
+import type { TemplateResult } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
+import type { DeForm, TextFieldConfig } from '../../typedefs/index.js';
 
 const ifd = ifDefined;
 
-export function _render_password(field) {
+/**
+ * Renders a password input field with optional confirmation.
+ */
+export function _render_password(this: DeForm, field: TextFieldConfig): TemplateResult {
   const { currentKey, isDirtyKey, repeatKey } = this.propKeys(field.name);
 
   // Custom validation to check if both passwords match
-  const validatePasswordsMatch = (event) => {
-    const passwordEl = this.shadowRoot.querySelector(`[name=${field.name}]`)
-    this[currentKey] !== this[repeatKey]
+  const validatePasswordsMatch = (_event: Event): void => {
+    const passwordEl = (this as any).shadowRoot.querySelector(`[name=${field.name}]`) as any;
+    (this as any)[currentKey] !== (this as any)[repeatKey]
       ? passwordEl.setCustomValidity('Passwords do not match')
       : passwordEl.setCustomValidity('');
   };
@@ -21,17 +26,17 @@ export function _render_password(field) {
       label=${ifd(field.label)}
       placeholder=${ifd(field.placeholder)}
       help-text=${ifd(field.help)}
-      minlength=${ifd(field.minLength)}
-      maxlength=${ifd(field.maxLength)}
+      minlength=${ifd(field.minlength)}
+      maxlength=${ifd(field.maxlength)}
       pattern=${ifd(field.pattern)}
       size=${ifd(field.size)}
-      .value=${ifd(this[currentKey] || "")}
+      .value=${ifd((this as any)[currentKey] || "")}
       ?clearable=${field.clearable}
       ?required=${field.required}
-      ?disabled=${field.disabled}
+      ?disabled=${(field as any).disabled}
       ?password-toggle=${field.passwordToggle}
-      ?data-dirty-field=${this[isDirtyKey]}
-      @input=${(event) => {
+      ?data-dirty-field=${(this as any)[isDirtyKey]}
+      @input=${(event: Event) => {
           this._handleInput(event);
           field.requireConfirmation && validatePasswordsMatch(event);
         }}
@@ -45,17 +50,17 @@ export function _render_password(field) {
         help-text="Just to be sure you know your password"
         size=${ifd(field.size)}
         ?clearable=${field.clearable}
-        ?disabled=${field.disabled}
+        ?disabled=${(field as any).disabled}
         data-repeat-field
-        .value=${ifd(this[repeatKey])}
+        .value=${ifd((this as any)[repeatKey])}
         required
         password-toggle
-        @input=${(event) => {
+        @input=${(event: Event) => {
           this._handleInput(event);
           validatePasswordsMatch(event);
         }}
       >
     </sl-input>
-    ` : nothing }
+    ` : nothing}
   `;
 }

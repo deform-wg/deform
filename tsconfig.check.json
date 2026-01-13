@@ -4,8 +4,7 @@
     "noEmit": true
   },
   "include": [
-    "src/types/**/*.ts",
-    "src/utils/**/*.ts"
+    "src/**/*.ts"
   ],
   "exclude": [
     "src/vendor"

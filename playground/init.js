@@ -1,4 +1,4 @@
-import '../src/index.js';
+import '../src/index.ts';
 import { DEMO_FIELDS } from "./demo-some-fields.js";
 import { ALL_FIELDS_SECTION } from "./demo-all-fields.js";
 

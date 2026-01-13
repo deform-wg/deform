@@ -1,6 +1,6 @@
 import { LitElement, html, css, nothing } from "lit";
 import { styles } from "./styles.ts"
-import '../../src/index.js';
+import '../../src/index.ts';
 
 class EditorTray extends LitElement {
   static styles = styles;

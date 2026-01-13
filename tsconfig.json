@@ -4,7 +4,7 @@
     "module": "ES2022",
     "moduleResolution": "bundler",
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
-    "allowJs": true,
+    "allowJs": false,
     "checkJs": false,
     "strict": true,
     "noImplicitAny": true,
@@ -45,26 +45,14 @@
     }
   },
   "include": [
-    "src/core/**/*.js",
-    "src/core/**/*.ts",
-    "src/renders/**/*.js",
-    "src/renders/**/*.ts",
-    "src/theme/**/*.js",
-    "src/theme/**/*.ts",
-    "src/types/**/*.ts",
-    "src/utils/**/*.js",
-    "src/utils/**/*.ts",
-    "src/de-form.js",
-    "src/index.js"
+    "src/**/*.ts"
   ],
   "exclude": [
     "node_modules",
     "dist",
     "docs",
     "**/vendor/**",
-    "**/*.test.js",
     "**/*.test.ts",
-    "**/*.spec.js",
     "**/*.spec.ts"
   ],
   "ts-node": {
