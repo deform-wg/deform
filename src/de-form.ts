@@ -43,11 +43,7 @@ class DeForm extends LitElement {
   declare theme: 'light' | 'dark';
   declare orientation: string;
   declare onSubmit:
-    | ((
-        changes: FormDataModel,
-        form: HTMLFormElement,
-        deform: DeFormInterface,
-      ) => Promise<unknown>)
+    | ((changes: FormDataModel, form: HTMLFormElement, deform: DeFormInterface) => Promise<unknown>)
     | undefined;
   declare onChange:
     | ((

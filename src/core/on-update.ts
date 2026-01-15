@@ -15,6 +15,11 @@ export async function _onUpdate(
   this: DeForm,
   changedProperties: Map<PropertyKey, unknown>,
 ): Promise<void> {
+  // Initialize field values when the values property changes
+  if (changedProperties.has('values') && this.values) {
+    this._initializeValuesPreservingEdits(this.values);
+  }
+
   if (changedProperties.has('fields') || changedProperties.has('values')) {
     // Run rules.
     this._checkForChanges();

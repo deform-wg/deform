@@ -163,4 +163,35 @@ describe('DeForm component', () => {
     expect(accents.length).toBeGreaterThan(0);
     expect(current?.name).toBe('sky');
   });
+
+  it('initializes field values when values property is set', async () => {
+    const form = new DeForm();
+    form.fields = {
+      sections: [
+        {
+          name: 'profile',
+          fields: [
+            { name: 'first', type: 'text' },
+            { name: 'last', type: 'text' },
+          ],
+        },
+      ],
+    };
+
+    // Setting values should initialize both current and original values
+    form.values = { first: 'John', last: 'Doe' };
+
+    // Trigger the update lifecycle
+    await form.updated(new Map([['values', {}]]));
+
+    // Both current and original should be set
+    expect(getDynFormValue(form, '_first')).toBe('John');
+    expect(getDynFormValue(form, '__first')).toBe('John');
+    expect(getDynFormValue(form, '_last')).toBe('Doe');
+    expect(getDynFormValue(form, '__last')).toBe('Doe');
+
+    // Fields should not be dirty since values match
+    expect(getDynBoolean(form, '__first_is_dirty')).toBe(false);
+    expect(getDynBoolean(form, '__last_is_dirty')).toBe(false);
+  });
 });
