@@ -1,12 +1,13 @@
 // Add shoelace once. Use components anywhere.
 import { getBasePath, setBasePath } from '@shoelace-style/shoelace/dist/utilities/base-path.js';
-import type { PropertyValues } from 'lit';
+import type { PropertyValues, TemplateResult } from 'lit';
 import { html, LitElement } from 'lit';
 import * as methods from './core/index.js';
 import * as renders from './renders/index.js';
 import { accents, supportedAccents } from './theme/accents.js';
 import { styles } from './theme/styles.js';
 import type {
+  DeForm as DeFormInterface,
   FieldConfig,
   FormConfig,
   FormDataModel,
@@ -42,7 +43,17 @@ class DeForm extends LitElement {
   declare theme: 'light' | 'dark';
   declare orientation: string;
   declare onSubmit:
-    | ((changes: FormDataModel, form: HTMLFormElement, deform: DeForm) => Promise<unknown>)
+    | ((
+        changes: FormDataModel,
+        form: HTMLFormElement,
+        deform: DeFormInterface,
+      ) => Promise<unknown>)
+    | undefined;
+  declare onChange:
+    | ((
+        change: Omit<import('./typedefs/index.js').ChangePayload, 'deForm'>,
+        deForm: DeFormInterface,
+      ) => void)
     | undefined;
   declare requireCommit: boolean;
   declare markModifiedFields: boolean;
@@ -56,10 +67,41 @@ class DeForm extends LitElement {
 
   // Methods bound in at runtime via bindToClass()
   declare _initializeFormFieldProperties: (newValue: FormConfig) => void;
+  declare _initializeValuesPreservingEdits: (newValue: FormDataModel) => void;
   declare _dispatchEvent: (name: string, detail: Record<string, unknown>) => void;
-  declare _generateOneOrManyForms: (data: FormConfig) => unknown;
+  declare _generateOneOrManyForms: (data: FormConfig) => TemplateResult;
+  declare _generateField: (field: FieldConfig) => TemplateResult | typeof import('lit').nothing;
+  declare _generateErrorField: (field: FieldConfig) => TemplateResult;
+  declare _generateFormControls: (options: {
+    formId: string;
+    submitLabel?: string;
+    submitLabelSuccess?: string;
+  }) => TemplateResult;
   declare _onUpdate: (changedProperties: PropertyValues) => Promise<void>;
   declare _checkForChanges: (fieldName?: string, newValue?: unknown) => void;
+  declare _handleInput: (event: Event) => void;
+  declare _handleToggle: (event: Event) => void;
+  declare _handleChoice: (event: Event) => void;
+  declare _handleRating: (event: Event) => void;
+  declare _handleTabChange: (event: Event, tabName: string) => void;
+  declare _handleSubmit: (event: Event) => Promise<void>;
+  declare _handleDiscardChanges: (event: Event) => void;
+  declare _shouldUpdateForm: (changedProperties: Map<string, unknown>) => boolean;
+  declare _getTargetForm: (changedProperties: Map<string, unknown>) => HTMLFormElement | null;
+  declare _updateActiveFormId: (
+    form: HTMLFormElement,
+    changedProperties: Map<string, unknown>,
+  ) => void;
+  declare _checkAndSetFieldDirtyStatus: (fieldName: string) => boolean;
+  declare _checkAndSetConditionMetFlags: (
+    rule: ValidationRule,
+    currentState: FormStateModel,
+    currentValues: FormDataModel,
+  ) => void;
+  declare checkValidity: (form: HTMLFormElement) => boolean;
+  declare getChanges: (form: HTMLFormElement) => FormDataModel;
+  declare commitChanges: (form: HTMLFormElement) => void;
+  declare retainChanges: () => void;
 
   // Internal state
   private _fields: FormConfig | undefined;
