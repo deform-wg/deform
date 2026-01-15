@@ -41,6 +41,7 @@ export default [
 
       // Migration guardrails: keep escapes visible
       '@typescript-eslint/no-explicit-any': 'error',
+      '@typescript-eslint/no-non-null-assertion': 'error',
       '@typescript-eslint/consistent-type-imports': [
         'warn',
         {
@@ -52,4 +53,3 @@ export default [
     },
   },
 ];
-

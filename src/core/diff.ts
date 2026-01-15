@@ -1,4 +1,12 @@
-import type { DeForm, FormDataModel, FormSection, FieldConfig, FormStateModel, FormValue, ValidationRule } from '../typedefs/index.js';
+import type {
+  DeForm,
+  FieldConfig,
+  FormDataModel,
+  FormSection,
+  FormStateModel,
+  FormValue,
+  ValidationRule,
+} from '../typedefs/index.js';
 import { getDynFormValue, setDynBoolean, setDynNumber } from '../utils/dynamic-props.js';
 
 /**
@@ -54,24 +62,26 @@ export function _checkAndSetConditionMetFlags(
   this: DeForm,
   rule: ValidationRule,
   currentState: FormStateModel,
-  currentValues: FormDataModel
+  currentValues: FormDataModel,
 ): void {
   if (!rule.self) return;
   const revealKey = this.propKeys(rule.self).revealKey;
 
   if (!rule.fn) {
     // Obtain targets current value
-    const targetValue = rule.target ? getDynFormValue(this, this.propKeys(rule.target).currentKey) : undefined;
+    const targetValue = rule.target
+      ? getDynFormValue(this, this.propKeys(rule.target).currentKey)
+      : undefined;
     const desiredValue = rule.value;
 
     // Test the rule
     let newState: boolean;
     switch (rule.operator) {
-      case "=":
-        newState = targetValue == desiredValue;
+      case '=':
+        newState = targetValue === desiredValue;
         break;
-      case "!=":
-        newState = targetValue !== undefined && targetValue != desiredValue;
+      case '!=':
+        newState = targetValue !== undefined && targetValue !== desiredValue;
         break;
       default:
         newState = false;
@@ -96,8 +106,8 @@ export function _checkAndSetFieldDirtyStatus(this: DeForm, fieldName: string): b
 
   // Replace undefined with an empty string for comparison
   // to handle the situation where a user has backspaced an input to "".
-  const curr = (getDynFormValue(this, currentKey) ?? "") as FormValue | "";
-  const orig = (getDynFormValue(this, originalKey) ?? "") as FormValue | "";
+  const curr = (getDynFormValue(this, currentKey) ?? '') as FormValue | '';
+  const orig = (getDynFormValue(this, originalKey) ?? '') as FormValue | '';
   const isDirty = curr !== orig;
 
   // Update the isDirty flag and return its value

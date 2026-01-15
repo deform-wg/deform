@@ -1,12 +1,30 @@
-import type { DeForm, FieldConfig, FormConfig, FormDataModel, FormValue, PropKeys, ValidationRule } from '../typedefs/index.js';
-import { getDynBoolean, getDynFormValue, setDyn, setDynFormValue, setDynNumber } from '../utils/dynamic-props.js';
+import type {
+  DeForm,
+  FieldConfig,
+  FormConfig,
+  FormDataModel,
+  FormValue,
+  PropKeys,
+  ValidationRule,
+} from '../typedefs/index.js';
+import {
+  getDynBoolean,
+  getDynFormValue,
+  setDyn,
+  setDynFormValue,
+  setDynNumber,
+} from '../utils/dynamic-props.js';
 
 // Type for LitElement constructor with createProperty
 interface LitElementConstructor {
   createProperty: (name: string, options: object) => void;
 }
 
-type FieldPropertyType = StringConstructor | NumberConstructor | BooleanConstructor | ArrayConstructor;
+type FieldPropertyType =
+  | StringConstructor
+  | NumberConstructor
+  | BooleanConstructor
+  | ArrayConstructor;
 
 function getFieldPropertyType(field: FieldConfig): FieldPropertyType {
   // Multi-select values must be arrays.
@@ -29,8 +47,8 @@ function getFieldPropertyType(field: FieldConfig): FieldPropertyType {
 export function _initializeFormFieldProperties(this: DeForm, newValue: FormConfig): void {
   newValue.sections.forEach((section) => {
     // For each section, create a property to track modified field count
-    const constructor = this.constructor as unknown as LitElementConstructor;
-    constructor.createProperty(`_form_${section.name}_count`, {
+    const elementCtor = this.constructor as unknown as LitElementConstructor;
+    elementCtor.createProperty(`_form_${section.name}_count`, {
       type: Number,
     });
     setDynNumber(this, `_form_${section.name}_count`, 0);
@@ -41,7 +59,7 @@ export function _initializeFormFieldProperties(this: DeForm, newValue: FormConfi
       this._flattenedFields.push(field);
 
       // Additionally, for toggleFields push nested fields.
-      if (field.type === "toggleField") {
+      if (field.type === 'toggleField') {
         field.fields.forEach((f: FieldConfig) => {
           this._flattenedFields.push(f);
         });
@@ -64,10 +82,10 @@ export function _initializeFormFieldProperties(this: DeForm, newValue: FormConfi
       const isMultiSelect = propertyType === Array;
 
       // Create the standard property
-      constructor.createProperty(currentKey, { type: propertyType });
+      elementCtor.createProperty(currentKey, { type: propertyType });
 
       // Create the prefixed property (used for change tracking)
-      constructor.createProperty(originalKey, { type: propertyType });
+      elementCtor.createProperty(originalKey, { type: propertyType });
 
       // Initialize multi-select fields with empty array to prevent Shoelace errors
       if (isMultiSelect) {
@@ -84,31 +102,39 @@ export function _initializeFormFieldProperties(this: DeForm, newValue: FormConfi
       }
 
       // Create a property for dirty tracking
-      constructor.createProperty(isDirtyKey, { type: Boolean });
+      elementCtor.createProperty(isDirtyKey, { type: Boolean });
 
-      if (field.type === "password" && 'requireConfirmation' in field && field.requireConfirmation) {
-        constructor.createProperty(repeatKey, { type: String });
+      if (
+        field.type === 'password' &&
+        'requireConfirmation' in field &&
+        field.requireConfirmation
+      ) {
+        elementCtor.createProperty(repeatKey, { type: String });
       }
 
       // Create a property to track field visibility (for A/B fields)
-      if (field.type === "toggleField") {
-        constructor.createProperty(variantIndexKey, { type: Number });
-        setDynNumber(this, variantIndexKey, typeof field.defaultTo === 'number' ? field.defaultTo : 0);
+      if (field.type === 'toggleField') {
+        elementCtor.createProperty(variantIndexKey, { type: Number });
+        setDynNumber(
+          this,
+          variantIndexKey,
+          typeof field.defaultTo === 'number' ? field.defaultTo : 0,
+        );
       }
 
       // Create a property to track reveal condition
       if (field.revealOn) {
-        const exists = this._rules.find(r => r.self === field.name);
+        const exists = this._rules.find((r) => r.self === field.name);
         if (exists) return;
 
-        constructor.createProperty(revealKey, { type: Boolean });
-        constructor.createProperty(labelKey, { type: Boolean });
+        elementCtor.createProperty(revealKey, { type: Boolean });
+        elementCtor.createProperty(labelKey, { type: Boolean });
 
         try {
           if (typeof field.revealOn === 'function') {
             const rule: ValidationRule = {
               self: field.name,
-              fn: field.revealOn
+              fn: field.revealOn,
             };
             this._rules.push(rule);
           } else {

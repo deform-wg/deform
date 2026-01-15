@@ -1,5 +1,5 @@
-import type { DeForm, FormDataModel } from '../typedefs/index.js';
 import { getFormControls } from '@shoelace-style/shoelace/dist/utilities/form.js';
+import type { DeForm, FormDataModel } from '../typedefs/index.js';
 import { isNamedElement, isValidatableElement } from '../utils/dom-guards.js';
 import { getDynFormValue, setDynFormValue } from '../utils/dynamic-props.js';
 
@@ -12,7 +12,9 @@ export function checkValidity(this: DeForm, form: HTMLFormElement): boolean {
     throw new Error('dynamic-form checkValidity called without providing form Node');
   }
   const formControls = getFormControls(form);
-  const isValid = [...formControls].every((control) => !isValidatableElement(control) || control.checkValidity());
+  const isValid = [...formControls].every(
+    (control) => !isValidatableElement(control) || control.checkValidity(),
+  );
   return isValid;
 }
 
@@ -29,8 +31,7 @@ export function getChanges(this: DeForm, form: HTMLFormElement): FormDataModel {
 
   // Collect data
   const formData: FormDataModel = {};
-  Array
-    .from(modifiedFieldNodes)
+  Array.from(modifiedFieldNodes)
     .filter((node): node is Element => node instanceof Element)
     .filter(isNamedElement)
     .map((node) => node.name)
@@ -94,11 +95,13 @@ export function commitChanges(this: DeForm, form: HTMLFormElement): void {
   this._checkForChanges();
 
   // Dispatch a form success event.
-  this.dispatchEvent(new CustomEvent('form-submit-success', {
-    detail: {},
-    composed: true,
-    bubbles: true
-  }));
+  this.dispatchEvent(
+    new CustomEvent('form-submit-success', {
+      detail: {},
+      composed: true,
+      bubbles: true,
+    }),
+  );
 
   this._loading = false;
 }

@@ -1,6 +1,6 @@
 /**
  * DeForm Type Definitions
- * 
+ *
  * This file contains the core type definitions for the DeForm library.
  * These types are designed to provide comprehensive type safety while
  * maintaining backward compatibility during the JavaScript to TypeScript migration.
@@ -317,7 +317,7 @@ export interface SeedphraseFieldConfig extends BaseFieldConfig {
 /**
  * Union type for all field configurations
  */
-export type FieldConfig = 
+export type FieldConfig =
   | TextFieldConfig
   | SelectFieldConfig
   | RadioFieldConfig
@@ -398,7 +398,10 @@ export type RevealOperator = '=' | '!=';
 export type RevealTuple = readonly [target: string, operator: RevealOperator, value: FormValue];
 
 /** Function form of reveal rules. */
-export type RevealFunction = (currentState: FormStateModel, currentValues: FormDataModel) => boolean;
+export type RevealFunction = (
+  currentState: FormStateModel,
+  currentValues: FormDataModel,
+) => boolean;
 
 /** Union of supported reveal rule definitions. */
 export type RevealOn = RevealTuple | RevealFunction;
@@ -511,7 +514,7 @@ export interface DeForm {
   allowDiscardChanges: boolean;
   /** Color accent */
   accent: string;
-  
+
   // Internal state properties
   _activeFormId: string | null;
   _dirty: number;
@@ -520,7 +523,7 @@ export interface DeForm {
   _rules: ValidationRule[];
   _flattenedFields: FieldConfig[];
   _celebrate: boolean;
-  
+
   // Methods
   // Core lifecycle / helpers (bound at runtime)
   _initializeFormFieldProperties: (newValue: FormConfig) => void;
@@ -530,9 +533,15 @@ export interface DeForm {
 
   // Render helpers (bound at runtime)
   _generateOneOrManyForms: (data: FormConfig) => import('lit').TemplateResult;
-  _generateField: (field: FieldConfig) => import('lit').TemplateResult | typeof import('lit').nothing;
+  _generateField: (
+    field: FieldConfig,
+  ) => import('lit').TemplateResult | typeof import('lit').nothing;
   _generateErrorField: (field: FieldConfig) => import('lit').TemplateResult;
-  _generateFormControls: (options: { formId: string; submitLabel?: string; submitLabelSuccess?: string }) => import('lit').TemplateResult;
+  _generateFormControls: (options: {
+    formId: string;
+    submitLabel?: string;
+    submitLabelSuccess?: string;
+  }) => import('lit').TemplateResult;
 
   // State helpers
   getFormValues: () => FormDataModel;
@@ -549,7 +558,11 @@ export interface DeForm {
   _handleDiscardChanges: (event: Event) => void;
   _checkForChanges: (fieldName?: string, newValue?: FormValue) => void;
   _checkAndSetFieldDirtyStatus: (fieldName: string) => boolean;
-  _checkAndSetConditionMetFlags: (rule: ValidationRule, currentState: FormStateModel, currentValues: FormDataModel) => void;
+  _checkAndSetConditionMetFlags: (
+    rule: ValidationRule,
+    currentState: FormStateModel,
+    currentValues: FormDataModel,
+  ) => void;
   _shouldUpdateForm: (changedProperties: Map<string, unknown>) => boolean;
   _getTargetForm: (changedProperties: Map<string, unknown>) => HTMLFormElement | null;
   _updateActiveFormId: (form: HTMLFormElement, changedProperties: Map<string, unknown>) => void;

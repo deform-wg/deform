@@ -2,12 +2,14 @@ const logoContainer = document.getElementById('logo');
 const logos = {
   1: document.getElementById('logo1'),
   2: document.getElementById('logo2'),
-  3: document.getElementById('logo3')
+  3: document.getElementById('logo3'),
 };
 let autoAnimationTimeout;
 
 function showLogo(num) {
-  Object.values(logos).forEach(logo => logo.style.display = 'none');
+  Object.values(logos).forEach((logo) => {
+    logo.style.display = 'none';
+  });
   logos[num].style.display = 'block';
 }
 
@@ -42,7 +44,7 @@ function cleanup() {
 }
 
 function changeLogoColor(options) {
-  ['logo1', 'logo2', 'logo3'].forEach(id => {
+  ['logo1', 'logo2', 'logo3'].forEach((id) => {
     const svg = document.getElementById(id).contentDocument;
     const style = svg.querySelector('style');
     style.textContent = `.cls-1 { fill: ${options.hex} !important; }`;

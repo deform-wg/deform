@@ -1,5 +1,5 @@
-import { html, nothing } from 'lit';
 import type { TemplateResult } from 'lit';
+import { html, nothing } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import type { DeForm, TextFieldConfig } from '../../typedefs/index.js';
 import { getDynBoolean, getDynFormValue } from '../../utils/dynamic-props.js';
@@ -38,19 +38,21 @@ export function _render_password(this: DeForm, field: TextFieldConfig): Template
       maxlength=${ifd(field.maxlength)}
       pattern=${ifd(field.pattern)}
       size=${ifd(field.size)}
-      .value=${ifd(String(getDynFormValue(this, currentKey) ?? ""))}
+      .value=${ifd(String(getDynFormValue(this, currentKey) ?? ''))}
       ?clearable=${field.clearable}
       ?required=${field.required}
       ?disabled=${field.disabled}
       ?password-toggle=${field.passwordToggle}
       ?data-dirty-field=${getDynBoolean(this, isDirtyKey)}
       @input=${(event: Event) => {
-          this._handleInput(event);
-          field.requireConfirmation && validatePasswordsMatch(event);
-        }}
+        this._handleInput(event);
+        field.requireConfirmation && validatePasswordsMatch(event);
+      }}
     >
     </sl-input>
-    ${field.requireConfirmation ? html`
+    ${
+      field.requireConfirmation
+        ? html`
       <sl-input
         type="password"
         name=${`${field.name}_repeat`}
@@ -60,7 +62,7 @@ export function _render_password(this: DeForm, field: TextFieldConfig): Template
         ?clearable=${field.clearable}
         ?disabled=${field.disabled}
         data-repeat-field
-        .value=${ifd(String(getDynFormValue(this, repeatKey) ?? ""))}
+        .value=${ifd(String(getDynFormValue(this, repeatKey) ?? ''))}
         required
         password-toggle
         @input=${(event: Event) => {
@@ -69,6 +71,8 @@ export function _render_password(this: DeForm, field: TextFieldConfig): Template
         }}
       >
     </sl-input>
-    ` : nothing}
+    `
+        : nothing
+    }
   `;
 }

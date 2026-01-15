@@ -1,18 +1,22 @@
-import { html, nothing } from "lit";
-import type { TemplateResult } from "lit";
-import { repeat } from "lit/directives/repeat.js";
-import { classMap } from "lit/directives/class-map.js";
-import { generateActionLabel } from "./action.js";
-import type { DeForm, FormConfig, FormSection, FieldConfig } from '../typedefs/index.js';
-import type { RenderOptions } from '../typedefs/index.js';
+import type { TemplateResult } from 'lit';
+import { html, nothing } from 'lit';
+import { classMap } from 'lit/directives/class-map.js';
+import { repeat } from 'lit/directives/repeat.js';
+import type {
+  DeForm,
+  FieldConfig,
+  FormConfig,
+  FormSection,
+  RenderOptions,
+} from '../typedefs/index.js';
 import { getDynBoolean, getDynNumber } from '../utils/dynamic-props.js';
+import { generateActionLabel } from './action.js';
 
 interface FormControlOptions {
   formId: string;
   submitLabel?: string;
   submitLabelSuccess?: string;
 }
-
 
 /**
  * Generates one or multiple forms based on the number of sections.
@@ -30,7 +34,9 @@ export function _generateOneOrManyForms(this: DeForm, data: FormConfig): Templat
         panel=${section.name}
       >
         ${section.name}
-        ${this.showModifiedCount ? html`
+        ${
+          this.showModifiedCount
+            ? html`
           <sl-tag
             pill
             size="small"
@@ -39,7 +45,9 @@ export function _generateOneOrManyForms(this: DeForm, data: FormConfig): Templat
             variant="neutral"
             >${changeCount}
           </sl-tag>
-        ` : nothing}
+        `
+            : nothing
+        }
       </sl-tab>
     `;
   });
@@ -65,8 +73,8 @@ export function _generateOneOrManyForms(this: DeForm, data: FormConfig): Templat
 
     const formControls = this._generateFormControls({
       formId: section.name,
-      submitLabel: section.submitLabel || "Save",
-      submitLabelSuccess: section.submitLabelSuccess || ""
+      submitLabel: section.submitLabel || 'Save',
+      submitLabelSuccess: section.submitLabelSuccess || '',
     });
     return html`
       <form
@@ -91,14 +99,16 @@ export function _generateOneOrManyForms(this: DeForm, data: FormConfig): Templat
   if (data.sections.length > 1)
     return html`
       <sl-tab-group
-        placement=${this.orientation === "portrait" ? "top" : "start"}
+        placement=${this.orientation === 'portrait' ? 'top' : 'start'}
       >
         ${tabs} ${panels}
       </sl-tab-group>
     `;
 
   if (data.sections.length === 1) {
-    return html`${form(data.sections[0]!)}`;
+    const onlySection = data.sections.at(0);
+    if (!onlySection) return html`<p>No form sections configured</p>`;
+    return html`${form(onlySection)}`;
   }
 
   // Empty sections array
@@ -114,33 +124,40 @@ export function _generateField(this: DeForm, field: FieldConfig): TemplateResult
     if ('hidden' in field && field.hidden) return nothing;
 
     // Fields with reveal rules render HTML if rule conditions are met
-    if ('revealOn' in field && field.revealOn && !getDynBoolean(this, this.propKeys(field.name).revealKey)) return nothing;
+    if (
+      'revealOn' in field &&
+      field.revealOn &&
+      !getDynBoolean(this, this.propKeys(field.name).revealKey)
+    )
+      return nothing;
 
     // Stylistic
     const formControlClasses = classMap({
       'form-control': true,
-      'breakline': 'breakline' in field && !!field.breakline
+      breakline: 'breakline' in field && !!field.breakline,
     });
 
     // Form Label
-    const actionEl = ('labelAction' in field && field.labelAction) ? generateActionLabel(
-      this,
-      field.name,
-      field.labelAction.name,
-      field.labelAction.label
-    ) : nothing;
+    const actionEl =
+      'labelAction' in field && field.labelAction
+        ? generateActionLabel(this, field.name, field.labelAction.name, field.labelAction.label)
+        : nothing;
 
-    const labelEl = ('label' in field && field.label) ? html`
+    const labelEl =
+      'label' in field && field.label
+        ? html`
       <span slot="label">
         ${field.label}
         ${actionEl}
       </span>
-    ` : nothing;
+    `
+        : nothing;
 
     const renderFn = (this as unknown as Record<string, unknown>)[`_render_${field.type}`];
-    const fieldElement = typeof renderFn === 'function'
-      ? (renderFn as (field: FieldConfig, options: RenderOptions) => unknown)(field, { labelEl })
-      : this._generateErrorField(field);
+    const fieldElement =
+      typeof renderFn === 'function'
+        ? (renderFn as (field: FieldConfig, options: RenderOptions) => unknown)(field, { labelEl })
+        : this._generateErrorField(field);
 
     return html`
       <div class=${formControlClasses}>
@@ -148,7 +165,7 @@ export function _generateField(this: DeForm, field: FieldConfig): TemplateResult
       </div>
     `;
   } catch (fieldRenderError) {
-    console.error("Dynamic form field error:", { field, fieldRenderError });
+    console.error('Dynamic form field error:', { field, fieldRenderError });
     return this._generateErrorField(field);
   }
 }
@@ -173,12 +190,16 @@ export function _generateErrorField(this: DeForm, field: FieldConfig): TemplateR
 /**
  * Generates the form control buttons (submit, discard).
  */
-export function _generateFormControls(this: DeForm, options: FormControlOptions = { formId: '' }): TemplateResult {
+export function _generateFormControls(
+  this: DeForm,
+  options: FormControlOptions = { formId: '' },
+): TemplateResult {
   const changeCount = getDynNumber(this, `_form_${options.formId}_count`);
   return html`
     <div class="footer-controls">
-      ${this.allowDiscardChanges && changeCount
-        ? html`
+      ${
+        this.allowDiscardChanges && changeCount
+          ? html`
             <sl-button
               variant="text"
               id="${options.formId}__reset_button"
@@ -187,9 +208,12 @@ export function _generateFormControls(this: DeForm, options: FormControlOptions 
               Discard changes
             </sl-button>
           `
-        : nothing}
+          : nothing
+      }
 
-      ${this.onSubmit ? html`
+      ${
+        this.onSubmit
+          ? html`
         <sl-button
           id="${options.formId}__save_button"
           variant="primary"
@@ -198,12 +222,18 @@ export function _generateFormControls(this: DeForm, options: FormControlOptions 
           ?disabled=${!changeCount || this._celebrate}
           form=${options.formId}
         >
-          ${this._celebrate ? html`
-            <sl-icon name="check-lg" slot=${options.submitLabelSuccess ? "prefix" : ""}></sl-icon>
+          ${
+            this._celebrate
+              ? html`
+            <sl-icon name="check-lg" slot=${options.submitLabelSuccess ? 'prefix' : ''}></sl-icon>
             ${options.submitLabelSuccess}
-            ` : (options.submitLabel || "Save")}
+            `
+              : options.submitLabel || 'Save'
+          }
         </sl-button>
-      ` : nothing}
+      `
+          : nothing
+      }
     </div>
   `;
 }

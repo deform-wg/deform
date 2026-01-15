@@ -1,5 +1,5 @@
-import { html } from 'lit';
 import type { TemplateResult } from 'lit';
+import { html } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import type { DeForm, TextareaFieldConfig } from '../../typedefs/index.js';
 import { getDynBoolean, getDynFormValue } from '../../utils/dynamic-props.js';
@@ -14,7 +14,7 @@ export function _render_textarea(this: DeForm, field: TextareaFieldConfig): Temp
   return html`
     <sl-textarea
       name=${field.name}
-      .value=${ifd(String(getDynFormValue(this, currentKey) ?? ""))}
+      .value=${ifd(String(getDynFormValue(this, currentKey) ?? ''))}
       size=${ifd(field.size)}
       ?filled=${field.filled}
       label=${ifd(field.label)}

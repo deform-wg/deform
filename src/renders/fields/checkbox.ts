@@ -1,6 +1,6 @@
-import { html } from 'lit';
 import type { TemplateResult } from 'lit';
-import type { DeForm, CheckboxFieldConfig } from '../../typedefs/index.js';
+import { html } from 'lit';
+import type { CheckboxFieldConfig, DeForm } from '../../typedefs/index.js';
 import { getDynBoolean, getDynFormValue } from '../../utils/dynamic-props.js';
 
 /**

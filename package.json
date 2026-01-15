@@ -30,8 +30,13 @@
     "playground": "parcel playground/index.html --port 8000 --no-source-maps",
     "playground:build": "parcel build playground/index.html --dist-dir playground/dist --public-url ./ --no-source-maps",
     "type-check": "tsc --noEmit",
-    "lint": "eslint src/**/*.ts",
-    "lint:fix": "eslint src/**/*.ts --fix",
+    "lint:biome": "biome check .",
+    "lint:biome:fix": "biome check --write .",
+    "lint:eslint": "eslint \"src/**/*.ts\"",
+    "lint:eslint:fix": "eslint \"src/**/*.ts\" --fix",
+    "lint": "npm run lint:biome && npm run lint:eslint",
+    "lint:fix": "npm run lint:biome:fix && npm run lint:eslint:fix",
+    "format": "biome format --write .",
     "clean": "rm -rf dist .parcel-cache playground/dist playground/.parcel-cache",
     "prebuild": "npm run clean",
     "test": "npm run type-check && npm run lint"
@@ -46,6 +51,7 @@
   "author": "DeForm Team",
   "license": "MIT",
   "devDependencies": {
+    "@biomejs/biome": "^2.3.11",
     "@parcel/transformer-typescript-tsc": "^2.16.3",
     "@parcel/transformer-typescript-types": "^2.16.0",
     "@typescript-eslint/eslint-plugin": "^6.15.0",

@@ -1,5 +1,5 @@
-import { html } from 'lit';
 import type { TemplateResult } from 'lit';
+import { html } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import type { DeForm, SelectFieldConfig, SelectOption } from '../../typedefs/index.js';
 import { getDynBoolean, getDynFormValue } from '../../utils/dynamic-props.js';
@@ -13,7 +13,11 @@ interface RenderOptions {
 /**
  * Renders a select dropdown field.
  */
-export function _render_select(this: DeForm, field: SelectFieldConfig, options: RenderOptions): TemplateResult {
+export function _render_select(
+  this: DeForm,
+  field: SelectFieldConfig,
+  options: RenderOptions,
+): TemplateResult {
   const { currentKey, isDirtyKey } = this.propKeys(field.name);
   return html`
     <sl-select
@@ -32,9 +36,11 @@ export function _render_select(this: DeForm, field: SelectFieldConfig, options: 
       @sl-hide=${(e: Event) => e.stopPropagation()}
       >
       ${options.labelEl}
-      ${field.options.map((option: SelectOption) => html`
+      ${field.options.map(
+        (option: SelectOption) => html`
         <sl-option .value=${option.value}>${option.label}</sl-option>
-      `)}
+      `,
+      )}
     </sl-select>
   `;
 }

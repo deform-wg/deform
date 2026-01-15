@@ -11,8 +11,11 @@ function getShadowRoot(host: DeForm): ShadowRoot | null {
 /**
  * Handles property updates and triggers form initialization when needed.
  */
-export async function _onUpdate(this: DeForm, changedProperties: Map<PropertyKey, unknown>): Promise<void> {
-  if (changedProperties.has("fields") || changedProperties.has("values")) {
+export async function _onUpdate(
+  this: DeForm,
+  changedProperties: Map<PropertyKey, unknown>,
+): Promise<void> {
+  if (changedProperties.has('fields') || changedProperties.has('values')) {
     // Run rules.
     this._checkForChanges();
   }
@@ -37,21 +40,25 @@ export async function _onUpdate(this: DeForm, changedProperties: Map<PropertyKey
 /**
  * Determines if the form should be updated based on changed properties.
  */
-export function _shouldUpdateForm(this: DeForm, changedProperties: Map<PropertyKey, unknown>): boolean {
+export function _shouldUpdateForm(
+  this: DeForm,
+  changedProperties: Map<PropertyKey, unknown>,
+): boolean {
   return changedProperties.has('fields') || changedProperties.has('_activeFormId');
 }
 
 /**
  * Gets the target form element based on initialization state.
  */
-export function _getTargetForm(this: DeForm, changedProperties: Map<PropertyKey, unknown>): HTMLFormElement | null {
+export function _getTargetForm(
+  this: DeForm,
+  changedProperties: Map<PropertyKey, unknown>,
+): HTMLFormElement | null {
   const isDataInitialization =
     changedProperties.has('fields') &&
     (!changedProperties.has('_activeFormId') || !this._activeFormId);
 
-  const formSelector = isDataInitialization
-    ? 'form'
-    : `form#${this._activeFormId}`;
+  const formSelector = isDataInitialization ? 'form' : `form#${this._activeFormId}`;
 
   return getShadowRoot(this)?.querySelector<HTMLFormElement>(formSelector) ?? null;
 }
@@ -59,8 +66,13 @@ export function _getTargetForm(this: DeForm, changedProperties: Map<PropertyKey,
 /**
  * Updates the active form ID during initialization.
  */
-export function _updateActiveFormId(this: DeForm, form: HTMLFormElement, changedProperties: Map<PropertyKey, unknown>): void {
-  const isDataInitialization = changedProperties.has('fields') &&
+export function _updateActiveFormId(
+  this: DeForm,
+  form: HTMLFormElement,
+  changedProperties: Map<PropertyKey, unknown>,
+): void {
+  const isDataInitialization =
+    changedProperties.has('fields') &&
     (!changedProperties.has('_activeFormId') || !this._activeFormId);
 
   if (isDataInitialization) {

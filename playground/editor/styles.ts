@@ -1,4 +1,4 @@
-import { css } from "lit";
+import { css } from 'lit';
 
 export const styles = css`
   :host {
@@ -30,4 +30,4 @@ export const styles = css`
   :host(.no-transition) {
     transition: none;
   }
-`
+`;

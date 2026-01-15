@@ -1,5 +1,5 @@
-import { html } from 'lit';
 import type { TemplateResult } from 'lit';
+import { html } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import type { DeForm, TextFieldConfig } from '../../typedefs/index.js';
 import { getDynBoolean, getDynFormValue } from '../../utils/dynamic-props.js';
@@ -13,7 +13,11 @@ interface RenderOptions {
 /**
  * Renders a text input field.
  */
-export function _render_text(this: DeForm, field: TextFieldConfig, options: RenderOptions): TemplateResult {
+export function _render_text(
+  this: DeForm,
+  field: TextFieldConfig,
+  options: RenderOptions,
+): TemplateResult {
   const { currentKey, isDirtyKey } = this.propKeys(field.name);
 
   return html`
@@ -26,7 +30,7 @@ export function _render_text(this: DeForm, field: TextFieldConfig, options: Rend
       maxlength=${ifd(field.maxlength)}
       pattern=${ifd(field.pattern)}
       size=${ifd(field.size)}
-      .value=${ifd(String(getDynFormValue(this, currentKey) ?? ""))}
+      .value=${ifd(String(getDynFormValue(this, currentKey) ?? ''))}
       ?clearable=${field.clearable}
       ?required=${field.required}
       ?data-dirty-field=${getDynBoolean(this, isDirtyKey)}

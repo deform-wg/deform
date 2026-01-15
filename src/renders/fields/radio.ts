@@ -1,5 +1,5 @@
-import { html } from 'lit';
 import type { TemplateResult } from 'lit';
+import { html } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import type { DeForm, RadioFieldConfig, SelectOption } from '../../typedefs/index.js';
 import { getDynBoolean, getDynFormValue } from '../../utils/dynamic-props.js';
@@ -21,14 +21,16 @@ export function _render_radio(this: DeForm, field: RadioFieldConfig): TemplateRe
       ?data-dirty-field=${getDynBoolean(this, isDirtyKey)}
       @sl-change=${this._handleChoice}
     >
-      ${field.options.map((option: SelectOption) => html`
+      ${field.options.map(
+        (option: SelectOption) => html`
         <sl-radio
           value=${option.value}
           ?checked=${option.checked}
           ?disabled=${option.disabled}>
           ${option.label}
         </sl-radio>
-      `)}
+      `,
+      )}
     </sl-radio-group>
   `;
 }

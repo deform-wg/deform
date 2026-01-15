@@ -1,5 +1,5 @@
-import { html } from "lit";
-import type { TemplateResult } from "lit";
+import type { TemplateResult } from 'lit';
+import { html } from 'lit';
 import type { DeForm } from '../typedefs/index.js';
 import { getDynBoolean } from '../utils/dynamic-props.js';
 
@@ -11,7 +11,7 @@ export function generateActionLabel(
   formInstance: DeForm,
   fieldName: string,
   actionName: string,
-  actionLabel: string
+  actionLabel: string,
 ): TemplateResult {
   const { labelKey } = formInstance.propKeys(fieldName);
   return html`
@@ -22,14 +22,14 @@ export function generateActionLabel(
       ?loading=${getDynBoolean(formInstance, labelKey)}
       @click=${(e: Event) => {
         e.preventDefault();
-        formInstance.dispatchEvent(new CustomEvent(
-          `action-label-triggered`, {
+        formInstance.dispatchEvent(
+          new CustomEvent(`action-label-triggered`, {
             detail: { fieldName, actionName },
             composed: true,
             bubbles: true,
-          }));
-        }
-      }
+          }),
+        );
+      }}
       >${actionLabel}
     </sl-button>
   `;

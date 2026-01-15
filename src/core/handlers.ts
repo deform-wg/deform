@@ -1,11 +1,7 @@
 import type { ChangePayload, DeForm, FormValue } from '../typedefs/index.js';
-import {
-  emitChangeEvent,
-  emitTabChangeEvent,
-  emitDiscardEvent
-} from './events.js';
 import { isNamedElement } from '../utils/dom-guards.js';
 import { getDynFormValue, setDynFormValue } from '../utils/dynamic-props.js';
+import { emitChangeEvent, emitDiscardEvent, emitTabChangeEvent } from './events.js';
 
 function isObject(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null;
@@ -59,7 +55,7 @@ export function _handleInput(this: DeForm, event: Event): void {
     priorValue,
     newValue,
     timestamp: Date.now(),
-    deForm: this
+    deForm: this,
   };
 
   emitChangeEvent(changePayload);
@@ -89,7 +85,7 @@ export function _handleToggle(this: DeForm, event: Event): void {
     priorValue,
     newValue,
     timestamp: Date.now(),
-    deForm: this
+    deForm: this,
   };
 
   emitChangeEvent(changePayload);
@@ -119,7 +115,7 @@ export function _handleChoice(this: DeForm, event: Event): void {
     priorValue,
     newValue,
     timestamp: Date.now(),
-    deForm: this
+    deForm: this,
   };
 
   emitChangeEvent(changePayload);
@@ -152,7 +148,7 @@ export function _handleRating(this: DeForm, event: Event): void {
     priorValue,
     newValue,
     timestamp: Date.now(),
-    deForm: this
+    deForm: this,
   };
 
   emitChangeEvent(changePayload);
@@ -170,7 +166,7 @@ export function _handleTabChange(this: DeForm, _event: Event, tabName: string): 
     ...(priorTabName ? { priorTabName } : {}),
     newTabName: tabName,
     timestamp: Date.now(),
-    deForm: this
+    deForm: this,
   });
 }
 
@@ -183,9 +179,8 @@ export function _handleDiscardChanges(this: DeForm, event: Event): void {
 
   // Reset fields of active form to initial data state
   const shadowRoot = (this as unknown as { shadowRoot?: ShadowRoot | null }).shadowRoot ?? null;
-  const modifiedFieldNodes = shadowRoot?.querySelectorAll(
-    `#${this._activeFormId} [data-dirty-field]`,
-  ) ?? [];
+  const modifiedFieldNodes =
+    shadowRoot?.querySelectorAll(`#${this._activeFormId} [data-dirty-field]`) ?? [];
   Array.from(modifiedFieldNodes)
     .filter(isNamedElement)
     .map((node) => node.name)
@@ -197,7 +192,7 @@ export function _handleDiscardChanges(this: DeForm, event: Event): void {
 
   this._checkForChanges();
   emitDiscardEvent({
-    deForm: this
+    deForm: this,
   });
 }
 
@@ -205,14 +200,7 @@ export function _handleDiscardChanges(this: DeForm, event: Event): void {
  * Internal callback that invokes the user-provided onChange handler if present.
  */
 function onChangeCallback(options: ChangePayload): void {
-  const {
-    fieldName,
-    originalValue,
-    priorValue,
-    newValue,
-    timestamp,
-    deForm,
-  } = options;
+  const { fieldName, originalValue, priorValue, newValue, timestamp, deForm } = options;
 
   if (deForm.onChange && typeof deForm.onChange === 'function') {
     try {

@@ -7,6 +7,8 @@ export function isNamedElement(node: Element): node is NamedElement {
 export type ValidatableElement = Element & { checkValidity: () => boolean };
 
 export function isValidatableElement(node: Element): node is ValidatableElement {
-  return 'checkValidity' in node && typeof (node as { checkValidity?: unknown }).checkValidity === 'function';
+  return (
+    'checkValidity' in node &&
+    typeof (node as { checkValidity?: unknown }).checkValidity === 'function'
+  );
 }
-

@@ -1,4 +1,4 @@
-import type { DeForm, ChangePayload } from '../typedefs/index.js';
+import type { ChangePayload, DeForm } from '../typedefs/index.js';
 
 type EventDetail = Record<string, string | number | boolean | null | undefined | object>;
 
@@ -39,12 +39,13 @@ function validateTabChangeEvent(options: Partial<TabChangeOptions>): void {
  * Dispatches an internal form event.
  */
 export function _dispatchEvent(this: DeForm, name: string, detail: EventDetail): void {
-  this.dispatchEvent(new CustomEvent(
-    `form-${name}`, {
+  this.dispatchEvent(
+    new CustomEvent(`form-${name}`, {
       detail,
       composed: true,
       bubbles: true,
-    }));
+    }),
+  );
 }
 
 /**
@@ -58,12 +59,13 @@ export const _dispatchPublicEvent = (name: string, detail: EventDetail, deForm: 
     throw new Error('Event detail is required');
   }
 
-  deForm.dispatchEvent(new CustomEvent(
-    `deform-${name}`, {
+  deForm.dispatchEvent(
+    new CustomEvent(`deform-${name}`, {
       detail,
       composed: true,
       bubbles: true,
-    }));
+    }),
+  );
 };
 
 /**
@@ -71,13 +73,17 @@ export const _dispatchPublicEvent = (name: string, detail: EventDetail, deForm: 
  */
 export const emitChangeEvent = (options: ChangePayload): void => {
   validateChangeEvent(options);
-  _dispatchPublicEvent('value-change', {
-    fieldName: options.fieldName,
-    originalValue: options.originalValue,
-    priorValue: options.priorValue,
-    newValue: options.newValue,
-    timestamp: options.timestamp
-  }, options.deForm);
+  _dispatchPublicEvent(
+    'value-change',
+    {
+      fieldName: options.fieldName,
+      originalValue: options.originalValue,
+      priorValue: options.priorValue,
+      newValue: options.newValue,
+      timestamp: options.timestamp,
+    },
+    options.deForm,
+  );
 };
 
 /**
@@ -85,18 +91,26 @@ export const emitChangeEvent = (options: ChangePayload): void => {
  */
 export const emitTabChangeEvent = (options: TabChangeOptions): void => {
   validateTabChangeEvent(options);
-  _dispatchPublicEvent('tab-change', {
-    priorTabName: options.priorTabName,
-    newTabName: options.newTabName,
-    timestamp: options.timestamp
-  }, options.deForm);
+  _dispatchPublicEvent(
+    'tab-change',
+    {
+      priorTabName: options.priorTabName,
+      newTabName: options.newTabName,
+      timestamp: options.timestamp,
+    },
+    options.deForm,
+  );
 };
 
 /**
  * Emits a discard changes event when changes are discarded.
  */
 export const emitDiscardEvent = (options: DiscardOptions): void => {
-  _dispatchPublicEvent('discard-changes', {
-    timestamp: options.timestamp
-  }, options.deForm);
+  _dispatchPublicEvent(
+    'discard-changes',
+    {
+      timestamp: options.timestamp,
+    },
+    options.deForm,
+  );
 };

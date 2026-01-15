@@ -22,4 +22,3 @@ customElements.whenDefined('sl-icon').then(() => {
     `;
   }
 });
-

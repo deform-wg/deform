@@ -1,4 +1,4 @@
-import { css } from "lit";
+import { css } from 'lit';
 
 export const accents = css`
   :host {
@@ -269,22 +269,22 @@ export const accents = css`
 `;
 
 export const supportedAccents = [
-  { name: "gray", hex: "#52525b", label: "Gray" },
-  { name: "red", hex: "#dc2626", label: "Red" },
-  { name: "orange", hex: "#ea580c", label: "Orange" },
-  { name: "amber", hex: "#d97706", label: "Amber" },
-  { name: "yellow", hex: "#ca8a04", label: "Yellow" },
-  { name: "lime", hex: "#65a30d", label: "Lime" },
-  { name: "green", hex: "#16a34a", label: "Green" },
-  { name: "emerald", hex: "#059669", label: "Emerald" },
-  { name: "teal", hex: "#0d9488", label: "Teal" },
-  { name: "cyan", hex: "#0891b2", label: "Cyan" },
-  { name: "sky", hex: "#0284c7", label: "Sky" },
-  { name: "blue", hex: "#2563eb", label: "Blue" },
-  { name: "indigo", hex: "#4f46e5", label: "Indigo" },
-  { name: "violet", hex: "#7c3aed", label: "Violet" },
-  { name: "purple", hex: "#9333ea", label: "Purple" },
-  { name: "fuchsia", hex: "#c026d3", label: "Fuchsia" },
-  { name: "pink", hex: "#db2777", label: "Pink" },
-  { name: "rose", hex: "#e11d48", label: "Rose" }
+  { name: 'gray', hex: '#52525b', label: 'Gray' },
+  { name: 'red', hex: '#dc2626', label: 'Red' },
+  { name: 'orange', hex: '#ea580c', label: 'Orange' },
+  { name: 'amber', hex: '#d97706', label: 'Amber' },
+  { name: 'yellow', hex: '#ca8a04', label: 'Yellow' },
+  { name: 'lime', hex: '#65a30d', label: 'Lime' },
+  { name: 'green', hex: '#16a34a', label: 'Green' },
+  { name: 'emerald', hex: '#059669', label: 'Emerald' },
+  { name: 'teal', hex: '#0d9488', label: 'Teal' },
+  { name: 'cyan', hex: '#0891b2', label: 'Cyan' },
+  { name: 'sky', hex: '#0284c7', label: 'Sky' },
+  { name: 'blue', hex: '#2563eb', label: 'Blue' },
+  { name: 'indigo', hex: '#4f46e5', label: 'Indigo' },
+  { name: 'violet', hex: '#7c3aed', label: 'Violet' },
+  { name: 'purple', hex: '#9333ea', label: 'Purple' },
+  { name: 'fuchsia', hex: '#c026d3', label: 'Fuchsia' },
+  { name: 'pink', hex: '#db2777', label: 'Pink' },
+  { name: 'rose', hex: '#e11d48', label: 'Rose' },
 ];

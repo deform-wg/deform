@@ -1,30 +1,34 @@
-import { LitElement, html } from "lit";
-import type { PropertyValues } from "lit";
+// Add shoelace once. Use components anywhere.
+import { getBasePath, setBasePath } from '@shoelace-style/shoelace/dist/utilities/base-path.js';
+import type { PropertyValues } from 'lit';
+import { html, LitElement } from 'lit';
 import * as methods from './core/index.js';
 import * as renders from './renders/index.js';
-import { bindToClass } from "./utils/class-bind.js";
-import { styles } from "./theme/styles.js";
-import { accents, supportedAccents } from "./theme/accents.js";
-import { asyncTimeout } from "./utils/timeout.js";
-import { getDynBoolean, getDynFormValue, setDynBoolean, setDynFormValue } from "./utils/dynamic-props.js";
-import type { 
-  FormConfig, 
-  FieldConfig, 
-  FormDataModel, 
+import { accents, supportedAccents } from './theme/accents.js';
+import { styles } from './theme/styles.js';
+import type {
+  FieldConfig,
+  FormConfig,
+  FormDataModel,
   FormStateModel,
   FormValue,
+  PropKeys,
   SelectOption,
-  PropKeys, 
   ValidationRule,
 } from './typedefs/index.js';
-
-// Add shoelace once. Use components anywhere.
-import { getBasePath, setBasePath } from "@shoelace-style/shoelace/dist/utilities/base-path.js";
-import "@shoelace-style/shoelace/dist/shoelace.js";
+import { bindToClass } from './utils/class-bind.js';
+import {
+  getDynBoolean,
+  getDynFormValue,
+  setDynBoolean,
+  setDynFormValue,
+} from './utils/dynamic-props.js';
+import { asyncTimeout } from './utils/timeout.js';
+import '@shoelace-style/shoelace/dist/shoelace.js';
 // Prefer a consumer-provided base path (e.g. via data-shoelace attribute). Fall back to CDN.
 const shoelaceBasePath = getBasePath();
 if (!shoelaceBasePath || shoelaceBasePath === '/') {
-  setBasePath("https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.19.1/cdn/");
+  setBasePath('https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.19.1/cdn/');
 }
 
 interface AccentInfo {
@@ -37,7 +41,9 @@ class DeForm extends LitElement {
   declare values: FormDataModel;
   declare theme: 'light' | 'dark';
   declare orientation: string;
-  declare onSubmit: ((changes: FormDataModel, form: HTMLFormElement, deform: DeForm) => Promise<unknown>) | undefined;
+  declare onSubmit:
+    | ((changes: FormDataModel, form: HTMLFormElement, deform: DeForm) => Promise<unknown>)
+    | undefined;
   declare requireCommit: boolean;
   declare markModifiedFields: boolean;
   declare showModifiedCount: boolean;
@@ -77,9 +83,9 @@ class DeForm extends LitElement {
       _dirty: { type: Number, state: true },
       _initializing: { type: Boolean },
       _loading: { type: Boolean, state: true },
-      
+
       _rules: { type: Object, state: true },
-      _celebrate: { type: Boolean }
+      _celebrate: { type: Boolean },
     };
   }
 
@@ -89,13 +95,13 @@ class DeForm extends LitElement {
 
   constructor() {
     super();
-    
+
     bindToClass(methods, this);
     bindToClass(renders, this);
     this.values = {};
-    this.theme = "dark";
-    this.orientation = "";
-    this.accent = "sky";
+    this.theme = 'dark';
+    this.orientation = '';
+    this.accent = 'sky';
     this.requireCommit = false;
     this.markModifiedFields = false;
     this.showModifiedCount = false;
@@ -109,7 +115,7 @@ class DeForm extends LitElement {
 
     // Add the class to the host element
     this.classList.add('sl-theme-dark');
-    
+
     // Load stylesheets immediately when shadow root is available
     this.updateComplete.then(() => {
       this._updateThemeStylesheet(this.theme);
@@ -118,7 +124,7 @@ class DeForm extends LitElement {
 
   private _updateThemeStylesheet(newTheme: 'light' | 'dark'): void {
     if (!this.shadowRoot) return;
-    
+
     if (newTheme === 'light') {
       this.classList.remove('sl-theme-dark');
       this.classList.add('sl-theme-light');
@@ -144,7 +150,7 @@ class DeForm extends LitElement {
     // Adjust only if incoming value differs, also emit change event.
     if (this.__dirty !== value) {
       this.__dirty = value;
-      this._dispatchEvent("dirty-change", { dirty: this._dirty });
+      this._dispatchEvent('dirty-change', { dirty: this._dirty });
     }
   }
 
@@ -156,7 +162,7 @@ class DeForm extends LitElement {
     // Adjust only if incoming value differs, also emit change event.
     if (this.__loading !== value) {
       this.__loading = value;
-      this._dispatchEvent("loading-change", { loading: this._loading });
+      this._dispatchEvent('loading-change', { loading: this._loading });
     }
   }
 
@@ -187,7 +193,7 @@ class DeForm extends LitElement {
     // In a key/val structure, where key is the field name, val is the field value.
     // eg. { colour: '#0000FF' }
     const out: FormDataModel = {};
-    this._flattenedFields.forEach(field => {
+    this._flattenedFields.forEach((field) => {
       out[field.name] = getDynFormValue(this, `_${field.name}`);
     });
     return out;
@@ -198,7 +204,7 @@ class DeForm extends LitElement {
     // an options property, it will supply the selected option object as the value.
     // eg. { colour: { value: '#0000FF', label: 'Blue', primary: true } }
     const out: FormStateModel = {};
-    this._flattenedFields.forEach(field => {
+    this._flattenedFields.forEach((field) => {
       if ('options' in field && field.options) {
         const raw = getDynFormValue(this, `_${field.name}`);
         if (typeof raw === 'string' || typeof raw === 'number') {
@@ -215,9 +221,9 @@ class DeForm extends LitElement {
   };
 
   getAccents(): { accents: AccentInfo[]; current: AccentInfo | undefined } {
-    return { 
+    return {
       accents: supportedAccents,
-      current: supportedAccents.find(a => a.name === this.accent)
+      current: supportedAccents.find((a) => a.name === this.accent),
     };
   }
 
@@ -271,7 +277,7 @@ class DeForm extends LitElement {
   }
 }
 
-customElements.define("de-form", DeForm);
+customElements.define('de-form', DeForm);
 
 // Export the DeForm class for programmatic usage
 export { DeForm };

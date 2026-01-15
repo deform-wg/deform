@@ -1,7 +1,11 @@
-import { html, css, nothing } from "lit";
-import type { TemplateResult } from "lit";
-import type { DeForm, ToggleFieldConfig } from '../../typedefs/index.js';
-import type { FieldConfig, RenderOptions } from '../../typedefs/index.js';
+import type { TemplateResult } from 'lit';
+import { css, html, nothing } from 'lit';
+import type {
+  DeForm,
+  FieldConfig,
+  RenderOptions,
+  ToggleFieldConfig,
+} from '../../typedefs/index.js';
 import { getDynNumber, setDynNumber } from '../../utils/dynamic-props.js';
 
 const fieldToggleStyles = css`
@@ -17,8 +21,12 @@ export function _render_toggleField(this: DeForm, field: ToggleFieldConfig): Tem
   const { variantIndexKey } = this.propKeys(field.name);
 
   const switchField = (showingIndex: number): void => {
-    if (showingIndex === 0) { setDynNumber(this, variantIndexKey, 1); }
-    if (showingIndex === 1) { setDynNumber(this, variantIndexKey, 0); }
+    if (showingIndex === 0) {
+      setDynNumber(this, variantIndexKey, 1);
+    }
+    if (showingIndex === 1) {
+      setDynNumber(this, variantIndexKey, 0);
+    }
   };
 
   const activeIndex = getDynNumber(this, variantIndexKey);
@@ -28,9 +36,12 @@ export function _render_toggleField(this: DeForm, field: ToggleFieldConfig): Tem
       ${field.fields.map((f, index) => {
         if (index !== activeIndex) return nothing;
         const renderFn = (this as unknown as Record<string, unknown>)[`_render_${f.type}`];
-        const element = typeof renderFn === 'function'
-          ? (renderFn as (field: FieldConfig, options: RenderOptions) => unknown)(f, { labelEl: nothing })
-          : nothing;
+        const element =
+          typeof renderFn === 'function'
+            ? (renderFn as (field: FieldConfig, options: RenderOptions) => unknown)(f, {
+                labelEl: nothing,
+              })
+            : nothing;
         return html`${element}`;
       })}
     </div>

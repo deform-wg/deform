@@ -1,7 +1,7 @@
-import { html } from 'lit';
 import type { TemplateResult } from 'lit';
+import { html } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
-import type { DeForm, DateFieldConfig } from '../../typedefs/index.js';
+import type { DateFieldConfig, DeForm } from '../../typedefs/index.js';
 import { getDynBoolean, getDynFormValue } from '../../utils/dynamic-props.js';
 
 const ifd = ifDefined;
