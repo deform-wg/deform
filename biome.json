@@ -5,6 +5,7 @@
       "**",
       "!dist",
       "!.parcel-cache",
+      "!coverage",
       "!playground/dist",
       "!playground/.parcel-cache",
       "!src/vendor",

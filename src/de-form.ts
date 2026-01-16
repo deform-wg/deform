@@ -26,10 +26,13 @@ import {
 } from './utils/dynamic-props.js';
 import { asyncTimeout } from './utils/timeout.js';
 import '@shoelace-style/shoelace/dist/shoelace.js';
+// Shoelace version derived from package.json dependency
+const SHOELACE_VERSION = '2.20.1';
+
 // Prefer a consumer-provided base path (e.g. via data-shoelace attribute). Fall back to CDN.
 const shoelaceBasePath = getBasePath();
 if (!shoelaceBasePath || shoelaceBasePath === '/') {
-  setBasePath('https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.19.1/cdn/');
+  setBasePath(`https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@${SHOELACE_VERSION}/cdn/`);
 }
 
 interface AccentInfo {

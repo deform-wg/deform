@@ -39,7 +39,7 @@
     "format": "biome format --write .",
     "clean": "rm -rf dist .parcel-cache playground/dist playground/.parcel-cache",
     "prebuild": "npm run clean",
-    "test": "npm run type-check && npm run lint"
+    "test": "npm run type-check && npm run lint && npx vitest run"
   },
   "keywords": [
     "form",

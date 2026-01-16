@@ -353,6 +353,91 @@ describe('renderers/fields', () => {
     expect(inputs[1]?.getAttribute('name')).toBe('password_repeat');
   });
 
+  it('renders password without confirmation when not required', () => {
+    const form = new DeForm();
+    const field: TextFieldConfig = {
+      name: 'password',
+      type: 'password',
+      requireConfirmation: false,
+    };
+
+    setDynFormValue(form, form.propKeys('password').currentKey, 'secret');
+
+    const template = _render_password.call(form, field);
+    const container = document.createElement('div');
+    render(template, container);
+
+    const inputs = container.querySelectorAll('sl-input');
+    expect(inputs.length).toBe(1);
+    expect(inputs[0]?.getAttribute('type')).toBe('password');
+  });
+
+  it('renders password with all optional attributes', () => {
+    const form = new DeForm();
+    const field: TextFieldConfig = {
+      name: 'password',
+      type: 'password',
+      label: 'Password',
+      placeholder: 'Enter password',
+      help: 'Must be 8+ characters',
+      minlength: 8,
+      maxlength: 32,
+      pattern: '[A-Za-z0-9]+',
+      size: 'large',
+      clearable: true,
+      required: true,
+      disabled: false,
+      passwordToggle: true,
+    };
+
+    setDynFormValue(form, form.propKeys('password').currentKey, 'secret123');
+
+    const template = _render_password.call(form, field);
+    const container = document.createElement('div');
+    render(template, container);
+
+    const input = container.querySelector('sl-input');
+    expect(input?.getAttribute('label')).toBe('Password');
+    expect(input?.getAttribute('placeholder')).toBe('Enter password');
+    expect(input?.getAttribute('help-text')).toBe('Must be 8+ characters');
+    expect(input?.getAttribute('minlength')).toBe('8');
+    expect(input?.getAttribute('maxlength')).toBe('32');
+    expect(input?.getAttribute('pattern')).toBe('[A-Za-z0-9]+');
+    expect(input?.getAttribute('size')).toBe('large');
+    expect(input?.hasAttribute('clearable')).toBe(true);
+    expect(input?.hasAttribute('required')).toBe(true);
+    expect(input?.hasAttribute('password-toggle')).toBe(true);
+  });
+
+  it('renders password repeat field with correct attributes when confirmation required', () => {
+    const form = new DeForm();
+    const field: TextFieldConfig = {
+      name: 'pass',
+      type: 'password',
+      requireConfirmation: true,
+      size: 'medium',
+      clearable: true,
+      disabled: false,
+    };
+
+    setDynFormValue(form, form.propKeys('pass').currentKey, 'mypass');
+    setDynFormValue(form, form.propKeys('pass').repeatKey, 'mypass');
+
+    const template = _render_password.call(form, field);
+    const container = document.createElement('div');
+    render(template, container);
+
+    const inputs = container.querySelectorAll('sl-input');
+    expect(inputs.length).toBe(2);
+
+    const repeatInput = inputs[1];
+    expect(repeatInput?.getAttribute('name')).toBe('pass_repeat');
+    expect(repeatInput?.getAttribute('label')).toBe('Repeat password');
+    expect(repeatInput?.hasAttribute('required')).toBe(true);
+    expect(repeatInput?.hasAttribute('password-toggle')).toBe(true);
+    expect(repeatInput?.hasAttribute('data-repeat-field')).toBe(true);
+  });
+
   it('renders toggle-field with active variant only', () => {
     const form = new DeForm();
     const field: ToggleFieldConfig = {
@@ -374,5 +459,138 @@ describe('renderers/fields', () => {
 
     expect(container.querySelector('sl-input')).not.toBeNull();
     expect(container.textContent).toContain('Email');
+  });
+
+  it('renders toggle-field with second variant when index is 1', () => {
+    const form = new DeForm();
+    const field: ToggleFieldConfig = {
+      name: 'contact',
+      type: 'toggleField',
+      defaultTo: 1,
+      labels: ['Use Email', 'Use Phone'],
+      fields: [
+        { name: 'email', type: 'email' },
+        { name: 'phone', type: 'number' },
+      ],
+    };
+
+    setDynNumber(form, form.propKeys('contact').variantIndexKey, 1);
+    setDynFormValue(form, form.propKeys('phone').currentKey, '1234567890');
+
+    const template = _render_toggleField.call(form, field);
+    const container = document.createElement('div');
+    render(template, container);
+
+    const button = container.querySelector('sl-button');
+    expect(button?.textContent?.trim()).toBe('Use Phone');
+    const input = container.querySelector('sl-input');
+    expect(input?.getAttribute('type')).toBe('number');
+  });
+
+  it('toggle-field button switches variant from 0 to 1 on click', () => {
+    const form = new DeForm();
+    const field: ToggleFieldConfig = {
+      name: 'mode',
+      type: 'toggleField',
+      defaultTo: 0,
+      labels: ['Option A', 'Option B'],
+      fields: [
+        { name: 'optA', type: 'text' },
+        { name: 'optB', type: 'text' },
+      ],
+    };
+
+    setDynNumber(form, form.propKeys('mode').variantIndexKey, 0);
+
+    const template = _render_toggleField.call(form, field);
+    const container = document.createElement('div');
+    render(template, container);
+
+    const button = container.querySelector('sl-button');
+    // Use dispatchEvent instead of .click() as Shoelace buttons need full shadow DOM
+    button?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+
+    // After click, variant should be 1
+    const variantKey = form.propKeys('mode').variantIndexKey;
+    const currentVariant = (form as unknown as Record<string, unknown>)[variantKey];
+    expect(currentVariant).toBe(1);
+  });
+
+  it('toggle-field button switches variant from 1 to 0 on click', () => {
+    const form = new DeForm();
+    const field: ToggleFieldConfig = {
+      name: 'mode',
+      type: 'toggleField',
+      defaultTo: 1,
+      labels: ['Option A', 'Option B'],
+      fields: [
+        { name: 'optA', type: 'text' },
+        { name: 'optB', type: 'text' },
+      ],
+    };
+
+    setDynNumber(form, form.propKeys('mode').variantIndexKey, 1);
+
+    const template = _render_toggleField.call(form, field);
+    const container = document.createElement('div');
+    render(template, container);
+
+    const button = container.querySelector('sl-button');
+    // Use dispatchEvent instead of .click() as Shoelace buttons need full shadow DOM
+    button?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+
+    // After click, variant should be 0
+    const variantKey = form.propKeys('mode').variantIndexKey;
+    const currentVariant = (form as unknown as Record<string, unknown>)[variantKey];
+    expect(currentVariant).toBe(0);
+  });
+
+  it('toggle-field renders nothing for fields at non-active index', () => {
+    const form = new DeForm();
+    const field: ToggleFieldConfig = {
+      name: 'picker',
+      type: 'toggleField',
+      defaultTo: 0,
+      labels: ['Color', 'Date'],
+      fields: [
+        { name: 'colorVal', type: 'color' },
+        { name: 'dateVal', type: 'date' },
+      ],
+    };
+
+    setDynNumber(form, form.propKeys('picker').variantIndexKey, 0);
+    setDynFormValue(form, form.propKeys('colorVal').currentKey, '#ff0000');
+
+    const template = _render_toggleField.call(form, field);
+    const container = document.createElement('div');
+    render(template, container);
+
+    // Should only render color picker, not date input
+    expect(container.querySelector('sl-color-picker')).not.toBeNull();
+    expect(container.querySelectorAll('sl-input[type="date"]').length).toBe(0);
+  });
+
+  it('toggle-field handles unknown field type gracefully', () => {
+    const form = new DeForm();
+    const field: ToggleFieldConfig = {
+      name: 'unknown',
+      type: 'toggleField',
+      defaultTo: 0,
+      labels: ['Unknown', 'Text'],
+      fields: [
+        { name: 'unknownField', type: 'unknownType' } as unknown as TextFieldConfig,
+        { name: 'textField', type: 'text' },
+      ],
+    };
+
+    setDynNumber(form, form.propKeys('unknown').variantIndexKey, 0);
+
+    // Should not throw, renders nothing for unknown type
+    const template = _render_toggleField.call(form, field);
+    const container = document.createElement('div');
+    render(template, container);
+
+    // Button should still render
+    expect(container.querySelector('sl-button')).not.toBeNull();
   });
 });

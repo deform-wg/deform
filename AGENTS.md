@@ -118,10 +118,13 @@ Tests use Vitest with happy-dom. Test files live in `__tests__/` directories adj
 
 ## Verification after changes
 
-After making any code changes, run all three checks before considering the work complete:
+After making any code changes, run all four checks before considering the work complete:
 
 1. **TypeScript type checking**: `npm run type-check`
 2. **Linting**: `npm run lint`
 3. **Tests**: `npx vitest run`
+4. **IDE linter errors**: Use the `ReadLints` tool on all edited files
 
-All three must pass. Do not rely on just one check—TypeScript errors, lint violations, and test failures can each catch different issues.
+All four must pass. Do not rely on just one check—TypeScript errors, lint violations, and test failures catch different issues.
+
+**Important**: CLI type-checking (`tsc --noEmit`) may pass while the IDE's TypeScript language server reports errors. The `ReadLints` tool catches these IDE-specific errors that CLI tools can miss. Always check edited files with `ReadLints` before marking work complete.

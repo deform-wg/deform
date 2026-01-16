@@ -5,6 +5,7 @@ npm-debug.log*
 # Build outputs
 dist/
 .parcel-cache/
+coverage/
 playground/dist/
 playground/.parcel-cache/
 
