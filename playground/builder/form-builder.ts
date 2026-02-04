@@ -65,6 +65,7 @@ export class FormBuilder extends LitElement {
     statusMessage: { type: String },
     activeSettingsTab: { type: String },
     importSummary: { type: Object },
+    showCodeModal: { type: Boolean },
   };
 
   declare config: FormConfig;
@@ -75,6 +76,7 @@ export class FormBuilder extends LitElement {
   declare statusMessage: string;
   declare activeSettingsTab: 'field-settings' | 'section-settings' | 'form-settings';
   declare importSummary: ImportSummary | null;
+  declare showCodeModal: boolean;
 
   private readonly fileInputRef = createRef<HTMLInputElement>();
   private readonly storageKey = 'deform-playground-config';
@@ -89,6 +91,7 @@ export class FormBuilder extends LitElement {
     this.statusMessage = '';
     this.activeSettingsTab = 'field-settings';
     this.importSummary = null;
+    this.showCodeModal = false;
   }
 
   override connectedCallback(): void {
@@ -135,6 +138,10 @@ export class FormBuilder extends LitElement {
             <sl-icon slot="prefix" name="upload"></sl-icon>
             Import
           </sl-button>
+          <sl-button size="small" @click=${this.handleOpenCodeModal}>
+            <sl-icon slot="prefix" name="code"></sl-icon>
+            Code
+          </sl-button>
           <sl-button size="small" @click=${this.handleExport}>
             <sl-icon slot="prefix" name="download"></sl-icon>
             Export
@@ -158,6 +165,7 @@ export class FormBuilder extends LitElement {
           ${this.renderPropertiesPanel()}
         </div>
       </div>
+      ${this.renderCodeModal()}
 
       <input
         type="file"
@@ -209,6 +217,29 @@ export class FormBuilder extends LitElement {
           }
         </sl-alert>
       </div>
+    `;
+  }
+
+  private renderCodeModal(): TemplateResult {
+    const jsonText = this.getCurrentJsonText();
+    return html`
+      <sl-dialog
+        label="Form JSON"
+        ?open=${this.showCodeModal}
+        @sl-request-close=${this.handleCloseCodeModal}
+        @sl-after-hide=${this.handleCloseCodeModal}
+      >
+        <div class="code-box" aria-label="Form JSON">
+          ${this.renderJsonCode(jsonText)}
+        </div>
+        <div slot="footer">
+          <sl-button size="small" @click=${this.handleCopyCode}>
+            <sl-icon slot="prefix" name="clipboard"></sl-icon>
+            Copy
+          </sl-button>
+          <sl-button size="small" @click=${this.handleCloseCodeModal}>Close</sl-button>
+        </div>
+      </sl-dialog>
     `;
   }
 
@@ -302,6 +333,7 @@ export class FormBuilder extends LitElement {
         <div
           class="empty-state"
           @dragover=${this.handleCanvasDragOver}
+          @dragleave=${this.handleCanvasDragLeave}
           @drop=${(event: DragEvent) => this.handleCanvasDrop(event, sectionIndex)}
         >
           <sl-icon name="arrow-left" style="font-size: 2rem;"></sl-icon>
@@ -312,8 +344,10 @@ export class FormBuilder extends LitElement {
 
     return html`
       <div
+        class="canvas-list"
         style="display: flex; flex-direction: column; gap: var(--sl-spacing-medium);"
         @dragover=${this.handleCanvasDragOver}
+        @dragleave=${this.handleCanvasDragLeave}
         @drop=${(event: DragEvent) => this.handleCanvasDrop(event, sectionIndex)}
       >
         ${section.fields.map((field, index) => {
@@ -335,23 +369,27 @@ export class FormBuilder extends LitElement {
             allowDiscardChanges: this.config.allowDiscardChanges,
           };
           return html`
-            <div
-              class="canvas-drop-zone ${this.dragOverIndex === index ? 'active' : ''}"
-              @dragover=${(event: DragEvent) => this.handleCanvasDropZoneOver(event, index)}
-              @dragleave=${this.handleCanvasDragLeave}
-              @drop=${(event: DragEvent) => this.handleCanvasDropAt(event, sectionIndex, index)}
-            ></div>
+            <div class="canvas-drop-zone ${this.dragOverIndex === index ? 'active' : ''}"></div>
             <div
               class="canvas-item ${isSelected ? 'selected' : ''}"
-              draggable="true"
               @click=${() => this.selectField(sectionIndex, index)}
-              @dragstart=${(event: DragEvent) =>
-                this.handleCanvasDragStart(event, sectionIndex, index)}
               @dragend=${this.handleDragEnd}
-              @drop=${(event: DragEvent) => this.handleCanvasDropOnItem(event, sectionIndex, index)}
             >
               <div class="canvas-item-header">
-                <span class="canvas-item-type">${field.type}</span>
+                <div class="canvas-item-meta">
+                  <span
+                    class="canvas-item-drag"
+                    aria-label="Drag to reorder field"
+                    draggable="true"
+                    @dragstart=${(event: DragEvent) => {
+                      event.stopPropagation();
+                      this.handleCanvasDragStart(event, sectionIndex, index);
+                    }}
+                  >
+                    <sl-icon name="grip-vertical"></sl-icon>
+                  </span>
+                  <span class="canvas-item-type">${field.type}</span>
+                </div>
                 <sl-icon-button
                   name="trash"
                   label="Delete field"
@@ -370,11 +408,6 @@ export class FormBuilder extends LitElement {
         })}
         <div
           class="canvas-drop-zone ${this.dragOverIndex === section.fields.length ? 'active' : ''}"
-          @dragover=${(event: DragEvent) =>
-            this.handleCanvasDropZoneOver(event, section.fields.length)}
-          @dragleave=${this.handleCanvasDragLeave}
-          @drop=${(event: DragEvent) =>
-            this.handleCanvasDropAt(event, sectionIndex, section.fields.length)}
         ></div>
       </div>
     `;
@@ -564,66 +597,45 @@ export class FormBuilder extends LitElement {
 
   private handleCanvasDragOver(event: DragEvent): void {
     event.preventDefault();
-    if (event.dataTransfer) {
-      event.dataTransfer.dropEffect = 'copy';
-    }
-  }
-
-  private handleCanvasDropZoneOver(event: DragEvent, index: number): void {
-    event.preventDefault();
     event.stopPropagation();
-    this.dragOverIndex = index;
+    const container = event.currentTarget;
+    if (!(container instanceof HTMLElement)) return;
+    this.scheduleDragOverUpdate(container, event.clientY);
     if (event.dataTransfer) {
-      event.dataTransfer.dropEffect = 'move';
+      event.dataTransfer.dropEffect = this.dragPayload ? 'move' : 'copy';
     }
   }
 
-  private handleCanvasDragLeave = (): void => {
+  private handleCanvasDragLeave = (event: DragEvent): void => {
+    const container = event.currentTarget;
+    if (!(container instanceof HTMLElement)) {
+      this.dragOverIndex = null;
+      return;
+    }
+    if (event.relatedTarget instanceof Node && container.contains(event.relatedTarget)) {
+      return;
+    }
+    this.cancelDragOverFrame();
     this.dragOverIndex = null;
   };
 
   private handleDragEnd = (): void => {
+    this.cancelDragOverFrame();
     this.dragOverIndex = null;
     this.dragPayload = null;
   };
 
   private handleCanvasDrop(event: DragEvent, sectionIndex: number): void {
     event.preventDefault();
-    const type = event.dataTransfer?.getData('deform-toolbox-type') ?? '';
-    if (isFieldType(type)) {
-      this.addField(type, sectionIndex);
-    } else {
-      this.moveFieldFromPayload(sectionIndex);
-    }
-    this.dragOverIndex = null;
-    this.dragPayload = null;
-  }
-
-  private handleCanvasDropOnItem(
-    event: DragEvent,
-    sectionIndex: number,
-    targetIndex: number,
-  ): void {
-    event.preventDefault();
     event.stopPropagation();
+    const container = event.currentTarget;
+    const dropIndex =
+      container instanceof HTMLElement ? this.getDropIndex(container, event.clientY) : undefined;
     const type = event.dataTransfer?.getData('deform-toolbox-type') ?? '';
     if (isFieldType(type)) {
-      this.addField(type, sectionIndex, targetIndex);
+      this.addField(type, sectionIndex, dropIndex);
     } else {
-      this.moveFieldFromPayload(sectionIndex, targetIndex);
-    }
-    this.dragOverIndex = null;
-    this.dragPayload = null;
-  }
-
-  private handleCanvasDropAt(event: DragEvent, sectionIndex: number, targetIndex: number): void {
-    event.preventDefault();
-    event.stopPropagation();
-    const type = event.dataTransfer?.getData('deform-toolbox-type') ?? '';
-    if (isFieldType(type)) {
-      this.addField(type, sectionIndex, targetIndex);
-    } else {
-      this.moveFieldFromPayload(sectionIndex, targetIndex);
+      this.moveFieldFromPayload(sectionIndex, dropIndex);
     }
     this.dragOverIndex = null;
     this.dragPayload = null;
@@ -638,6 +650,45 @@ export class FormBuilder extends LitElement {
   }
 
   private dragPayload: SelectedField | null = null;
+  private dragOverFrame: number | null = null;
+  private lastDragOverY: number | null = null;
+  private lastDropIndex: number | null = null;
+
+  private scheduleDragOverUpdate(container: HTMLElement, clientY: number): void {
+    this.lastDragOverY = clientY;
+    if (this.dragOverFrame !== null) return;
+    this.dragOverFrame = window.requestAnimationFrame(() => {
+      this.dragOverFrame = null;
+      const latestY = this.lastDragOverY;
+      if (latestY === null) return;
+      const nextIndex = this.getDropIndex(container, latestY);
+      if (nextIndex !== this.lastDropIndex) {
+        this.lastDropIndex = nextIndex;
+        this.dragOverIndex = nextIndex;
+      }
+    });
+  }
+
+  private cancelDragOverFrame(): void {
+    if (this.dragOverFrame === null) return;
+    window.cancelAnimationFrame(this.dragOverFrame);
+    this.dragOverFrame = null;
+    this.lastDragOverY = null;
+    this.lastDropIndex = null;
+  }
+
+  private getDropIndex(container: HTMLElement, clientY: number): number {
+    const items = Array.from(container.querySelectorAll<HTMLElement>('.canvas-item'));
+    if (items.length === 0) return 0;
+    for (let index = 0; index < items.length; index += 1) {
+      const rect = items[index].getBoundingClientRect();
+      const midpoint = rect.top + rect.height / 2;
+      if (clientY < midpoint) {
+        return index;
+      }
+    }
+    return items.length;
+  }
 
   private selectField(sectionIndex: number, fieldIndex: number): void {
     this.selectedField = { sectionIndex, fieldIndex };
@@ -707,7 +758,11 @@ export class FormBuilder extends LitElement {
     if (!fromSection || !toSection) return;
     const [moved] = fromSection.fields.splice(fromIndex, 1);
     if (!moved) return;
-    const insertIndex = typeof toIndex === 'number' ? toIndex : toSection.fields.length;
+    let insertIndex = typeof toIndex === 'number' ? toIndex : toSection.fields.length;
+    if (fromSectionIndex === toSectionIndex && typeof toIndex === 'number' && toIndex > fromIndex) {
+      insertIndex -= 1;
+    }
+    insertIndex = Math.max(0, Math.min(insertIndex, toSection.fields.length));
     toSection.fields.splice(insertIndex, 0, moved);
     this.config = updated;
     this.selectedField = { sectionIndex: toSectionIndex, fieldIndex: insertIndex };
@@ -1250,6 +1305,91 @@ export class FormBuilder extends LitElement {
       this.statusMessage = '';
     }, 1200);
   };
+
+  private handleOpenCodeModal = (): void => {
+    this.showCodeModal = true;
+  };
+
+  private handleCloseCodeModal = (): void => {
+    this.showCodeModal = false;
+  };
+
+  private getCurrentJsonText(): string {
+    return JSON.stringify(this.config, null, 2);
+  }
+
+  private handleCopyCode = async (): Promise<void> => {
+    const jsonText = this.getCurrentJsonText();
+    try {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(jsonText);
+      } else {
+        const textarea = document.createElement('textarea');
+        textarea.value = jsonText;
+        textarea.setAttribute('readonly', 'true');
+        textarea.style.position = 'fixed';
+        textarea.style.opacity = '0';
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        textarea.remove();
+      }
+      this.statusMessage = 'Code copied';
+    } catch {
+      this.statusMessage = 'Copy failed';
+    }
+    setTimeout(() => {
+      this.statusMessage = '';
+    }, 1200);
+  };
+
+  private renderJsonCode(jsonText: string): TemplateResult {
+    const parts: Array<string | TemplateResult> = [];
+    const tokenPattern =
+      /("(?:\\.|[^"\\])*")|(-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?)|\b(true|false|null)\b|([[[\]{}:,])/g;
+    let lastIndex = 0;
+    let match = tokenPattern.exec(jsonText);
+    while (match) {
+      const index = match.index;
+      if (index > lastIndex) {
+        parts.push(jsonText.slice(lastIndex, index));
+      }
+      const token = match[0] ?? '';
+      const stringToken = match[1];
+      const numberToken = match[2];
+      const literalToken = match[3];
+      const punctuation = match[4];
+      if (stringToken !== undefined) {
+        const isKey = this.isJsonKey(jsonText, index + token.length);
+        parts.push(html`<span class=${isKey ? 'json-key' : 'json-string'}>${token}</span>`);
+      } else if (numberToken !== undefined) {
+        parts.push(html`<span class="json-number">${token}</span>`);
+      } else if (literalToken !== undefined) {
+        parts.push(html`<span class="json-literal">${token}</span>`);
+      } else if (punctuation !== undefined) {
+        parts.push(html`<span class="json-punctuation">${token}</span>`);
+      } else {
+        parts.push(token);
+      }
+      lastIndex = index + token.length;
+      match = tokenPattern.exec(jsonText);
+    }
+    if (lastIndex < jsonText.length) {
+      parts.push(jsonText.slice(lastIndex));
+    }
+    return html`<pre class="code-block">${parts}</pre>`;
+  }
+
+  private isJsonKey(jsonText: string, startIndex: number): boolean {
+    for (let index = startIndex; index < jsonText.length; index += 1) {
+      const char = jsonText[index];
+      if (char === ':') return true;
+      if (char !== ' ' && char !== '\n' && char !== '\r' && char !== '\t') {
+        return false;
+      }
+    }
+    return false;
+  }
 
   private togglePreview = (): void => {
     this.showPreview = !this.showPreview;

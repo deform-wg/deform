@@ -36,6 +36,48 @@ export const builderStyles = css`
     margin-left: auto;
   }
 
+  sl-dialog::part(panel) {
+    max-width: 720px;
+  }
+
+  .code-box {
+    border: 1px solid var(--sl-color-neutral-200);
+    background: var(--sl-color-neutral-50);
+    border-radius: var(--sl-border-radius-medium);
+    padding: var(--sl-spacing-medium);
+    max-height: 420px;
+    overflow: auto;
+    user-select: text;
+  }
+
+  .code-block {
+    margin: 0;
+    white-space: pre;
+    font-family: var(--sl-font-mono);
+    font-size: var(--sl-font-size-small);
+    color: var(--sl-color-neutral-800);
+  }
+
+  .json-key {
+    color: var(--sl-color-primary-700);
+  }
+
+  .json-string {
+    color: var(--sl-color-emerald-700);
+  }
+
+  .json-number {
+    color: var(--sl-color-amber-700);
+  }
+
+  .json-literal {
+    color: var(--sl-color-rose-700);
+  }
+
+  .json-punctuation {
+    color: var(--sl-color-neutral-500);
+  }
+
   .main {
     display: flex;
     flex: 1;
@@ -59,6 +101,17 @@ export const builderStyles = css`
     display: flex;
     flex-direction: column;
     gap: var(--sl-spacing-medium);
+  }
+
+  .canvas-list {
+    min-height: 100%;
+    padding-bottom: calc(var(--sl-spacing-large) * 2);
+  }
+
+  .canvas-list::after {
+    content: '';
+    display: block;
+    height: var(--sl-spacing-large);
   }
 
   .properties {
@@ -100,6 +153,7 @@ export const builderStyles = css`
     padding: var(--sl-spacing-small) var(--sl-spacing-medium);
     border-radius: var(--sl-border-radius-medium);
     cursor: pointer;
+    position: relative;
   }
 
   .canvas-item.selected {
@@ -111,11 +165,51 @@ export const builderStyles = css`
     border-top: 3px solid var(--sl-color-primary-500);
   }
 
+  .canvas-drop-zone {
+    height: 0;
+    position: relative;
+    pointer-events: none;
+  }
+
+  .canvas-drop-zone.active::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: calc(-1 * var(--sl-spacing-x-small));
+    height: 4px;
+    border-radius: var(--sl-border-radius-pill);
+    background: var(--sl-color-primary-400);
+    box-shadow: 0 0 0 1px var(--sl-color-primary-200);
+  }
+
   .canvas-item-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
     margin-bottom: var(--sl-spacing-small);
+  }
+
+  .canvas-item-meta {
+    display: flex;
+    align-items: center;
+    gap: var(--sl-spacing-x-small);
+  }
+
+  .canvas-item-drag {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--sl-color-neutral-500);
+    cursor: grab;
+  }
+
+  .canvas-item-drag:hover {
+    color: var(--sl-color-primary-600);
+  }
+
+  .canvas-item:active .canvas-item-drag {
+    cursor: grabbing;
   }
 
   .canvas-item-type {
