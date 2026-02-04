@@ -1,4 +1,6 @@
-export const DEMO_FIELDS = {
+import type { FormConfig } from '../../src/typedefs/index.js';
+
+export const defaultConfig: FormConfig = {
   sections: [
     {
       name: 'profile',
@@ -56,8 +58,8 @@ export const DEMO_FIELDS = {
           name: 'contact_method',
           type: 'radio',
           options: [
-            { value: 'email', label: 'Email', awesome: true },
-            { value: 'sms', label: 'SMS', chicken: 'nugget' },
+            { value: 'email', label: 'Email' },
+            { value: 'sms', label: 'SMS' },
           ],
         },
         {
@@ -88,7 +90,6 @@ export const DEMO_FIELDS = {
           type: 'text',
           placeholder: 'Enter company name',
           help: 'Required for business accounts',
-          // Only show when userType equals "business"
           revealOn: ['userType', '=', 'business'],
         },
         {
@@ -108,7 +109,6 @@ export const DEMO_FIELDS = {
           type: 'textarea',
           placeholder: 'Why do you want to downgrade?',
           help: 'We love to hear your feedback',
-          // Show when accountType is not "premium" (and has a value)
           revealOn: ['accountType', '!=', 'premium'],
         },
         {
@@ -124,9 +124,8 @@ export const DEMO_FIELDS = {
           name: 'parentalConsent',
           type: 'checkbox',
           help: 'Required for users under 18',
-          // Show when age is less than 18
-          revealOn: (currentState, currentValues) => {
-            const age = parseInt(currentValues.age) || 0;
+          revealOn: (_currentState, currentValues) => {
+            const age = parseInt(String(currentValues.age ?? '0')) || 0;
             return age < 18;
           },
         },
@@ -148,9 +147,10 @@ export const DEMO_FIELDS = {
           type: 'text',
           placeholder: 'Enter state or province',
           help: 'Required for US and Canada',
-          // Show only for US and Canada
-          revealOn: (currentState, currentValues) => {
-            return ['US', 'CA'].includes(currentValues.country);
+          revealOn: (_currentState, currentValues) => {
+            const country = currentValues.country;
+            if (typeof country !== 'string') return false;
+            return ['US', 'CA'].includes(country);
           },
         },
         {

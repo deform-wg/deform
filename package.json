@@ -23,12 +23,14 @@
     "src"
   ],
   "scripts": {
-    "build": "parcel build --target lib && npm run build:types",
+    "build": "npm run check:builder-field-types && parcel build --target lib && npm run build:types",
     "build:types": "tsc --emitDeclarationOnly --outDir dist",
     "build:watch": "parcel watch --target lib",
-    "dev": "npm run build:watch",
-    "playground": "parcel playground/index.html --port 8000 --no-source-maps",
-    "playground:build": "parcel build playground/index.html --dist-dir playground/dist --public-url ./ --no-source-maps",
+    "check:builder-field-types": "node scripts/check-builder-field-types.js",
+    "dev": "npm run check:builder-field-types && npm run build:watch",
+    "preplayground": "npm run clean",
+    "playground": "npm run check:builder-field-types && parcel playground/index.html --port 8000 --no-source-maps",
+    "playground:build": "npm run check:builder-field-types && parcel build playground/index.html --dist-dir playground/dist --public-url ./ --no-source-maps",
     "type-check": "tsc --noEmit",
     "lint:biome": "biome check .",
     "lint:biome:fix": "biome check --write .",
