@@ -45,6 +45,17 @@ export const builderStyles = css`
     margin-left: auto;
   }
 
+  .header-actions sl-button::part(base) {
+    box-shadow: none;
+  }
+
+  .header-actions sl-button:focus-visible::part(base),
+  .header-actions sl-button:focus::part(base),
+  .header-actions sl-button:active::part(base) {
+    box-shadow: none;
+    outline: none;
+  }
+
   sl-dialog::part(panel) {
     max-width: 720px;
     max-height: 82vh;
