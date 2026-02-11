@@ -1,6 +1,6 @@
 import type { TemplateResult } from 'lit';
 import { html, LitElement, nothing } from 'lit';
-import { createRef } from 'lit/directives/ref.js';
+import { createRef, ref } from 'lit/directives/ref.js';
 import { accents, supportedAccents } from '../../src/theme/accents.js';
 import type {
   FieldConfig,
