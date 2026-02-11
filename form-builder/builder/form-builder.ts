@@ -79,7 +79,7 @@ export class FormBuilder extends LitElement {
   declare showCodeModal: boolean;
 
   private readonly fileInputRef = createRef<HTMLInputElement>();
-  private readonly storageKey = 'deform-playground-config';
+  private readonly storageKey = 'deform-form-builder-config';
 
   constructor() {
     super();

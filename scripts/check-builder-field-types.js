@@ -3,7 +3,7 @@ import path from 'node:path';
 
 const ROOT_DIR = path.resolve(process.cwd());
 const CORE_TYPEDEFS = path.join(ROOT_DIR, 'src', 'typedefs', 'index.ts');
-const BUILDER_REGISTRY = path.join(ROOT_DIR, 'playground', 'builder', 'field-registry.ts');
+const BUILDER_REGISTRY = path.join(ROOT_DIR, 'form-builder', 'builder', 'field-registry.ts');
 
 function readFileOrNull(filePath) {
   try {

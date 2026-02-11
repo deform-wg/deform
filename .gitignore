@@ -6,8 +6,8 @@ npm-debug.log*
 dist/
 .parcel-cache/
 coverage/
-playground/dist/
-playground/.parcel-cache/
+form-builder/dist/
+form-builder/.parcel-cache/
 
 # Misc
 *DS_Store
