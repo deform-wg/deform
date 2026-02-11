@@ -1,6 +1,6 @@
 import type { TemplateResult } from 'lit';
 import { html, LitElement, nothing } from 'lit';
-import { createRef, ref } from 'lit/directives/ref.js';
+import { createRef } from 'lit/directives/ref.js';
 import { accents, supportedAccents } from '../../src/theme/accents.js';
 import type {
   FieldConfig,
@@ -41,6 +41,14 @@ type PreviewTabChangeDetail = {
   tabName: string;
 };
 
+type CodeValidationState = {
+  status: 'success' | 'error';
+  message: string;
+  warnings: string[];
+  errors: string[];
+  parsedConfig: FormConfig | null;
+};
+
 function isDeFormValueChangeDetail(value: unknown): value is DeFormValueChangeDetail {
   if (!isRecord(value)) return false;
   const fieldName = value.fieldName;
@@ -66,6 +74,9 @@ export class FormBuilder extends LitElement {
     activeSettingsTab: { type: String },
     importSummary: { type: Object },
     showCodeModal: { type: Boolean },
+    isCodeEditMode: { type: Boolean },
+    codeEditorValue: { type: String },
+    codeValidation: { type: Object },
   };
 
   declare config: FormConfig;
@@ -77,6 +88,9 @@ export class FormBuilder extends LitElement {
   declare activeSettingsTab: 'field-settings' | 'section-settings' | 'form-settings';
   declare importSummary: ImportSummary | null;
   declare showCodeModal: boolean;
+  declare isCodeEditMode: boolean;
+  declare codeEditorValue: string;
+  declare codeValidation: CodeValidationState | null;
 
   private readonly fileInputRef = createRef<HTMLInputElement>();
   private readonly storageKey = 'deform-form-builder-config';
@@ -92,6 +106,9 @@ export class FormBuilder extends LitElement {
     this.activeSettingsTab = 'field-settings';
     this.importSummary = null;
     this.showCodeModal = false;
+    this.isCodeEditMode = false;
+    this.codeEditorValue = '';
+    this.codeValidation = null;
   }
 
   override connectedCallback(): void {
@@ -222,6 +239,16 @@ export class FormBuilder extends LitElement {
 
   private renderCodeModal(): TemplateResult {
     const jsonText = this.getCurrentJsonText();
+    const validation = this.codeValidation;
+    const hasValidation = this.isCodeEditMode && validation;
+    const validationVariant =
+      validation?.status === 'error'
+        ? 'danger'
+        : validation?.warnings.length
+          ? 'warning'
+          : 'success';
+    const validationItems =
+      validation?.status === 'error' ? validation.errors : (validation?.warnings ?? []);
     return html`
       <sl-dialog
         label="Form JSON"
@@ -229,14 +256,68 @@ export class FormBuilder extends LitElement {
         @sl-request-close=${this.handleCloseCodeModal}
         @sl-after-hide=${this.handleCloseCodeModal}
       >
-        <div class="code-box" aria-label="Form JSON">
-          ${this.renderJsonCode(jsonText)}
-        </div>
+        ${
+          this.isCodeEditMode
+            ? html`
+                <div class="code-editor-wrap">
+                  ${
+                    hasValidation && validation
+                      ? html`
+                          <sl-alert class="code-validation" variant=${validationVariant} open>
+                            <strong>${validation.message}</strong>
+                            ${
+                              validationItems.length
+                                ? html`
+                                    <div style="margin-top: var(--sl-spacing-x-small);">
+                                      <div style="font-weight: 600; margin-bottom: var(--sl-spacing-2x-small);">
+                                        ${validation.status === 'error' ? 'Errors' : 'Warnings'}
+                                      </div>
+                                      <ul style="margin: 0; padding-left: 1.2rem;">
+                                        ${validationItems.map((item) => html`<li>${item}</li>`)}
+                                      </ul>
+                                    </div>
+                                  `
+                                : nothing
+                            }
+                          </sl-alert>
+                        `
+                      : nothing
+                  }
+                  ${this.renderCodeEditor()}
+                </div>
+              `
+            : html`
+                <div class="code-box" aria-label="Form JSON">
+                  ${this.renderJsonCode(jsonText)}
+                </div>
+              `
+        }
         <div slot="footer">
           <sl-button size="small" @click=${this.handleCopyCode}>
             <sl-icon slot="prefix" name="clipboard"></sl-icon>
             Copy
           </sl-button>
+          ${
+            this.isCodeEditMode
+              ? html`
+                  <sl-button size="small" @click=${this.handleCancelCodeEdit}>Cancel Edit</sl-button>
+                  <sl-button
+                    size="small"
+                    variant="primary"
+                    ?disabled=${this.codeValidation?.status !== 'success'}
+                    @click=${this.handleImportCode}
+                  >
+                    <sl-icon slot="prefix" name="floppy"></sl-icon>
+                    Save
+                  </sl-button>
+                `
+              : html`
+                  <sl-button size="small" @click=${this.handleStartCodeEdit}>
+                    <sl-icon slot="prefix" name="pencil"></sl-icon>
+                    Edit
+                  </sl-button>
+                `
+          }
           <sl-button size="small" @click=${this.handleCloseCodeModal}>Close</sl-button>
         </div>
       </sl-dialog>
@@ -1262,18 +1343,7 @@ export class FormBuilder extends LitElement {
         };
         return;
       }
-      const warnings = collectConfigWarnings(parsed);
-      this.config = cloneConfig(parsed);
-      this.activeSectionIndex = 0;
-      this.selectedField = null;
-      this.importSummary = {
-        status: 'success',
-        message: warnings.length
-          ? 'Config imported with warnings.'
-          : 'Config imported successfully.',
-        warnings,
-        errors: [],
-      };
+      this.applyImportedConfig(parsed, 'file');
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unknown parsing error';
       this.importSummary = {
@@ -1308,10 +1378,16 @@ export class FormBuilder extends LitElement {
 
   private handleOpenCodeModal = (): void => {
     this.showCodeModal = true;
+    this.isCodeEditMode = false;
+    this.codeEditorValue = this.getCurrentJsonText();
+    this.codeValidation = this.validateCodeInput(this.codeEditorValue);
   };
 
   private handleCloseCodeModal = (): void => {
     this.showCodeModal = false;
+    this.isCodeEditMode = false;
+    this.codeEditorValue = '';
+    this.codeValidation = null;
   };
 
   private getCurrentJsonText(): string {
@@ -1319,7 +1395,7 @@ export class FormBuilder extends LitElement {
   }
 
   private handleCopyCode = async (): Promise<void> => {
-    const jsonText = this.getCurrentJsonText();
+    const jsonText = this.isCodeEditMode ? this.codeEditorValue : this.getCurrentJsonText();
     try {
       if (navigator.clipboard?.writeText) {
         await navigator.clipboard.writeText(jsonText);
@@ -1342,6 +1418,136 @@ export class FormBuilder extends LitElement {
       this.statusMessage = '';
     }, 1200);
   };
+
+  private handleStartCodeEdit = (): void => {
+    this.isCodeEditMode = true;
+    this.codeEditorValue = this.getCurrentJsonText();
+    this.codeValidation = this.validateCodeInput(this.codeEditorValue);
+  };
+
+  private handleCancelCodeEdit = (): void => {
+    this.isCodeEditMode = false;
+    this.codeEditorValue = this.getCurrentJsonText();
+    this.codeValidation = this.validateCodeInput(this.codeEditorValue);
+  };
+
+  private handleCodeEditorInput = (event: Event): void => {
+    const nextValue = this.getInputValue(event);
+    if (nextValue === null) return;
+    this.codeEditorValue = nextValue;
+    this.codeValidation = this.validateCodeInput(nextValue);
+  };
+
+  private handleImportCode = (): void => {
+    const validation = this.codeValidation;
+    if (!validation || validation.status !== 'success' || !validation.parsedConfig) return;
+    this.applyImportedConfig(validation.parsedConfig, 'code');
+    this.showCodeModal = false;
+    this.isCodeEditMode = false;
+    this.codeEditorValue = '';
+    this.codeValidation = null;
+  };
+
+  private validateCodeInput(rawText: string): CodeValidationState {
+    try {
+      const parsed: unknown = JSON.parse(rawText);
+      if (!isFormConfig(parsed)) {
+        return {
+          status: 'error',
+          message: 'JSON parsed but does not match form config shape.',
+          warnings: [],
+          errors: ['Expected a config object with sections and field definitions.'],
+          parsedConfig: null,
+        };
+      }
+      const warnings = collectConfigWarnings(parsed);
+      return {
+        status: 'success',
+        message: warnings.length ? 'Valid config with warnings.' : 'Valid config. Ready to save.',
+        warnings,
+        errors: [],
+        parsedConfig: parsed,
+      };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unknown parsing error';
+      const location = this.extractJsonErrorLocation(rawText, message);
+      const locatedMessage = location
+        ? `${message} (line ${location.line}, column ${location.column})`
+        : message;
+      return {
+        status: 'error',
+        message: location
+          ? `Invalid JSON at line ${location.line}, column ${location.column}.`
+          : 'Invalid JSON.',
+        warnings: [],
+        errors: [locatedMessage],
+        parsedConfig: null,
+      };
+    }
+  }
+
+  private getInputValue(event: Event): string | null {
+    const target = event.target;
+    if (!isRecord(target)) return null;
+    const value = target.value;
+    return typeof value === 'string' ? value : null;
+  }
+
+  private applyImportedConfig(config: FormConfig, source: 'file' | 'code'): void {
+    const warnings = collectConfigWarnings(config);
+    this.config = cloneConfig(config);
+    this.activeSectionIndex = 0;
+    this.selectedField = null;
+    this.importSummary = {
+      status: 'success',
+      message: warnings.length
+        ? `Config imported from ${source} with warnings.`
+        : `Config imported from ${source} successfully.`,
+      warnings,
+      errors: [],
+    };
+  }
+
+  private extractJsonErrorLocation(
+    rawText: string,
+    errorMessage: string,
+  ): { line: number; column: number } | null {
+    const positionMatch = /position (\d+)/.exec(errorMessage);
+    if (!positionMatch) return null;
+    const rawPosition = Number(positionMatch[1]);
+    if (Number.isNaN(rawPosition) || rawPosition < 0) return null;
+    let line = 1;
+    let column = 1;
+    const max = Math.min(rawPosition, rawText.length);
+    for (let index = 0; index < max; index += 1) {
+      const char = rawText[index];
+      if (char === '\n') {
+        line += 1;
+        column = 1;
+      } else {
+        column += 1;
+      }
+    }
+    return { line, column };
+  }
+
+  private renderCodeEditor(): TemplateResult {
+    const lineCount = Math.max(1, this.codeEditorValue.split('\n').length);
+    const lineNumbers = Array.from({ length: lineCount }, (_, index) => index + 1);
+    return html`
+      <div class="code-editor-shell">
+        <div class="code-line-numbers" aria-hidden="true">
+          ${lineNumbers.map((lineNumber) => html`<div class="code-line-number">${lineNumber}</div>`)}
+        </div>
+        <textarea
+          class="code-editor-textarea"
+          spellcheck="false"
+          .value=${this.codeEditorValue}
+          @input=${this.handleCodeEditorInput}
+        ></textarea>
+      </div>
+    `;
+  }
 
   private renderJsonCode(jsonText: string): TemplateResult {
     const parts: Array<string | TemplateResult> = [];

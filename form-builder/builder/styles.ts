@@ -38,6 +38,7 @@ export const builderStyles = css`
 
   sl-dialog::part(panel) {
     max-width: 720px;
+    max-height: 82vh;
   }
 
   .code-box {
@@ -48,6 +49,83 @@ export const builderStyles = css`
     max-height: 420px;
     overflow: auto;
     user-select: text;
+  }
+
+  .code-editor-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sl-spacing-small);
+    max-height: 68vh;
+    overflow-y: auto;
+  }
+
+  .code-validation {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background: var(--sl-color-neutral-0);
+  }
+
+  .code-editor-shell {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    border: 1px solid var(--sl-color-neutral-300);
+    border-radius: var(--sl-border-radius-medium);
+    overflow: hidden;
+    background: var(--sl-color-neutral-0);
+    height: min(46vh, 420px);
+    max-height: 46vh;
+    align-items: stretch;
+  }
+
+  .code-line-numbers {
+    margin: 0;
+    padding: var(--sl-spacing-small) var(--sl-spacing-x-small);
+    min-width: 3.5rem;
+    text-align: right;
+    font-family: var(--sl-font-mono);
+    font-size: var(--sl-font-size-small);
+    line-height: 1.5;
+    color: var(--sl-color-neutral-500);
+    background: var(--sl-color-neutral-100);
+    border-right: 1px solid var(--sl-color-neutral-200);
+    overflow-y: auto;
+    overflow-x: hidden;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    user-select: none;
+  }
+
+  .code-line-numbers::-webkit-scrollbar {
+    display: none;
+  }
+
+  .code-line-number {
+    height: calc(1em * 1.5);
+  }
+
+  .code-editor-textarea {
+    box-sizing: border-box;
+    width: 100%;
+    border: 0;
+    outline: none;
+    resize: none;
+    margin: 0;
+    padding: var(--sl-spacing-small);
+    min-height: 100%;
+    max-height: 100%;
+    white-space: pre;
+    tab-size: 2;
+    overflow: auto;
+    font-family: var(--sl-font-mono);
+    font-size: var(--sl-font-size-small);
+    line-height: 1.5;
+    background: transparent;
+    color: var(--sl-color-neutral-800);
+  }
+
+  .code-editor-textarea:focus {
+    box-shadow: inset 0 0 0 2px var(--sl-color-primary-200);
   }
 
   .code-block {
