@@ -4,9 +4,6 @@ on:
   push:
     branches:
       - main
-    paths:
-      - "form-builder/**"
-      - ".github/workflows/static.yml"
   workflow_dispatch:
 
 permissions:
