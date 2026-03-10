@@ -4,9 +4,10 @@ An open-source, config-driven dynamic form renderer built with web components.
 
 ## Features
 
-- **Config-driven**: Define forms with simple JSON/JavaScript configuration
+- **Config-driven**: Define forms with simple JSON/TypeScript configuration
 - **Change tracking**: Built-in dirty state tracking and change management
 - **Multiple field types**: Text, email, password, select, radio, checkbox, date, color, and more
+- **TypeScript**: Fully typed with exported type definitions
 
 ## Quick Start
 
@@ -32,7 +33,19 @@ Compile and watch for changes:
 npm run dev
 ```
 
-Launch [deform-playground](https://github.com/deform-wg/deform-playground) to see deform in action.
+Type check:
+
+```bash
+npm run type-check
+```
+
+Run the playground locally:
+
+```bash
+npm run playground
+```
+
+Then open http://localhost:8000
 
 ## License
 

@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="apple-touch-icon" sizes="180x180" href="./favi/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="./favi/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="./favi/favicon-16x16.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /> 
+    <link rel="stylesheet" type="text/css" href="styles.css">
+    
+    <!-- Shoelace theme stylesheets -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.19.1/cdn/themes/light.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.19.1/cdn/themes/dark.css">
+    
+    <!-- Shoelace initialization - must come before any components -->
+    <script type="module" src="./init-shoelace.js"></script>
+  </head>
+  <body>
+
+    <div class="page">
+
+      <!-- SVG logo --->
+      <div id="logo" style="width: 200px; margin-bottom: 2em">
+        <object id="logo1" data="logo/1.svg" type="image/svg+xml" width="200" style="display: block"></object>
+        <object id="logo2" data="logo/2.svg" type="image/svg+xml" width="200" style="display: none"></object>
+        <object id="logo3" data="logo/3.svg" type="image/svg+xml" width="200" style="display: none"></object>
+      </div>
+
+      <!-- Add a deform element -->
+      <de-form id="myForm"></de-form>
+    </div>
+
+    <!-- buttons on the top right -->
+    <div class="buttons">
+      <div class="toggle-button" onclick="toggleTray()">
+        <span>☰</span>
+      </div>
+      <div class="toggle-button" onclick="nextColor()">
+        <span>✰</span>
+      </div>
+      <div class="toggle-button" onclick="toggleTheme()">
+        <span>⏾</span>
+      </div>
+    </div>
+
+    <!-- This script initialises the demonstration de-form "myForm" -->
+    <script type="module" src="init.js"></script>
+
+    <!-- Adds the sidebar to showcase de-form options -->
+    <script type="module" src="./editor/editor-tray.js"></script>
+    <editor-tray id="editorTray" target="myForm"></editor-tray>
+    <script src="editor/add.js"></script>
+
+    <!-- little bit fancy logo -->
+    <script src="logo/logo.js"></script>
+    
+  </body>
+</html>

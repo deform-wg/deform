@@ -3,11 +3,6 @@
   "compilerOptions": {
     "noEmit": true
   },
-  "include": [
-    "src/types/**/*.ts",
-    "src/utils/**/*.ts"
-  ],
-  "exclude": [
-    "src/vendor"
-  ]
+  "include": ["src/**/*.ts"],
+  "exclude": ["src/vendor"]
 }

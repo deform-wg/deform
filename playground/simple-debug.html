@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Simple DeForm Debug</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .debug { background: #f0f0f0; border: 1px solid #ccc; padding: 10px; margin: 10px 0; }
+        .error { background: #ffebee; color: #c62828; border: 1px solid #ffcdd2; }
+        .success { background: #e8f5e8; color: #2e7d32; border: 1px solid #c8e6c9; }
+    </style>
+</head>
+<body>
+    <h1>DeForm Simple Debug</h1>
+    
+    <div id="debug" class="debug">Loading...</div>
+    
+    <div id="form-container">
+        <de-form id="testForm"></de-form>
+    </div>
+
+    <script type="module">
+        const debugDiv = document.getElementById('debug');
+        
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const className = type === 'error' ? 'error' : type === 'success' ? 'success' : 'debug';
+            debugDiv.innerHTML += `<div class="${className}">[${timestamp}] ${message}</div>`;
+        }
+        
+        async function testDeForm() {
+            try {
+                log('Starting DeForm test...');
+                
+                // Import the library
+                log('Importing library...');
+                await import('../src/index.ts');
+                log('Library imported successfully', 'success');
+                
+                // Check if custom element is registered
+                if (customElements.get('de-form')) {
+                    log('Custom element registered', 'success');
+                    
+                    // Get the form element
+                    const form = document.getElementById('testForm');
+                    if (!form) {
+                        throw new Error('Form element not found');
+                    }
+                    log('Form element found', 'success');
+                    
+                    // Set up a simple form
+                    const simpleFields = {
+                        sections: [{
+                            name: 'test',
+                            fields: [{
+                                name: 'first',
+                                type: 'text',
+                                label: 'First name',
+                                placeholder: 'Enter your first name',
+                                required: true
+                            }]
+                        }]
+                    };
+                    
+                    log('Setting form fields...');
+                    form.fields = simpleFields;
+                    log('Form fields set', 'success');
+                    
+                    log('Setting form values...');
+                    form.values = { first: 'Test' };
+                    log('Form values set', 'success');
+                    
+                    // Wait a bit for rendering
+                    log('Waiting for form to render...');
+                    await new Promise(resolve => setTimeout(resolve, 2000));
+                    
+                    // Check what was rendered
+                    if (form.shadowRoot) {
+                        const content = form.shadowRoot.innerHTML;
+                        log(`Shadow root content length: ${content.length}`, 'success');
+                        
+                        if (content.length > 0) {
+                            log('Form has rendered content', 'success');
+                            
+                            // Look for specific elements
+                            if (content.includes('sl-input')) {
+                                log('Found sl-input element', 'success');
+                            } else {
+                                log('No sl-input element found', 'error');
+                            }
+                            
+                            if (content.includes('First name')) {
+                                log('Found "First name" label', 'success');
+                            } else {
+                                log('No "First name" label found', 'error');
+                            }
+                            
+                            // Show a snippet of the content
+                            const snippet = content.substring(0, 200) + '...';
+                            log(`Content snippet: ${snippet}`);
+                        } else {
+                            log('Form shadow root is empty', 'error');
+                        }
+                    } else {
+                        log('No shadow root found', 'error');
+                    }
+                    
+                } else {
+                    log('Custom element not registered', 'error');
+                }
+                
+            } catch (error) {
+                log(`Test failed: ${error.message}`, 'error');
+                log(`Stack: ${error.stack}`, 'error');
+            }
+        }
+        
+        // Start the test
+        testDeForm();
+        
+        // Monitor for errors
+        window.addEventListener('error', (event) => {
+            log(`Runtime error: ${event.message}`, 'error');
+        });
+        
+        window.addEventListener('unhandledrejection', (event) => {
+            log(`Unhandled rejection: ${event.reason}`, 'error');
+        });
+    </script>
+</body>
+</html>

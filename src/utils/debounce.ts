@@ -1,0 +1,46 @@
+/**
+ * Debounces a function, delaying its execution until after the wait period has
+ * elapsed since the last time it was invoked.
+ *
+ * @param func - The function to debounce.
+ * @param wait - The time period in milliseconds to wait before executing the function.
+ * @returns A debounced function that delays execution until calls stop.
+ */
+export default function debounce<This, Args extends unknown[], R>(
+  func: (this: This, ...args: Args) => R,
+  wait: number,
+): (this: This, ...args: Args) => void {
+  let timeout: ReturnType<typeof setTimeout> | undefined;
+  return function executedFunction(this: This, ...args: Args): void {
+    const later = () => {
+      clearTimeout(timeout);
+      func.apply(this, args);
+    };
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+  };
+}
+
+/**
+ * Executes immediately on the first call, then debounces subsequent calls within
+ * the wait period.
+ *
+ * @param func - The function to debounce.
+ * @param wait - The time period in milliseconds to wait before allowing another execution.
+ * @returns A debounced function that executes immediately on first call, then waits.
+ */
+export function onceThenDebounce<This, Args extends unknown[], R>(
+  func: (this: This, ...args: Args) => R,
+  wait: number,
+): (this: This, ...args: Args) => void {
+  let timeout: ReturnType<typeof setTimeout> | undefined;
+  return function executedFunction(this: This, ...args: Args): void {
+    const later = () => {
+      timeout = undefined;
+    };
+    const shouldCallNow = !timeout;
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+    if (shouldCallNow) func.apply(this, args);
+  };
+}

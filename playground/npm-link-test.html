@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Deform Import Test</title>
+</head>
+<body>
+    <h1>Deform Import Test</h1>
+    <div id="status">Testing...</div>
+    <de-form id="testForm"></de-form>
+    
+    <script type="module">
+        try {
+            // Test importing the library
+            await import('../src/index.ts');
+            document.getElementById('status').innerHTML = "✅ Library imported successfully!";
+            console.log("✅ Library import successful");
+            
+            // Test if the custom element is defined
+            setTimeout(() => {
+                if (customElements.get('de-form')) {
+                    document.getElementById('status').innerHTML += "<br>✅ Custom element registered!";
+                    console.log("✅ Custom element registered");
+                } else {
+                    document.getElementById('status').innerHTML += "<br>❌ Custom element not registered";
+                    console.log("❌ Custom element not registered");
+                }
+            }, 100);
+            
+        } catch (error) {
+            document.getElementById('status').innerHTML = "❌ Import failed: " + error.message;
+            console.error("❌ Import failed:", error);
+        }
+    </script>
+</body>
+</html>
