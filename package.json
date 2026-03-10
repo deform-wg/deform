@@ -14,7 +14,9 @@
     },
     "form-builder": {
       "source": "form-builder/index.html",
-      "distDir": "form-builder/dist"
+      "distDir": "form-builder/dist",
+      "context": "browser",
+      "includeNodeModules": true
     }
   },
   "typings": "./dist/index.d.ts",
