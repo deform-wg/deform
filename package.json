@@ -30,7 +30,7 @@
     "dev": "npm run check:builder-field-types && npm run build:watch",
     "preform-builder": "npm run clean",
     "form-builder": "npm run check:builder-field-types && parcel form-builder/index.html --port 8000 --no-source-maps",
-    "form-builder:build": "npm run check:builder-field-types && parcel build form-builder/index.html --dist-dir form-builder/dist --public-url ./ --no-source-maps",
+    "form-builder:build": "npm run check:builder-field-types && parcel build --target form-builder --public-url ./ --no-source-maps",
     "type-check": "tsc --noEmit",
     "lint:biome": "biome check .",
     "lint:biome:fix": "biome check --write .",
