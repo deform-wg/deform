@@ -12,9 +12,9 @@
       "distDir": "dist",
       "outputFormat": "esmodule"
     },
-    "playground": {
-      "source": "playground/index.html",
-      "distDir": "playground/dist"
+    "form-builder": {
+      "source": "form-builder/index.html",
+      "distDir": "form-builder/dist"
     }
   },
   "typings": "./dist/index.d.ts",
@@ -23,12 +23,14 @@
     "src"
   ],
   "scripts": {
-    "build": "parcel build --target lib && npm run build:types",
+    "build": "npm run check:builder-field-types && parcel build --target lib && npm run build:types",
     "build:types": "tsc --emitDeclarationOnly --outDir dist",
     "build:watch": "parcel watch --target lib",
-    "dev": "npm run build:watch",
-    "playground": "parcel playground/index.html --port 8000 --no-source-maps",
-    "playground:build": "parcel build playground/index.html --dist-dir playground/dist --public-url ./ --no-source-maps",
+    "check:builder-field-types": "node scripts/check-builder-field-types.js",
+    "dev": "npm run check:builder-field-types && npm run build:watch",
+    "preform-builder": "npm run clean",
+    "form-builder": "npm run check:builder-field-types && parcel form-builder/index.html --port 8000 --no-source-maps",
+    "form-builder:build": "npm run check:builder-field-types && parcel build form-builder/index.html --dist-dir form-builder/dist --public-url ./ --no-source-maps",
     "type-check": "tsc --noEmit",
     "lint:biome": "biome check .",
     "lint:biome:fix": "biome check --write .",
@@ -37,7 +39,7 @@
     "lint": "npm run lint:biome && npm run lint:eslint",
     "lint:fix": "npm run lint:biome:fix && npm run lint:eslint:fix",
     "format": "biome format --write .",
-    "clean": "rm -rf dist .parcel-cache playground/dist playground/.parcel-cache",
+    "clean": "rm -rf dist .parcel-cache form-builder/dist form-builder/.parcel-cache",
     "prebuild": "npm run clean",
     "test": "npm run type-check && npm run lint && npx vitest run"
   },

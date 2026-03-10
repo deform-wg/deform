@@ -39,10 +39,10 @@ Type check:
 npm run type-check
 ```
 
-Run the playground locally:
+Run the form builder locally:
 
 ```bash
-npm run playground
+npm run form-builder
 ```
 
 Then open http://localhost:8000

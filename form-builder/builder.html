@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <link rel="apple-touch-icon" sizes="180x180" href="./favi/apple-touch-icon.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="./favi/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="./favi/favicon-16x16.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset="UTF-8" />
+    <title>DeForm Builder</title>
+    <link rel="stylesheet" type="text/css" href="styles.css" />
+
+    <!-- Shoelace theme stylesheets -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.19.1/cdn/themes/light.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.19.1/cdn/themes/dark.css"
+    />
+
+    <!-- Shoelace initialization -->
+    <script type="module" src="./init-shoelace.js"></script>
+  </head>
+  <body>
+    <div class="page" style="height: 100vh; width: 100vw; margin: 0;">
+      <div class="glitch-logo" aria-hidden="true">
+        <div
+          id="logo1"
+          class="glitch-logo__layer glitch-logo__layer--one"
+          data-src="./logo/1.svg"
+        ></div>
+        <div
+          id="logo2"
+          class="glitch-logo__layer glitch-logo__layer--two"
+          data-src="./logo/2.svg"
+        ></div>
+        <div
+          id="logo3"
+          class="glitch-logo__layer glitch-logo__layer--three"
+          data-src="./logo/3.svg"
+        ></div>
+      </div>
+      <form-builder></form-builder>
+    </div>
+
+    <script type="module" src="./builder/app.ts"></script>
+    <script type="module" src="./logo/logo.js"></script>
+  </body>
+</html>

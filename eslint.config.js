@@ -11,8 +11,8 @@ export default [
     ignores: [
       '**/dist/**',
       '**/.parcel-cache/**',
-      'playground/dist/**',
-      'playground/.parcel-cache/**',
+      'form-builder/dist/**',
+      'form-builder/.parcel-cache/**',
       'src/vendor/**',
       '**/*.d.ts',
     ],
