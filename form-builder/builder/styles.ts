@@ -215,6 +215,10 @@ export const builderStyles = css`
   }
 
   .canvas sl-tab-panel {
+    display: none;
+  }
+
+  .canvas sl-tab-panel[active] {
     display: flex;
     flex-direction: column;
     flex: 1 1 auto;

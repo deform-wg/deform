@@ -23,7 +23,11 @@
     <script type="module" src="./init-shoelace.js"></script>
   </head>
   <body>
-    <div class="pre-alpha-banner" role="status" aria-live="polite">Pre-alpha</div>
+    <div class="pre-alpha-banner" role="status" aria-live="polite">
+      <div class="pre-alpha-banner__marquee" data-banner-text="Pre-alpha - Heavily under construction - stay tuned">
+        <span class="pre-alpha-banner__text" aria-hidden="true"></span>
+      </div>
+    </div>
     <div class="page">
       <div class="glitch-logo" aria-hidden="true">
         <div
@@ -47,5 +51,26 @@
 
     <script type="module" src="./builder/app.ts"></script>
     <script type="module" src="./logo/logo.js"></script>
+    <script>
+      const bannerMarquee = document.querySelector(".pre-alpha-banner__marquee");
+      if (bannerMarquee instanceof HTMLElement) {
+        const bannerText = bannerMarquee.dataset.bannerText?.trim() ?? "";
+        if (bannerText.length > 0) {
+          const wideDashSeparator = "\u00a0\u00a0\u00a0\u00a0-\u00a0\u00a0\u00a0\u00a0";
+          const spacedBannerText = bannerText.replaceAll(" - ", wideDashSeparator);
+          const repeatedText = `${spacedBannerText}${wideDashSeparator}`.repeat(12);
+          const firstRun = document.createElement("span");
+          firstRun.className = "pre-alpha-banner__text";
+          firstRun.textContent = repeatedText;
+
+          const secondRun = document.createElement("span");
+          secondRun.className = "pre-alpha-banner__text";
+          secondRun.textContent = repeatedText;
+          secondRun.setAttribute("aria-hidden", "true");
+
+          bannerMarquee.replaceChildren(firstRun, secondRun);
+        }
+      }
+    </script>
   </body>
 </html>

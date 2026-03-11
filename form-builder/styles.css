@@ -31,13 +31,46 @@ body {
   height: var(--pre-alpha-banner-height);
   display: flex;
   align-items: center;
-  justify-content: center;
   background: var(--sl-color-warning-600, #d97706);
   color: var(--sl-color-neutral-0, #fff);
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
+  overflow: hidden;
+}
+
+.pre-alpha-banner__marquee {
+  display: flex;
+  width: max-content;
+  animation: pre-alpha-marquee 120s linear infinite;
+}
+
+.pre-alpha-banner__text {
+  flex: 0 0 auto;
+  white-space: nowrap;
+  padding-right: 24px;
+}
+
+@keyframes pre-alpha-marquee {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pre-alpha-banner {
+    justify-content: center;
+  }
+
+  .pre-alpha-banner__marquee {
+    animation: none;
+    width: 100%;
+    justify-content: center;
+  }
 }
 
 .glitch-logo {
