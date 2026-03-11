@@ -192,8 +192,53 @@ export const builderStyles = css`
     gap: var(--sl-spacing-medium);
   }
 
+  .canvas sl-tab-group {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+    flex-direction: column;
+  }
+
+  .canvas sl-tab-group::part(base) {
+    display: flex;
+    flex: 1 1 auto !important;
+    height: 100% !important;
+    min-height: 100% !important;
+    flex-direction: column;
+  }
+
+  .canvas sl-tab-group::part(body) {
+    display: flex;
+    flex: 1 1 auto !important;
+    height: 100% !important;
+    min-height: 0 !important;
+  }
+
+  .canvas sl-tab-panel {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    height: 100%;
+    min-height: 0;
+  }
+
+  .canvas sl-tab-panel::part(base) {
+    display: flex;
+    flex: 1 1 auto;
+    min-height: 0;
+    height: 100%;
+  }
+
+  .section-canvas-drop-surface {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-height: 320px;
+  }
+
   .canvas-list {
     min-height: 100%;
+    padding-top: var(--sl-spacing-large);
     padding-bottom: calc(var(--sl-spacing-large) * 2);
   }
 
@@ -272,6 +317,10 @@ export const builderStyles = css`
     box-shadow: 0 0 0 1px var(--sl-color-primary-200);
   }
 
+  .canvas-drop-zone-empty {
+    width: 100%;
+  }
+
   .canvas-item-header {
     display: flex;
     align-items: center;
@@ -332,6 +381,16 @@ export const builderStyles = css`
     text-align: center;
     color: var(--sl-color-neutral-500);
     margin-top: var(--sl-spacing-x-large);
+  }
+
+  .canvas-empty-drop-target {
+    flex: 1 1 auto;
+    min-height: 320px;
+    height: 100%;
+    margin-top: 0;
+    display: grid;
+    place-content: center;
+    gap: var(--sl-spacing-small);
   }
 
   .preview-card {

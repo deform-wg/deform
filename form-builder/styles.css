@@ -1,3 +1,7 @@
+:root {
+  --pre-alpha-banner-height: 32px;
+}
+
 body {
   margin: 0;
   padding: 0;
@@ -19,13 +23,26 @@ body {
 }
 
 .page {
-  height: 100vh;
+  height: calc(100vh - var(--pre-alpha-banner-height));
   width: 100vw;
+}
+
+.pre-alpha-banner {
+  height: var(--pre-alpha-banner-height);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--sl-color-warning-600, #d97706);
+  color: var(--sl-color-neutral-0, #fff);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 .glitch-logo {
   position: fixed;
-  top: 0;
+  top: var(--pre-alpha-banner-height);
   left: 16px;
   width: 160px;
   height: 64px;

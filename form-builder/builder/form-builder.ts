@@ -430,87 +430,93 @@ export class FormBuilder extends LitElement {
   }
 
   private renderSectionCanvas(section: FormSection, sectionIndex: number): TemplateResult {
-    if (!section.fields.length) {
-      return html`
-        <div
-          class="empty-state"
-          @dragover=${this.handleCanvasDragOver}
-          @dragleave=${this.handleCanvasDragLeave}
-          @drop=${(event: DragEvent) => this.handleCanvasDrop(event, sectionIndex)}
-        >
-          <sl-icon name="arrow-left" style="font-size: 2rem;"></sl-icon>
-          <p>Drag fields here from the toolbox.</p>
-        </div>
-      `;
-    }
-
     return html`
       <div
-        class="canvas-list"
-        style="display: flex; flex-direction: column; gap: var(--sl-spacing-medium);"
+        class="section-canvas-drop-surface"
         @dragover=${this.handleCanvasDragOver}
         @dragleave=${this.handleCanvasDragLeave}
         @drop=${(event: DragEvent) => this.handleCanvasDrop(event, sectionIndex)}
       >
-        ${section.fields.map((field, index) => {
-          const isSelected =
-            this.selectedField?.sectionIndex === sectionIndex &&
-            this.selectedField?.fieldIndex === index;
-          const previewField: FieldConfig = {
-            ...field,
-            revealOn: undefined,
-          };
-          const previewConfig: FormConfig = {
-            sections: [{ name: 'preview', fields: [previewField] }],
-            theme: this.displayConfig.theme,
-            orientation: this.displayConfig.orientation,
-            accent: this.displayConfig.accent,
-            requireCommit: this.displayConfig.requireCommit,
-            markModifiedFields: this.displayConfig.markModifiedFields,
-            showModifiedCount: this.displayConfig.showModifiedCount,
-            allowDiscardChanges: this.displayConfig.allowDiscardChanges,
-          };
-          return html`
-            <div class="canvas-drop-zone ${this.dragOverIndex === index ? 'active' : ''}"></div>
-            <div
-              class="canvas-item ${isSelected ? 'selected' : ''}"
-              @click=${() => this.selectField(sectionIndex, index)}
-              @dragend=${this.handleDragEnd}
-            >
-              <div class="canvas-item-header">
-                <div class="canvas-item-meta">
-                  <span
-                    class="canvas-item-drag"
-                    aria-label="Drag to reorder field"
-                    draggable="true"
-                    @dragstart=${(event: DragEvent) => {
-                      event.stopPropagation();
-                      this.handleCanvasDragStart(event, sectionIndex, index);
-                    }}
-                  >
-                    <sl-icon name="grip-vertical"></sl-icon>
-                  </span>
-                  <span class="canvas-item-type">${field.type}</span>
+        ${
+          section.fields.length === 0
+            ? html`
+                <div class="empty-state canvas-empty-drop-target">
+                  <div
+                    class="canvas-drop-zone canvas-drop-zone-empty ${
+                      this.dragOverIndex === 0 ? 'active' : ''
+                    }"
+                  ></div>
+                  <sl-icon name="arrow-left" style="font-size: 2rem;"></sl-icon>
+                  <p>Drag fields here from the toolbox.</p>
                 </div>
-                <sl-icon-button
-                  name="trash"
-                  label="Delete field"
-                  @click=${(event: Event) => this.deleteField(event, sectionIndex, index)}
-                ></sl-icon-button>
-              </div>
-              <div class="canvas-preview">
-                <de-form
-                  .fields=${previewConfig}
-                  theme=${previewConfig.theme ?? 'dark'}
-                  accent=${previewConfig.accent ?? 'sky'}
-                ></de-form>
-              </div>
-            </div>
-          `;
-        })}
-        <div
-          class="canvas-drop-zone ${this.dragOverIndex === section.fields.length ? 'active' : ''}"
-        ></div>
+              `
+            : html`
+                <div
+                  class="canvas-list"
+                  style="display: flex; flex-direction: column; gap: var(--sl-spacing-medium);"
+                >
+                  ${section.fields.map((field, index) => {
+                    const isSelected =
+                      this.selectedField?.sectionIndex === sectionIndex &&
+                      this.selectedField?.fieldIndex === index;
+                    const previewField: FieldConfig = {
+                      ...field,
+                      revealOn: undefined,
+                    };
+                    const previewConfig: FormConfig = {
+                      sections: [{ name: 'preview', fields: [previewField] }],
+                      theme: this.displayConfig.theme,
+                      orientation: this.displayConfig.orientation,
+                      accent: this.displayConfig.accent,
+                      requireCommit: this.displayConfig.requireCommit,
+                      markModifiedFields: this.displayConfig.markModifiedFields,
+                      showModifiedCount: this.displayConfig.showModifiedCount,
+                      allowDiscardChanges: this.displayConfig.allowDiscardChanges,
+                    };
+                    return html`
+                      <div class="canvas-drop-zone ${this.dragOverIndex === index ? 'active' : ''}"></div>
+                      <div
+                        class="canvas-item ${isSelected ? 'selected' : ''}"
+                        @click=${() => this.selectField(sectionIndex, index)}
+                        @dragend=${this.handleDragEnd}
+                      >
+                        <div class="canvas-item-header">
+                          <div class="canvas-item-meta">
+                            <span
+                              class="canvas-item-drag"
+                              aria-label="Drag to reorder field"
+                              draggable="true"
+                              @dragstart=${(event: DragEvent) => {
+                                event.stopPropagation();
+                                this.handleCanvasDragStart(event, sectionIndex, index);
+                              }}
+                            >
+                              <sl-icon name="grip-vertical"></sl-icon>
+                            </span>
+                            <span class="canvas-item-type">${field.type}</span>
+                          </div>
+                          <sl-icon-button
+                            name="trash"
+                            label="Delete field"
+                            @click=${(event: Event) => this.deleteField(event, sectionIndex, index)}
+                          ></sl-icon-button>
+                        </div>
+                        <div class="canvas-preview">
+                          <de-form
+                            .fields=${previewConfig}
+                            theme=${previewConfig.theme ?? 'dark'}
+                            accent=${previewConfig.accent ?? 'sky'}
+                          ></de-form>
+                        </div>
+                      </div>
+                    `;
+                  })}
+                  <div
+                    class="canvas-drop-zone ${this.dragOverIndex === section.fields.length ? 'active' : ''}"
+                  ></div>
+                </div>
+              `
+        }
       </div>
     `;
   }
@@ -906,7 +912,6 @@ export class FormBuilder extends LitElement {
   private dragPayload: SelectedField | null = null;
   private dragOverFrame: number | null = null;
   private lastDragOverY: number | null = null;
-  private lastDropIndex: number | null = null;
 
   private scheduleDragOverUpdate(container: HTMLElement, clientY: number): void {
     this.lastDragOverY = clientY;
@@ -916,8 +921,7 @@ export class FormBuilder extends LitElement {
       const latestY = this.lastDragOverY;
       if (latestY === null) return;
       const nextIndex = this.getDropIndex(container, latestY);
-      if (nextIndex !== this.lastDropIndex) {
-        this.lastDropIndex = nextIndex;
+      if (nextIndex !== this.dragOverIndex) {
         this.dragOverIndex = nextIndex;
       }
     });
@@ -928,7 +932,6 @@ export class FormBuilder extends LitElement {
     window.cancelAnimationFrame(this.dragOverFrame);
     this.dragOverFrame = null;
     this.lastDragOverY = null;
-    this.lastDropIndex = null;
   }
 
   private getDropIndex(container: HTMLElement, clientY: number): number {
