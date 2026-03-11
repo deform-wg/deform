@@ -1,5 +1,6 @@
 import type { TemplateResult } from 'lit';
 import { html, LitElement, nothing } from 'lit';
+import { keyed } from 'lit/directives/keyed.js';
 import { createRef, ref } from 'lit/directives/ref.js';
 import { accents, supportedAccents } from '../../src/theme/accents.js';
 import type {
@@ -10,6 +11,7 @@ import type {
   SelectOption,
 } from '../../src/typedefs/index.js';
 import '../../src/index.ts';
+import debounce from '../../src/utils/debounce.js';
 import { defaultConfig } from './default-config.js';
 import {
   buildFieldSettingsValues,
@@ -66,6 +68,7 @@ export class FormBuilder extends LitElement {
 
   static properties = {
     config: { type: Object },
+    displayConfig: { type: Object },
     activeSectionIndex: { type: Number },
     selectedField: { type: Object },
     showPreview: { type: Boolean },
@@ -80,6 +83,7 @@ export class FormBuilder extends LitElement {
   };
 
   declare config: FormConfig;
+  declare displayConfig: FormConfig;
   declare activeSectionIndex: number;
   declare selectedField: SelectedField | null;
   declare showPreview: boolean;
@@ -95,9 +99,16 @@ export class FormBuilder extends LitElement {
   private readonly fileInputRef = createRef<HTMLInputElement>();
   private readonly storageKey = 'deform-form-builder-config';
 
+  // Debounced sync from config → displayConfig. Fires after text input stops,
+  // keeping canvas re-renders and localStorage writes off the critical input path.
+  private readonly debouncedSyncDisplay = debounce(function (this: FormBuilder) {
+    this.displayConfig = this.config;
+  }, 200);
+
   constructor() {
     super();
     this.config = cloneConfig(defaultConfig);
+    this.displayConfig = this.config;
     this.activeSectionIndex = 0;
     this.selectedField = null;
     this.showPreview = false;
@@ -121,13 +132,24 @@ export class FormBuilder extends LitElement {
     return this.config.sections[this.activeSectionIndex];
   }
 
+  // Structural changes (add/remove/move fields, sections, clear, reset, import)
+  // update the canvas immediately. Settings panel text edits go through
+  // this.config = updated directly and reach the canvas via debouncedSyncDisplay.
+  private setConfig(newConfig: FormConfig): void {
+    this.config = newConfig;
+    this.displayConfig = newConfig;
+  }
+
   override updated(changedProperties: Map<string, unknown>): void {
     if (changedProperties.has('config')) {
       this.applyThemeClass();
-      this.persistConfig();
+      this.debouncedSyncDisplay();
     }
-    if (changedProperties.has('activeSectionIndex') || changedProperties.has('config')) {
+    if (changedProperties.has('activeSectionIndex') || changedProperties.has('displayConfig')) {
       void this.syncActiveTab();
+    }
+    if (changedProperties.has('displayConfig')) {
+      this.persistConfig();
     }
     if (changedProperties.has('activeSettingsTab')) {
       void this.syncSettingsTab();
@@ -346,7 +368,7 @@ export class FormBuilder extends LitElement {
   }
 
   private renderCanvas(): TemplateResult {
-    if (!this.config.sections.length) {
+    if (!this.displayConfig.sections.length) {
       return html`
         <div class="empty-state">
           <sl-icon name="plus-circle" style="font-size: 2rem;"></sl-icon>
@@ -363,7 +385,7 @@ export class FormBuilder extends LitElement {
         <div>
           <h2 style="margin: 0;">Sections</h2>
           <div style="color: var(--sl-color-neutral-600); font-size: 0.9rem;">
-            ${this.config.sections.length} tab${this.config.sections.length === 1 ? '' : 's'}
+            ${this.displayConfig.sections.length} tab${this.displayConfig.sections.length === 1 ? '' : 's'}
           </div>
         </div>
         <div style="display: flex; gap: var(--sl-spacing-small);">
@@ -374,7 +396,7 @@ export class FormBuilder extends LitElement {
           <sl-button
             size="small"
             variant="danger"
-            ?disabled=${this.config.sections.length <= 1}
+            ?disabled=${this.displayConfig.sections.length <= 1}
             @click=${this.removeSection}
           >
             <sl-icon slot="prefix" name="trash"></sl-icon>
@@ -387,7 +409,7 @@ export class FormBuilder extends LitElement {
         .active=${this.sectionPanelName(this.activeSectionIndex)}
         @sl-tab-show=${this.handleSectionTabShow}
       >
-        ${this.config.sections.map(
+        ${this.displayConfig.sections.map(
           (section, index) => html`
             <sl-tab
               slot="nav"
@@ -397,7 +419,7 @@ export class FormBuilder extends LitElement {
           `,
         )}
 
-        ${this.config.sections.map(
+        ${this.displayConfig.sections.map(
           (section, index) => html`
             <sl-tab-panel .name=${this.sectionPanelName(index)}>
               ${this.renderSectionCanvas(section, index)}
@@ -441,13 +463,13 @@ export class FormBuilder extends LitElement {
           };
           const previewConfig: FormConfig = {
             sections: [{ name: 'preview', fields: [previewField] }],
-            theme: this.config.theme,
-            orientation: this.config.orientation,
-            accent: this.config.accent,
-            requireCommit: this.config.requireCommit,
-            markModifiedFields: this.config.markModifiedFields,
-            showModifiedCount: this.config.showModifiedCount,
-            allowDiscardChanges: this.config.allowDiscardChanges,
+            theme: this.displayConfig.theme,
+            orientation: this.displayConfig.orientation,
+            accent: this.displayConfig.accent,
+            requireCommit: this.displayConfig.requireCommit,
+            markModifiedFields: this.displayConfig.markModifiedFields,
+            showModifiedCount: this.displayConfig.showModifiedCount,
+            allowDiscardChanges: this.displayConfig.allowDiscardChanges,
           };
           return html`
             <div class="canvas-drop-zone ${this.dragOverIndex === index ? 'active' : ''}"></div>
@@ -498,14 +520,14 @@ export class FormBuilder extends LitElement {
     return html`
       <div class="preview-card">
         <de-form
-          .fields=${this.config}
-          theme=${this.config.theme ?? 'dark'}
-          accent=${this.config.accent ?? 'sky'}
-          orientation=${this.config.orientation ?? 'portrait'}
-          .requireCommit=${this.config.requireCommit ?? false}
-          .markModifiedFields=${this.config.markModifiedFields ?? false}
-          .showModifiedCount=${this.config.showModifiedCount ?? false}
-          .allowDiscardChanges=${this.config.allowDiscardChanges ?? false}
+          .fields=${this.displayConfig}
+          theme=${this.displayConfig.theme ?? 'dark'}
+          accent=${this.displayConfig.accent ?? 'sky'}
+          orientation=${this.displayConfig.orientation ?? 'portrait'}
+          .requireCommit=${this.displayConfig.requireCommit ?? false}
+          .markModifiedFields=${this.displayConfig.markModifiedFields ?? false}
+          .showModifiedCount=${this.displayConfig.showModifiedCount ?? false}
+          .allowDiscardChanges=${this.displayConfig.allowDiscardChanges ?? false}
           @deform-tab-change=${this.handlePreviewTabChange}
         ></de-form>
       </div>
@@ -647,15 +669,19 @@ export class FormBuilder extends LitElement {
   private renderFieldSettings(field: FieldConfig): TemplateResult {
     const fields = getFieldSettingsFields(field);
     const values = buildFieldSettingsValues(field);
+    const fieldKey = `${this.selectedField?.sectionIndex}-${this.selectedField?.fieldIndex}`;
 
     return html`
-      <de-form
-        .fields=${{ sections: [{ name: 'field', fields }] }}
-        .values=${values}
-        theme=${this.config.theme ?? 'dark'}
-        accent=${this.config.accent ?? 'sky'}
-        @deform-value-change=${this.handleFieldSettingsChange}
-      ></de-form>
+      ${keyed(
+        fieldKey,
+        html`<de-form
+          .fields=${{ sections: [{ name: 'field', fields }] }}
+          .values=${values}
+          theme=${this.config.theme ?? 'dark'}
+          accent=${this.config.accent ?? 'sky'}
+          @deform-value-change=${this.handleFieldSettingsChange}
+        ></de-form>`,
+      )}
     `;
   }
 
@@ -783,7 +809,7 @@ export class FormBuilder extends LitElement {
     };
     const updated = cloneConfig(this.config);
     updated.sections.push(newSection);
-    this.config = updated;
+    this.setConfig(updated);
     this.activeSectionIndex = updated.sections.length - 1;
     this.selectedField = null;
     this.activeSettingsTab = 'section-settings';
@@ -793,7 +819,7 @@ export class FormBuilder extends LitElement {
     if (this.config.sections.length <= 1) return;
     const updated = cloneConfig(this.config);
     updated.sections.splice(this.activeSectionIndex, 1);
-    this.config = updated;
+    this.setConfig(updated);
     this.activeSectionIndex = Math.max(0, this.activeSectionIndex - 1);
     this.selectedField = null;
     this.activeSettingsTab = 'section-settings';
@@ -807,7 +833,7 @@ export class FormBuilder extends LitElement {
     const newField = this.createField(type, updated);
     const insertIndex = typeof targetIndex === 'number' ? targetIndex : section.fields.length;
     section.fields.splice(insertIndex, 0, newField);
-    this.config = updated;
+    this.setConfig(updated);
     this.selectedField = { sectionIndex: resolvedSectionIndex, fieldIndex: insertIndex };
   }
 
@@ -817,7 +843,7 @@ export class FormBuilder extends LitElement {
     const section = updated.sections[sectionIndex];
     if (!section) return;
     section.fields.splice(fieldIndex, 1);
-    this.config = updated;
+    this.setConfig(updated);
     if (
       this.selectedField &&
       this.selectedField.sectionIndex === sectionIndex &&
@@ -845,7 +871,7 @@ export class FormBuilder extends LitElement {
     }
     insertIndex = Math.max(0, Math.min(insertIndex, toSection.fields.length));
     toSection.fields.splice(insertIndex, 0, moved);
-    this.config = updated;
+    this.setConfig(updated);
     this.selectedField = { sectionIndex: toSectionIndex, fieldIndex: insertIndex };
   }
 
@@ -1296,7 +1322,7 @@ export class FormBuilder extends LitElement {
         ? true
         : window.confirm('Clear the current form and start fresh?');
     if (!shouldClear) return;
-    this.config = { sections: [{ name: 'main', fields: [] }] };
+    this.setConfig({ sections: [{ name: 'main', fields: [] }] });
     this.activeSectionIndex = 0;
     this.selectedField = null;
     this.statusMessage = 'Cleared';
@@ -1313,7 +1339,7 @@ export class FormBuilder extends LitElement {
     } catch {
       // Ignore storage failures.
     }
-    this.config = cloneConfig(defaultConfig);
+    this.setConfig(cloneConfig(defaultConfig));
     this.activeSectionIndex = 0;
     this.selectedField = null;
     this.statusMessage = 'Default restored';
@@ -1495,7 +1521,7 @@ export class FormBuilder extends LitElement {
 
   private applyImportedConfig(config: FormConfig, source: 'file' | 'code'): void {
     const warnings = collectConfigWarnings(config);
-    this.config = cloneConfig(config);
+    this.setConfig(cloneConfig(config));
     this.activeSectionIndex = 0;
     this.selectedField = null;
     this.importSummary = {
@@ -1645,7 +1671,7 @@ export class FormBuilder extends LitElement {
       if (!raw) return;
       const parsed: unknown = JSON.parse(raw);
       if (!isFormConfig(parsed)) return;
-      this.config = cloneConfig(parsed);
+      this.setConfig(cloneConfig(parsed));
     } catch {
       // Ignore storage failures and keep default config.
     }
