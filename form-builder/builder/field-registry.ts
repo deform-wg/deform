@@ -80,14 +80,40 @@ const SELECT_SETTINGS: FieldConfig[] = [
 const RADIO_SETTINGS: FieldConfig[] = [];
 
 const CHECKBOX_SETTINGS: FieldConfig[] = [
-  { name: 'defaultTo', type: 'toggle', label: 'Default Checked' },
+  {
+    name: 'defaultTo',
+    type: 'select',
+    label: 'Default Value',
+    options: [
+      { value: 'true', label: 'true' },
+      { value: 'false', label: 'false' },
+    ],
+  },
   { name: 'indeterminate', type: 'toggle', label: 'Indeterminate' },
 ];
 
-const TOGGLE_SETTINGS: FieldConfig[] = [{ name: 'defaultTo', type: 'toggle', label: 'Default On' }];
+const TOGGLE_SETTINGS: FieldConfig[] = [
+  {
+    name: 'defaultTo',
+    type: 'select',
+    label: 'Default Value',
+    options: [
+      { value: 'true', label: 'true' },
+      { value: 'false', label: 'false' },
+    ],
+  },
+];
 
 const TOGGLE_FIELD_SETTINGS: FieldConfig[] = [
-  { name: 'defaultTo', type: 'number', label: 'Default Variant (0 or 1)' },
+  {
+    name: 'defaultTo',
+    type: 'select',
+    label: 'Default Value',
+    options: [
+      { value: 'true', label: 'true' },
+      { value: 'false', label: 'false' },
+    ],
+  },
 ];
 
 const RANGE_SETTINGS: FieldConfig[] = [
@@ -194,18 +220,23 @@ export const FIELD_TYPE_OPTIONS: FieldTypeOption[] = FIELD_TYPE_ORDER.map((type)
 
 export function getFieldSettingsFields(field: FieldConfig): FieldConfig[] {
   const definition = isFieldType(field.type) ? FIELD_DEFINITIONS[field.type] : undefined;
-  const base = BASE_FIELD_SETTINGS.map((f) => {
-    if (f.name !== 'value') return f;
-    if (hasOptions(field)) {
-      return {
-        name: 'value',
-        type: 'select' as const,
-        label: 'Default Value',
-        options: field.options,
-        clearable: true,
-      };
+  const base = BASE_FIELD_SETTINGS.flatMap((f) => {
+    if (f.name !== 'value') return [f];
+    if (field.type === 'checkbox' || field.type === 'toggle' || field.type === 'toggleField') {
+      return [];
     }
-    return f;
+    if (hasOptions(field)) {
+      return [
+        {
+          name: 'value',
+          type: 'select' as const,
+          label: 'Default Value',
+          options: field.options,
+          clearable: true,
+        },
+      ];
+    }
+    return [f];
   });
   if (!definition) return base;
   return [...base, ...definition.settings];
@@ -345,7 +376,7 @@ export function buildFieldSettingsValues(field: FieldConfig): Record<string, For
   }
 
   if (field.type === 'toggleField') {
-    baseValues.defaultTo = field.defaultTo ?? 0;
+    baseValues.defaultTo = field.defaultTo === 1 ? 'true' : 'false';
   }
 
   return baseValues;

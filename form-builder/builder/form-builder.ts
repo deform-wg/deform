@@ -1413,8 +1413,13 @@ export class FormBuilder extends LitElement {
         return;
       case 'defaultTo':
         if (field.type === 'toggleField') {
-          const value = toOptionalNumber(rawValue);
-          field.defaultTo = value === 1 ? 1 : 0;
+          const boolValue = toOptionalBoolean(rawValue);
+          if (boolValue !== undefined) {
+            field.defaultTo = boolValue ? 1 : 0;
+            return;
+          }
+          const numberValue = toOptionalNumber(rawValue);
+          field.defaultTo = numberValue === 1 ? 1 : 0;
         } else if (field.type === 'checkbox' || field.type === 'toggle') {
           field.defaultTo = toOptionalBoolean(rawValue);
         } else if (field.type === 'color') {
