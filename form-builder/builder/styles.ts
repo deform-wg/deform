@@ -359,4 +359,41 @@ export const builderStyles = css`
     text-transform: uppercase;
     letter-spacing: 0.05em;
   }
+
+  .list-editor {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sl-spacing-x-small);
+    margin-top: var(--sl-spacing-medium);
+  }
+
+  .list-editor-header {
+    margin-bottom: var(--sl-spacing-2x-small);
+  }
+
+  .list-editor-label {
+    font-size: var(--sl-font-size-small);
+    font-weight: var(--sl-font-weight-semibold);
+    color: var(--sl-color-neutral-700);
+  }
+
+  .list-editor-columns,
+  .list-editor-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 28px;
+    gap: var(--sl-spacing-x-small);
+    align-items: center;
+  }
+
+  .list-editor-col-title {
+    font-size: var(--sl-font-size-x-small);
+    color: var(--sl-color-neutral-500);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  .list-editor-row sl-input {
+    min-width: 0;
+    overflow: hidden;
+  }
 `;

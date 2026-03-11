@@ -18,6 +18,7 @@ import {
   collectConfigWarnings,
   FIELD_TYPE_OPTIONS,
   getFieldSettingsFields,
+  hasOptions,
   isFieldType,
 } from './field-registry.js';
 import { builderStyles } from './styles.js';
@@ -96,11 +97,9 @@ export class FormBuilder extends LitElement {
   declare codeEditorValue: string;
   declare codeValidation: CodeValidationState | null;
 
+  private settingsRevision = 0;
   private readonly fileInputRef = createRef<HTMLInputElement>();
   private readonly storageKey = 'deform-form-builder-config';
-
-  // Debounced sync from config → displayConfig. Fires after text input stops,
-  // keeping canvas re-renders and localStorage writes off the critical input path.
   private readonly debouncedSyncDisplay = debounce(function (this: FormBuilder) {
     this.displayConfig = this.config;
   }, 200);
@@ -133,7 +132,7 @@ export class FormBuilder extends LitElement {
   }
 
   // Structural changes (add/remove/move fields, sections, clear, reset, import)
-  // update the canvas immediately. Settings panel text edits go through
+  // update the canvas immediately. Settings panel changes go through
   // this.config = updated directly and reach the canvas via debouncedSyncDisplay.
   private setConfig(newConfig: FormConfig): void {
     this.config = newConfig;
@@ -669,7 +668,7 @@ export class FormBuilder extends LitElement {
   private renderFieldSettings(field: FieldConfig): TemplateResult {
     const fields = getFieldSettingsFields(field);
     const values = buildFieldSettingsValues(field);
-    const fieldKey = `${this.selectedField?.sectionIndex}-${this.selectedField?.fieldIndex}`;
+    const fieldKey = `${this.selectedField?.sectionIndex}-${this.selectedField?.fieldIndex}-${this.settingsRevision}`;
 
     return html`
       ${keyed(
@@ -682,7 +681,155 @@ export class FormBuilder extends LitElement {
           @deform-value-change=${this.handleFieldSettingsChange}
         ></de-form>`,
       )}
+      ${hasOptions(field) ? this.renderOptionsEditor(field.options) : nothing}
+      ${field.type === 'toggleField' ? this.renderLabelsEditor(field.labels) : nothing}
     `;
+  }
+
+  private renderOptionsEditor(options: SelectOption[]): TemplateResult {
+    return html`
+      <div class="list-editor">
+        <div class="list-editor-header">
+          <label class="list-editor-label">Options</label>
+        </div>
+        <div class="list-editor-columns">
+          <span class="list-editor-col-title">Value</span>
+          <span class="list-editor-col-title">Label</span>
+          <span class="list-editor-col-action"></span>
+        </div>
+        ${options.map(
+          (option, index) => html`
+            <div class="list-editor-row">
+              <sl-input
+                size="small"
+                value=${String(option.value)}
+                @sl-change=${(e: Event) => this.handleOptionChange(index, 'value', e)}
+              ></sl-input>
+              <sl-input
+                size="small"
+                value=${option.label}
+                @sl-change=${(e: Event) => this.handleOptionChange(index, 'label', e)}
+              ></sl-input>
+              <sl-icon-button
+                name="dash-circle"
+                label="Remove option"
+                @click=${() => this.removeOption(index)}
+              ></sl-icon-button>
+            </div>
+          `,
+        )}
+        <sl-button size="small" @click=${this.addOption}>
+          <sl-icon slot="prefix" name="plus-circle"></sl-icon>
+          Add Option
+        </sl-button>
+      </div>
+    `;
+  }
+
+  private renderLabelsEditor(labels: string[]): TemplateResult {
+    return html`
+      <div class="list-editor">
+        <label class="list-editor-label">Toggle Labels</label>
+        ${labels.map(
+          (label, index) => html`
+            <div class="list-editor-row">
+              <sl-input
+                size="small"
+                placeholder="Label"
+                value=${label}
+                @sl-change=${(e: Event) => this.handleToggleLabelChange(index, e)}
+              ></sl-input>
+              <sl-icon-button
+                name="dash-circle"
+                label="Remove label"
+                @click=${() => this.removeToggleLabel(index)}
+              ></sl-icon-button>
+            </div>
+          `,
+        )}
+        <sl-button size="small" @click=${this.addToggleLabel}>
+          <sl-icon slot="prefix" name="plus-circle"></sl-icon>
+          Add Label
+        </sl-button>
+      </div>
+    `;
+  }
+
+  private getInputValue(target: EventTarget | null): string {
+    if (target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement) {
+      return target.value;
+    }
+    if (isRecord(target) && typeof target.value === 'string') {
+      return target.value;
+    }
+    return '';
+  }
+
+  private updateSelectedFieldConfig(mutate: (field: FieldConfig) => void): void {
+    if (!this.selectedField) return;
+    const { sectionIndex, fieldIndex } = this.selectedField;
+    const updated = cloneConfig(this.config);
+    const field = updated.sections[sectionIndex]?.fields[fieldIndex];
+    if (!field) return;
+    mutate(field);
+    updated.sections[sectionIndex].fields[fieldIndex] = field;
+    this.config = updated;
+  }
+
+  private handleOptionChange(index: number, part: 'value' | 'label', event: Event): void {
+    const val = this.getInputValue(event.target);
+    this.updateSelectedFieldConfig((field) => {
+      if (!hasOptions(field)) return;
+      const option = field.options[index];
+      if (!option) return;
+      if (part === 'value' && String(field.value) === String(option.value)) {
+        field.value = val;
+      }
+      option[part] = val;
+    });
+    this.settingsRevision += 1;
+    this.requestUpdate();
+  }
+
+  private addOption = (): void => {
+    this.updateSelectedFieldConfig((field) => {
+      if (!hasOptions(field)) return;
+      const n = field.options.length + 1;
+      field.options.push({ value: `option${n}`, label: `Option ${n}` });
+    });
+    this.settingsRevision += 1;
+    this.requestUpdate();
+  };
+
+  private removeOption(index: number): void {
+    this.updateSelectedFieldConfig((field) => {
+      if (!hasOptions(field)) return;
+      field.options.splice(index, 1);
+    });
+    this.settingsRevision += 1;
+    this.requestUpdate();
+  }
+
+  private handleToggleLabelChange(index: number, event: Event): void {
+    const val = this.getInputValue(event.target);
+    this.updateSelectedFieldConfig((field) => {
+      if (field.type !== 'toggleField') return;
+      field.labels[index] = val;
+    });
+  }
+
+  private addToggleLabel = (): void => {
+    this.updateSelectedFieldConfig((field) => {
+      if (field.type !== 'toggleField') return;
+      field.labels.push(`Label ${field.labels.length + 1}`);
+    });
+  };
+
+  private removeToggleLabel(index: number): void {
+    this.updateSelectedFieldConfig((field) => {
+      if (field.type !== 'toggleField') return;
+      field.labels.splice(index, 1);
+    });
   }
 
   private handleToolboxDragStart(event: DragEvent, type: FieldType): void {
@@ -992,14 +1139,7 @@ export class FormBuilder extends LitElement {
       updated.sections[this.selectedField.sectionIndex]?.fields[this.selectedField.fieldIndex];
     if (!field) return;
 
-    if (fieldName === 'optionsRaw') {
-      const options = this.parseOptions(newValue);
-      if ('options' in field) {
-        field.options = options;
-      }
-    } else if (fieldName === 'toggleLabels' && field.type === 'toggleField') {
-      field.labels = this.parseToggleLabels(newValue);
-    } else if (fieldName === 'labelActionName' || fieldName === 'labelActionLabel') {
+    if (fieldName === 'labelActionName' || fieldName === 'labelActionLabel') {
       const name = fieldName === 'labelActionName' ? newValue : (field.labelAction?.name ?? '');
       const label = fieldName === 'labelActionLabel' ? newValue : (field.labelAction?.label ?? '');
       const nextName = toOptionalString(name) ?? '';
@@ -1287,29 +1427,6 @@ export class FormBuilder extends LitElement {
     }
   }
 
-  private parseOptions(value: FormValue): SelectOption[] {
-    const raw = typeof value === 'string' ? value : '';
-    return raw
-      .split('\n')
-      .map((line) => line.trim())
-      .filter(Boolean)
-      .map((line) => {
-        const [valuePart, labelPart] = line.split(':');
-        const value = valuePart?.trim() ?? '';
-        const label = labelPart?.trim() ?? value;
-        return { value, label };
-      })
-      .filter((option) => option.value.length > 0);
-  }
-
-  private parseToggleLabels(value: FormValue): string[] {
-    if (typeof value !== 'string') return [];
-    return value
-      .split('\n')
-      .map((line) => line.trim())
-      .filter(Boolean);
-  }
-
   private getChangeDetail(event: Event): { fieldName: string; newValue: FormValue } | null {
     if (!(event instanceof CustomEvent)) return null;
     if (!isDeFormValueChangeDetail(event.detail)) return null;
@@ -1458,8 +1575,8 @@ export class FormBuilder extends LitElement {
   };
 
   private handleCodeEditorInput = (event: Event): void => {
-    const nextValue = this.getInputValue(event);
-    if (nextValue === null) return;
+    const nextValue = this.getInputValue(event.target);
+    if (!nextValue) return;
     this.codeEditorValue = nextValue;
     this.codeValidation = this.validateCodeInput(nextValue);
   };
@@ -1510,13 +1627,6 @@ export class FormBuilder extends LitElement {
         parsedConfig: null,
       };
     }
-  }
-
-  private getInputValue(event: Event): string | null {
-    const target = event.target;
-    if (!isRecord(target)) return null;
-    const value = target.value;
-    return typeof value === 'string' ? value : null;
   }
 
   private applyImportedConfig(config: FormConfig, source: 'file' | 'code'): void {
