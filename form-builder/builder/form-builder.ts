@@ -888,6 +888,7 @@ export class FormBuilder extends LitElement {
   private handleCanvasDrop(event: DragEvent, sectionIndex: number): void {
     event.preventDefault();
     event.stopPropagation();
+    this.cancelDragOverFrame();
     const container = event.currentTarget;
     const dropIndex =
       container instanceof HTMLElement ? this.getDropIndex(container, event.clientY) : undefined;

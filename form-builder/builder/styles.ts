@@ -237,15 +237,8 @@ export const builderStyles = css`
   }
 
   .canvas-list {
-    min-height: 100%;
-    padding-top: var(--sl-spacing-large);
-    padding-bottom: calc(var(--sl-spacing-large) * 2);
-  }
-
-  .canvas-list::after {
-    content: '';
-    display: block;
-    height: var(--sl-spacing-large);
+    flex: 1 1 auto;
+    min-height: 0;
   }
 
   .properties {
@@ -318,7 +311,10 @@ export const builderStyles = css`
   }
 
   .canvas-drop-zone-empty {
-    width: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
   }
 
   .canvas-item-header {
@@ -387,6 +383,7 @@ export const builderStyles = css`
     flex: 1 1 auto;
     min-height: 320px;
     height: 100%;
+    position: relative;
     margin-top: 0;
     display: grid;
     place-content: center;
