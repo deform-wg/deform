@@ -13,10 +13,10 @@ An open-source, config-driven dynamic form renderer built with web components.
 
 ...
 
-## Installation (not yet published)
+## Installation
 
 ```bash
-npm install deform (or something)
+npm install @deform-wg/deform@alpha
 ```
 
 ## Development
