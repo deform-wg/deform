@@ -8,6 +8,7 @@ dist/
 coverage/
 form-builder/dist/
 form-builder/.parcel-cache/
+.npm-pack/
 
 # Misc
 *DS_Store
