@@ -1,10 +1,13 @@
-// Add shoelace once. Use components anywhere.
-import { getBasePath, setBasePath } from '@shoelace-style/shoelace/dist/utilities/base-path.js';
 import type { PropertyValues, TemplateResult } from 'lit';
 import { html, LitElement } from 'lit';
 import * as methods from './core/index.js';
 import * as renders from './renders/index.js';
 import { accents, supportedAccents } from './theme/accents.js';
+import {
+  applyThemeClass,
+  type DeformTheme,
+  ensureShoelaceBasePath,
+} from './theme/shoelace-theme.js';
 import { styles } from './theme/styles.js';
 import type {
   DeForm as DeFormInterface,
@@ -25,15 +28,10 @@ import {
   setDynFormValue,
 } from './utils/dynamic-props.js';
 import { asyncTimeout } from './utils/timeout.js';
+// Add shoelace once. Use components anywhere.
 import '@shoelace-style/shoelace/dist/shoelace.js';
-// Shoelace version derived from package.json dependency
-const SHOELACE_VERSION = '2.20.1';
 
-// Prefer a consumer-provided base path (e.g. via data-shoelace attribute). Fall back to CDN.
-const shoelaceBasePath = getBasePath();
-if (!shoelaceBasePath || shoelaceBasePath === '/') {
-  setBasePath(`https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@${SHOELACE_VERSION}/cdn/`);
-}
+ensureShoelaceBasePath();
 
 interface AccentInfo {
   name: string;
@@ -43,7 +41,7 @@ interface AccentInfo {
 class DeForm extends LitElement {
   // Reactive properties
   declare values: FormDataModel;
-  declare theme: 'light' | 'dark';
+  declare theme: DeformTheme;
   declare orientation: string;
   declare onSubmit:
     | ((changes: FormDataModel, form: HTMLFormElement, deform: DeFormInterface) => Promise<unknown>)
@@ -153,31 +151,39 @@ class DeForm extends LitElement {
 
     this._rules = [];
     this._flattenedFields = [];
-
-    // Add the class to the host element
-    this.classList.add('sl-theme-dark');
-
-    // Load stylesheets immediately when shadow root is available
-    this.updateComplete.then(() => {
-      this._updateThemeStylesheet(this.theme);
-    });
+    // Add the theme class to the host element immediately.
+    this._updateThemeStylesheet(this.theme);
   }
 
-  private _updateThemeStylesheet(newTheme: 'light' | 'dark'): void {
-    if (!this.shadowRoot) return;
-
-    if (newTheme === 'light') {
-      this.classList.remove('sl-theme-dark');
-      this.classList.add('sl-theme-light');
-    } else {
-      this.classList.remove('sl-theme-light');
-      this.classList.add('sl-theme-dark');
-    }
+  private _updateThemeStylesheet(newTheme: DeformTheme): void {
+    applyThemeClass(newTheme, this);
   }
 
   set fields(newValue: FormConfig | undefined) {
     this._fields = newValue;
     if (!newValue?.sections) return;
+
+    if (newValue.theme) {
+      this.theme = newValue.theme;
+    }
+    if (newValue.orientation) {
+      this.orientation = newValue.orientation;
+    }
+    if (newValue.accent) {
+      this.accent = newValue.accent;
+    }
+    if (typeof newValue.requireCommit === 'boolean') {
+      this.requireCommit = newValue.requireCommit;
+    }
+    if (typeof newValue.markModifiedFields === 'boolean') {
+      this.markModifiedFields = newValue.markModifiedFields;
+    }
+    if (typeof newValue.showModifiedCount === 'boolean') {
+      this.showModifiedCount = newValue.showModifiedCount;
+    }
+    if (typeof newValue.allowDiscardChanges === 'boolean') {
+      this.allowDiscardChanges = newValue.allowDiscardChanges;
+    }
 
     // Create a reactive property for every form field.
     this._initializeFormFieldProperties(newValue);
