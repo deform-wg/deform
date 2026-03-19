@@ -8,7 +8,7 @@ dist/
 coverage/
 form-builder/dist/
 form-builder/.parcel-cache/
-*.tgz
+.npm-pack/
 
 # Misc
 *DS_Store
