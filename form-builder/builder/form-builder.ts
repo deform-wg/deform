@@ -49,6 +49,18 @@ type CodeValidationState = {
   parsedConfig: FormConfig | null;
 };
 
+const MOBILE_MEDIA_QUERY = '(max-width: 960px)';
+const MOBILE_FAB_HOST_STYLE = [
+  'position: fixed',
+  'right: max(var(--sl-spacing-medium), env(safe-area-inset-right, 0px))',
+  'bottom: max(calc(var(--sl-spacing-medium) * 2), env(safe-area-inset-bottom, 0px))',
+  'z-index: 30',
+  'display: inline-flex',
+  'width: auto',
+].join('; ');
+const MOBILE_TOOLBOX_DRAWER_STYLE = '--size: 90dvh;';
+const MOBILE_SETTINGS_DRAWER_STYLE = '--size: 90dvh;';
+
 function isDeFormValueChangeDetail(value: unknown): value is DeFormValueChangeDetail {
   if (!isRecord(value)) return false;
   const fieldName = value.fieldName;
@@ -77,6 +89,9 @@ export class FormBuilder extends LitElement {
     isCodeEditMode: { type: Boolean },
     codeEditorValue: { type: String },
     codeValidation: { type: Object },
+    isMobile: { type: Boolean },
+    showToolboxDrawer: { type: Boolean },
+    showSettingsDrawer: { type: Boolean },
   };
 
   declare config: FormConfig;
@@ -91,9 +106,13 @@ export class FormBuilder extends LitElement {
   declare isCodeEditMode: boolean;
   declare codeEditorValue: string;
   declare codeValidation: CodeValidationState | null;
+  declare isMobile: boolean;
+  declare showToolboxDrawer: boolean;
+  declare showSettingsDrawer: boolean;
 
   private readonly fileInputRef = createRef<HTMLInputElement>();
   private readonly storageKey = 'deform-form-builder-config';
+  private mobileQuery: MediaQueryList | null = null;
 
   constructor() {
     super();
@@ -109,12 +128,25 @@ export class FormBuilder extends LitElement {
     this.isCodeEditMode = false;
     this.codeEditorValue = '';
     this.codeValidation = null;
+    this.isMobile =
+      typeof window !== 'undefined' ? window.matchMedia(MOBILE_MEDIA_QUERY).matches : false;
+    this.showToolboxDrawer = false;
+    this.showSettingsDrawer = false;
   }
 
   override connectedCallback(): void {
     super.connectedCallback();
     this.restoreConfig();
     this.applyThemeClass();
+    this.mobileQuery = window.matchMedia(MOBILE_MEDIA_QUERY);
+    this.syncMobileState(this.mobileQuery.matches);
+    this.mobileQuery.addEventListener('change', this.handleMobileQueryChange);
+  }
+
+  override disconnectedCallback(): void {
+    this.mobileQuery?.removeEventListener('change', this.handleMobileQueryChange);
+    this.mobileQuery = null;
+    super.disconnectedCallback();
   }
 
   private get activeSection(): FormSection | undefined {
@@ -143,45 +175,35 @@ export class FormBuilder extends LitElement {
               ? html`<sl-badge variant="neutral">${this.statusMessage}</sl-badge>`
               : nothing
           }
-          <sl-button size="small" @click=${this.handleClear}>
-            <sl-icon slot="prefix" name="trash"></sl-icon>
-            Clear
-          </sl-button>
-          <sl-button size="small" @click=${this.handleResetDefault}>
-            <sl-icon slot="prefix" name="arrow-counterclockwise"></sl-icon>
-            Reset Default
-          </sl-button>
-          <sl-button size="small" @click=${this.handleImportClick}>
-            <sl-icon slot="prefix" name="upload"></sl-icon>
-            Import
-          </sl-button>
-          <sl-button size="small" @click=${this.handleOpenCodeModal}>
-            <sl-icon slot="prefix" name="code"></sl-icon>
-            Code
-          </sl-button>
-          <sl-button size="small" @click=${this.handleExport}>
-            <sl-icon slot="prefix" name="download"></sl-icon>
-            Export
-          </sl-button>
-          <sl-button size="small" variant="primary" @click=${this.togglePreview}>
-            <sl-icon slot="prefix" name=${this.showPreview ? 'pencil' : 'eye'}></sl-icon>
-            ${this.showPreview ? 'Edit' : 'Preview'}
-          </sl-button>
+          ${this.isMobile ? this.renderMobileHeaderActions() : this.renderDesktopHeaderActions()}
         </div>
       </div>
       ${this.renderImportSummary()}
 
       <div class="main">
-        <div class="sidebar" ?hidden=${this.showPreview}>
-          ${this.renderToolbox()}
-        </div>
+        ${
+          this.isMobile
+            ? nothing
+            : html`
+                <div class="sidebar" ?hidden=${this.showPreview}>
+                  ${this.renderToolbox()}
+                </div>
+              `
+        }
         <div class="canvas">
           ${this.showPreview ? this.renderPreview() : this.renderCanvas()}
         </div>
-        <div class="properties" ?hidden=${this.showPreview}>
-          ${this.renderPropertiesPanel()}
-        </div>
+        ${
+          this.isMobile
+            ? nothing
+            : html`
+                <div class="properties" ?hidden=${this.showPreview}>
+                  ${this.renderPropertiesPanel()}
+                </div>
+              `
+        }
       </div>
+      ${this.renderMobileEditingChrome()}
       ${this.renderCodeModal()}
 
       <input
@@ -191,6 +213,133 @@ export class FormBuilder extends LitElement {
         @change=${this.handleImportFile}
         ${ref(this.fileInputRef)}
       />
+    `;
+  }
+
+  private renderDesktopHeaderActions(): TemplateResult {
+    return html`
+      <sl-button size="small" @click=${this.handleClear}>
+        <sl-icon slot="prefix" name="trash"></sl-icon>
+        Clear
+      </sl-button>
+      <sl-button size="small" @click=${this.handleResetDefault}>
+        <sl-icon slot="prefix" name="arrow-counterclockwise"></sl-icon>
+        Reset Default
+      </sl-button>
+      <sl-button size="small" @click=${this.handleImportClick}>
+        <sl-icon slot="prefix" name="upload"></sl-icon>
+        Import
+      </sl-button>
+      <sl-button size="small" @click=${this.handleOpenCodeModal}>
+        <sl-icon slot="prefix" name="code"></sl-icon>
+        Code
+      </sl-button>
+      <sl-button size="small" @click=${this.handleExport}>
+        <sl-icon slot="prefix" name="download"></sl-icon>
+        Export
+      </sl-button>
+      <sl-button size="small" variant="primary" @click=${this.togglePreview}>
+        <sl-icon slot="prefix" name=${this.showPreview ? 'pencil' : 'eye'}></sl-icon>
+        ${this.showPreview ? 'Edit' : 'Preview'}
+      </sl-button>
+    `;
+  }
+
+  private renderMobileHeaderActions(): TemplateResult {
+    return html`
+      ${
+        this.showPreview
+          ? nothing
+          : html`
+              <sl-button
+                size="small"
+                circle
+                class="mobile-header-button"
+                aria-label="Open settings"
+                @click=${this.openSettingsDrawer}
+              >
+                <sl-icon name="gear"></sl-icon>
+              </sl-button>
+            `
+      }
+      <sl-button size="small" variant="primary" @click=${this.togglePreview}>
+        <sl-icon slot="prefix" name=${this.showPreview ? 'pencil' : 'eye'}></sl-icon>
+        ${this.showPreview ? 'Edit' : 'Preview'}
+      </sl-button>
+      <sl-dropdown placement="bottom-end" hoist>
+        <sl-button
+          slot="trigger"
+          size="small"
+          circle
+          class="mobile-header-button"
+          aria-label="Open actions menu"
+        >
+          <sl-icon name="three-dots-vertical"></sl-icon>
+        </sl-button>
+        <sl-menu>
+          <sl-menu-item @click=${this.handleClear}>
+            <sl-icon slot="prefix" name="trash"></sl-icon>
+            Clear
+          </sl-menu-item>
+          <sl-menu-item @click=${this.handleResetDefault}>
+            <sl-icon slot="prefix" name="arrow-counterclockwise"></sl-icon>
+            Reset Default
+          </sl-menu-item>
+          <sl-menu-item @click=${this.handleImportClick}>
+            <sl-icon slot="prefix" name="upload"></sl-icon>
+            Import
+          </sl-menu-item>
+          <sl-menu-item @click=${this.handleOpenCodeModal}>
+            <sl-icon slot="prefix" name="code"></sl-icon>
+            Code
+          </sl-menu-item>
+          <sl-menu-item @click=${this.handleExport}>
+            <sl-icon slot="prefix" name="download"></sl-icon>
+            Export
+          </sl-menu-item>
+        </sl-menu>
+      </sl-dropdown>
+    `;
+  }
+
+  private renderMobileEditingChrome(): TemplateResult | typeof nothing {
+    if (!this.isMobile || this.showPreview) return nothing;
+    return html`
+      <sl-button
+        class="mobile-fab"
+        variant="primary"
+        circle
+        style=${MOBILE_FAB_HOST_STYLE}
+        aria-label="Open toolbox"
+        @click=${this.openToolboxDrawer}
+      >
+        <sl-icon
+          name="plus"
+          style="display: block; width: 1.4rem; height: 1.4rem; font-size: 1.4rem; line-height: 1;"
+        ></sl-icon>
+      </sl-button>
+
+      <sl-drawer
+        label="Toolbox"
+        placement="bottom"
+        class="mobile-drawer toolbox-drawer"
+        style=${MOBILE_TOOLBOX_DRAWER_STYLE}
+        ?open=${this.showToolboxDrawer}
+        @sl-after-hide=${this.handleToolboxDrawerAfterHide}
+      >
+        ${this.renderToolbox()}
+      </sl-drawer>
+
+      <sl-drawer
+        label="Settings"
+        placement="bottom"
+        class="mobile-drawer settings-drawer"
+        style=${MOBILE_SETTINGS_DRAWER_STYLE}
+        ?open=${this.showSettingsDrawer}
+        @sl-after-hide=${this.handleSettingsDrawerAfterHide}
+      >
+        ${this.renderPropertiesPanel()}
+      </sl-drawer>
     `;
   }
 
@@ -329,19 +478,21 @@ export class FormBuilder extends LitElement {
       <div class="section-header">
         <h3 style="margin: 0;">Toolbox</h3>
       </div>
-      ${FIELD_TYPE_OPTIONS.map(
-        (fieldType) => html`
-          <div
-            class="field-item"
-            draggable="true"
-            @dragstart=${(event: DragEvent) => this.handleToolboxDragStart(event, fieldType.type)}
-            @click=${() => this.addField(fieldType.type)}
-          >
-            <sl-icon name=${fieldType.icon}></sl-icon>
-            ${fieldType.label}
-          </div>
-        `,
-      )}
+      <div class="toolbox-grid">
+        ${FIELD_TYPE_OPTIONS.map(
+          (fieldType) => html`
+            <div
+              class="field-item"
+              .draggable=${!this.isMobile}
+              @dragstart=${(event: DragEvent) => this.handleToolboxDragStart(event, fieldType.type)}
+              @click=${() => this.handleToolboxFieldClick(fieldType.type)}
+            >
+              <sl-icon name=${fieldType.icon}></sl-icon>
+              ${fieldType.label}
+            </div>
+          `,
+        )}
+      </div>
     `;
   }
 
@@ -359,14 +510,14 @@ export class FormBuilder extends LitElement {
     }
 
     return html`
-      <div class="section-header">
+      <div class="section-header builder-section-header">
         <div>
           <h2 style="margin: 0;">Sections</h2>
           <div style="color: var(--sl-color-neutral-600); font-size: 0.9rem;">
             ${this.config.sections.length} tab${this.config.sections.length === 1 ? '' : 's'}
           </div>
         </div>
-        <div style="display: flex; gap: var(--sl-spacing-small);">
+        <div class="section-actions builder-section-actions">
           <sl-button size="small" @click=${this.addSection}>
             <sl-icon slot="prefix" name="plus"></sl-icon>
             Add Section
@@ -384,6 +535,7 @@ export class FormBuilder extends LitElement {
       </div>
 
       <sl-tab-group
+        class="section-tabs"
         .active=${this.sectionPanelName(this.activeSectionIndex)}
         @sl-tab-show=${this.handleSectionTabShow}
       >
@@ -417,8 +569,8 @@ export class FormBuilder extends LitElement {
           @dragleave=${this.handleCanvasDragLeave}
           @drop=${(event: DragEvent) => this.handleCanvasDrop(event, sectionIndex)}
         >
-          <sl-icon name="arrow-left" style="font-size: 2rem;"></sl-icon>
-          <p>Drag fields here from the toolbox.</p>
+          <sl-icon name=${this.isMobile ? 'plus-circle' : 'arrow-left'} style="font-size: 2rem;"></sl-icon>
+          <p>${this.isMobile ? 'Tap + to add fields.' : 'Drag fields here from the toolbox.'}</p>
         </div>
       `;
     }
@@ -667,6 +819,13 @@ export class FormBuilder extends LitElement {
     this.dragPayload = null;
   }
 
+  private handleToolboxFieldClick(type: FieldType): void {
+    this.addField(type);
+    if (this.isMobile) {
+      this.showToolboxDrawer = false;
+    }
+  }
+
   private handleCanvasDragStart(event: DragEvent, sectionIndex: number, fieldIndex: number): void {
     const payload = JSON.stringify({ sectionIndex, fieldIndex });
     event.dataTransfer?.setData('deform-field-move', payload);
@@ -774,6 +933,9 @@ export class FormBuilder extends LitElement {
   private selectField(sectionIndex: number, fieldIndex: number): void {
     this.selectedField = { sectionIndex, fieldIndex };
     this.activeSettingsTab = 'field-settings';
+    if (this.isMobile) {
+      this.openSettingsDrawer();
+    }
   }
 
   private addSection = (): void => {
@@ -787,6 +949,9 @@ export class FormBuilder extends LitElement {
     this.activeSectionIndex = updated.sections.length - 1;
     this.selectedField = null;
     this.activeSettingsTab = 'section-settings';
+    if (this.isMobile) {
+      this.openSettingsDrawer();
+    }
   };
 
   private removeSection = (): void => {
@@ -809,6 +974,7 @@ export class FormBuilder extends LitElement {
     section.fields.splice(insertIndex, 0, newField);
     this.config = updated;
     this.selectedField = { sectionIndex: resolvedSectionIndex, fieldIndex: insertIndex };
+    this.activeSettingsTab = 'field-settings';
   }
 
   private deleteField(event: Event, sectionIndex: number, fieldIndex: number): void {
@@ -1299,6 +1465,7 @@ export class FormBuilder extends LitElement {
     this.config = { sections: [{ name: 'main', fields: [] }] };
     this.activeSectionIndex = 0;
     this.selectedField = null;
+    this.closeMobileDrawers();
     this.statusMessage = 'Cleared';
     setTimeout(() => {
       this.statusMessage = '';
@@ -1316,6 +1483,7 @@ export class FormBuilder extends LitElement {
     this.config = cloneConfig(defaultConfig);
     this.activeSectionIndex = 0;
     this.selectedField = null;
+    this.closeMobileDrawers();
     this.statusMessage = 'Default restored';
     setTimeout(() => {
       this.statusMessage = '';
@@ -1377,6 +1545,7 @@ export class FormBuilder extends LitElement {
   };
 
   private handleOpenCodeModal = (): void => {
+    this.closeMobileDrawers();
     this.showCodeModal = true;
     this.isCodeEditMode = false;
     this.codeEditorValue = this.getCurrentJsonText();
@@ -1498,6 +1667,7 @@ export class FormBuilder extends LitElement {
     this.config = cloneConfig(config);
     this.activeSectionIndex = 0;
     this.selectedField = null;
+    this.closeMobileDrawers();
     this.importSummary = {
       status: 'success',
       message: warnings.length
@@ -1599,6 +1769,46 @@ export class FormBuilder extends LitElement {
 
   private togglePreview = (): void => {
     this.showPreview = !this.showPreview;
+    if (this.showPreview) {
+      this.closeMobileDrawers();
+    }
+  };
+
+  private openToolboxDrawer = (): void => {
+    this.showSettingsDrawer = false;
+    this.showToolboxDrawer = true;
+  };
+
+  private openSettingsDrawer = (): void => {
+    if (this.activeSettingsTab === 'field-settings' && !this.selectedField) {
+      this.activeSettingsTab = this.activeSection ? 'section-settings' : 'form-settings';
+    }
+    this.showToolboxDrawer = false;
+    this.showSettingsDrawer = true;
+  };
+
+  private handleToolboxDrawerAfterHide = (): void => {
+    this.showToolboxDrawer = false;
+  };
+
+  private handleSettingsDrawerAfterHide = (): void => {
+    this.showSettingsDrawer = false;
+  };
+
+  private closeMobileDrawers(): void {
+    this.showToolboxDrawer = false;
+    this.showSettingsDrawer = false;
+  }
+
+  private syncMobileState(matches: boolean): void {
+    this.isMobile = matches;
+    if (!matches) {
+      this.closeMobileDrawers();
+    }
+  }
+
+  private handleMobileQueryChange = (event: MediaQueryListEvent): void => {
+    this.syncMobileState(event.matches);
   };
 
   private applyThemeClass(): void {
@@ -1615,7 +1825,7 @@ export class FormBuilder extends LitElement {
 
   private async syncActiveTab(): Promise<void> {
     await this.updateComplete;
-    const tabGroup = this.renderRoot.querySelector('sl-tab-group');
+    const tabGroup = this.renderRoot.querySelector('sl-tab-group.section-tabs');
     if (!isTabGroup(tabGroup)) return;
     const target = this.sectionPanelName(this.activeSectionIndex);
     tabGroup.show(target);
