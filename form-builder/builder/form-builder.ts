@@ -90,6 +90,7 @@ export class FormBuilder extends LitElement {
     codeEditorValue: { type: String },
     codeValidation: { type: Object },
     isMobile: { type: Boolean },
+    isTouchDevice: { type: Boolean },
     showToolboxDrawer: { type: Boolean },
     showSettingsDrawer: { type: Boolean },
   };
@@ -107,6 +108,7 @@ export class FormBuilder extends LitElement {
   declare codeEditorValue: string;
   declare codeValidation: CodeValidationState | null;
   declare isMobile: boolean;
+  declare isTouchDevice: boolean;
   declare showToolboxDrawer: boolean;
   declare showSettingsDrawer: boolean;
 
@@ -130,6 +132,8 @@ export class FormBuilder extends LitElement {
     this.codeValidation = null;
     this.isMobile =
       typeof window !== 'undefined' ? window.matchMedia(MOBILE_MEDIA_QUERY).matches : false;
+    this.isTouchDevice =
+      typeof window !== 'undefined' && ('ontouchstart' in window || navigator.maxTouchPoints > 0);
     this.showToolboxDrawer = false;
     this.showSettingsDrawer = false;
   }
@@ -605,29 +609,69 @@ export class FormBuilder extends LitElement {
             <div class="canvas-drop-zone ${this.dragOverIndex === index ? 'active' : ''}"></div>
             <div
               class="canvas-item ${isSelected ? 'selected' : ''}"
-              @click=${() => this.selectField(sectionIndex, index)}
+              @click=${() => this.handleCanvasItemClick(sectionIndex, index)}
               @dragend=${this.handleDragEnd}
             >
               <div class="canvas-item-header">
                 <div class="canvas-item-meta">
-                  <span
-                    class="canvas-item-drag"
-                    aria-label="Drag to reorder field"
-                    draggable="true"
-                    @dragstart=${(event: DragEvent) => {
-                      event.stopPropagation();
-                      this.handleCanvasDragStart(event, sectionIndex, index);
-                    }}
-                  >
-                    <sl-icon name="grip-vertical"></sl-icon>
-                  </span>
+                  ${
+                    this.isTouchDevice
+                      ? nothing
+                      : html`
+                          <span
+                            class="canvas-item-drag"
+                            aria-label="Drag to reorder field"
+                            draggable="true"
+                            @dragstart=${(event: DragEvent) => {
+                              event.stopPropagation();
+                              this.handleCanvasDragStart(event, sectionIndex, index);
+                            }}
+                          >
+                            <sl-icon name="grip-vertical"></sl-icon>
+                          </span>
+                        `
+                  }
                   <span class="canvas-item-type">${field.type}</span>
                 </div>
-                <sl-icon-button
-                  name="trash"
-                  label="Delete field"
-                  @click=${(event: Event) => this.deleteField(event, sectionIndex, index)}
-                ></sl-icon-button>
+                <div class="canvas-item-actions">
+                  ${
+                    this.isTouchDevice
+                      ? html`
+                          <sl-icon-button
+                            name="chevron-up"
+                            label="Move field up"
+                            ?disabled=${index === 0}
+                            @click=${(event: Event) =>
+                              this.moveFieldByOffset(event, sectionIndex, index, -1)}
+                          ></sl-icon-button>
+                          <sl-icon-button
+                            name="chevron-down"
+                            label="Move field down"
+                            ?disabled=${index === section.fields.length - 1}
+                            @click=${(event: Event) =>
+                              this.moveFieldByOffset(event, sectionIndex, index, 1)}
+                          ></sl-icon-button>
+                        `
+                      : nothing
+                  }
+                  ${
+                    this.isMobile
+                      ? html`
+                          <sl-icon-button
+                            name="pencil"
+                            label="Edit field settings"
+                            @click=${(event: Event) =>
+                              this.openFieldSettings(event, sectionIndex, index)}
+                          ></sl-icon-button>
+                        `
+                      : nothing
+                  }
+                  <sl-icon-button
+                    name="trash"
+                    label="Delete field"
+                    @click=${(event: Event) => this.deleteField(event, sectionIndex, index)}
+                  ></sl-icon-button>
+                </div>
               </div>
               <div class="canvas-preview">
                 <de-form
@@ -936,6 +980,31 @@ export class FormBuilder extends LitElement {
     if (this.isMobile) {
       this.openSettingsDrawer();
     }
+  }
+
+  private handleCanvasItemClick(sectionIndex: number, fieldIndex: number): void {
+    if (this.isMobile) return;
+    this.selectField(sectionIndex, fieldIndex);
+  }
+
+  private openFieldSettings(event: Event, sectionIndex: number, fieldIndex: number): void {
+    event.stopPropagation();
+    this.selectField(sectionIndex, fieldIndex);
+  }
+
+  private moveFieldByOffset(
+    event: Event,
+    sectionIndex: number,
+    fieldIndex: number,
+    offset: -1 | 1,
+  ): void {
+    event.stopPropagation();
+    const section = this.config.sections[sectionIndex];
+    if (!section) return;
+    const targetIndex = fieldIndex + offset;
+    if (targetIndex < 0 || targetIndex >= section.fields.length) return;
+    const insertionIndex = offset < 0 ? targetIndex : targetIndex + 1;
+    this.moveField(sectionIndex, fieldIndex, sectionIndex, insertionIndex);
   }
 
   private addSection = (): void => {

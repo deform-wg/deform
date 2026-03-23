@@ -311,6 +311,12 @@ export const builderStyles = css`
     margin-bottom: var(--sl-spacing-small);
   }
 
+  .canvas-item-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--sl-spacing-2x-small);
+  }
+
   .canvas-item-meta {
     display: flex;
     align-items: center;
@@ -491,8 +497,8 @@ export const builderStyles = css`
       cursor: pointer;
     }
 
-    .canvas-item-drag {
-      opacity: 0.55;
+    .canvas-item {
+      cursor: default;
     }
 
     .import-summary {
