@@ -25,6 +25,16 @@ const sampleFields: FormConfig = {
 };
 
 describe('DeForm component', () => {
+  it('keeps non-primitive config on properties and internal flags in state only', () => {
+    const properties = DeForm.properties;
+
+    expect(properties.values).toMatchObject({ type: Object, attribute: false });
+    expect(properties.fields).toMatchObject({ type: Object, attribute: false });
+    expect(properties.onSubmit).toMatchObject({ type: Object, attribute: false });
+    expect(properties._initializing).toMatchObject({ type: Boolean, state: true });
+    expect(properties._celebrate).toMatchObject({ type: Boolean, state: true });
+  });
+
   it('initializes with default properties', () => {
     const form = new DeForm();
 

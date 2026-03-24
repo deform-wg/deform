@@ -132,11 +132,11 @@ class DeForm extends LitElement {
 
   static override get properties() {
     return {
-      values: { type: Object },
-      fields: { type: Object },
+      values: { type: Object, attribute: false },
+      fields: { type: Object, attribute: false },
       theme: { type: String },
       orientation: { type: String },
-      onSubmit: { type: Object },
+      onSubmit: { type: Object, attribute: false },
       requireCommit: { type: Boolean },
       markModifiedFields: { type: Boolean },
       showModifiedCount: { type: Boolean },
@@ -144,11 +144,11 @@ class DeForm extends LitElement {
       accent: { type: String, reflect: true },
       _activeFormId: { type: String, state: true },
       _dirty: { type: Number, state: true },
-      _initializing: { type: Boolean },
+      _initializing: { type: Boolean, state: true },
       _loading: { type: Boolean, state: true },
 
       _rules: { type: Object, state: true },
-      _celebrate: { type: Boolean },
+      _celebrate: { type: Boolean, state: true },
     };
   }
 
