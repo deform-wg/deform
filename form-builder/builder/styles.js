@@ -317,6 +317,41 @@ export const builderStyles = css`
     gap: var(--sl-spacing-2x-small);
   }
 
+  .touch-reorder-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    padding: 0;
+    border: 0;
+    border-radius: var(--sl-border-radius-medium);
+    background: transparent;
+    color: var(--sl-color-neutral-600);
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    appearance: none;
+  }
+
+  .touch-reorder-button sl-icon {
+    font-size: 1rem;
+  }
+
+  .touch-reorder-button:disabled {
+    color: var(--sl-color-neutral-400);
+    cursor: default;
+  }
+
+  .touch-reorder-button:hover,
+  .touch-reorder-button:focus,
+  .touch-reorder-button:focus-visible,
+  .touch-reorder-button:active {
+    background: transparent;
+    color: var(--sl-color-neutral-600);
+    outline: none;
+    box-shadow: none;
+  }
+
   .canvas-item-meta {
     display: flex;
     align-items: center;
@@ -507,4 +542,5 @@ export const builderStyles = css`
       width: min(420px, calc(100% - 1rem));
     }
   }
+
 `;

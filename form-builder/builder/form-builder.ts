@@ -637,20 +637,26 @@ export class FormBuilder extends LitElement {
                   ${
                     this.isTouchDevice
                       ? html`
-                          <sl-icon-button
-                            name="chevron-up"
-                            label="Move field up"
+                          <button
+                            type="button"
+                            class="touch-reorder-button"
+                            aria-label="Move field up"
                             ?disabled=${index === 0}
                             @click=${(event: Event) =>
                               this.moveFieldByOffset(event, sectionIndex, index, -1)}
-                          ></sl-icon-button>
-                          <sl-icon-button
-                            name="chevron-down"
-                            label="Move field down"
+                          >
+                            <sl-icon name="chevron-up"></sl-icon>
+                          </button>
+                          <button
+                            type="button"
+                            class="touch-reorder-button"
+                            aria-label="Move field down"
                             ?disabled=${index === section.fields.length - 1}
                             @click=${(event: Event) =>
                               this.moveFieldByOffset(event, sectionIndex, index, 1)}
-                          ></sl-icon-button>
+                          >
+                            <sl-icon name="chevron-down"></sl-icon>
+                          </button>
                         `
                       : nothing
                   }
@@ -1005,6 +1011,7 @@ export class FormBuilder extends LitElement {
     if (targetIndex < 0 || targetIndex >= section.fields.length) return;
     const insertionIndex = offset < 0 ? targetIndex : targetIndex + 1;
     this.moveField(sectionIndex, fieldIndex, sectionIndex, insertionIndex);
+    this.selectedField = null;
   }
 
   private addSection = (): void => {
