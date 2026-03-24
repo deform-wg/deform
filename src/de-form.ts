@@ -38,24 +38,48 @@ interface AccentInfo {
   [key: string]: string | number | boolean | null | undefined;
 }
 
+/**
+ * Config-driven form renderer built with Lit and Shoelace.
+ *
+ * @tagname de-form
+ * @fires form-dirty-change Fired when the number of dirty fields changes. Detail: `{ dirty: number }`.
+ * @fires form-loading-change Fired when submit/loading state changes. Detail: `{ loading: boolean }`.
+ * @fires deform-value-change Fired when a field value changes. Detail: `{ fieldName, originalValue, priorValue, newValue, timestamp? }`.
+ * @fires deform-tab-change Fired when the active tab changes. Detail: `{ newTabName, priorTabName?, timestamp? }`.
+ * @fires deform-discard-changes Fired when staged changes are discarded. Detail: `{ timestamp? }`.
+ * @fires form-submit-success Fired after changes are committed successfully. Detail: `{}`.
+ * @fires action-label-triggered Fired when a field action label button is clicked. Detail: `{ fieldName, actionName }`.
+ * @cssproperty [--submit-btn-anchor=flex-end] Controls footer button alignment.
+ * @cssproperty [--submit-btn-width=100%] Controls non-text button width on narrow screens.
+ */
 class DeForm extends LitElement {
   // Reactive properties
+  /** Current form values keyed by field name. */
   declare values: FormDataModel;
+  /** Visual theme applied to the component and nested Shoelace controls. */
   declare theme: DeformTheme;
+  /** Optional layout orientation override for supported renderers. */
   declare orientation: string;
+  /** Async submit handler invoked with staged changes, form node, and component instance. */
   declare onSubmit:
     | ((changes: FormDataModel, form: HTMLFormElement, deform: DeFormInterface) => Promise<unknown>)
     | undefined;
+  /** Change callback invoked whenever a field value changes. */
   declare onChange:
     | ((
         change: Omit<import('./typedefs/index.js').ChangePayload, 'deForm'>,
         deForm: DeFormInterface,
       ) => void)
     | undefined;
+  /** Requires consumers to call `commitChanges()` manually after a successful submit. */
   declare requireCommit: boolean;
+  /** Marks modified fields visually in the rendered form. */
   declare markModifiedFields: boolean;
+  /** Shows a modified-field count per form section. */
   declare showModifiedCount: boolean;
+  /** Shows a discard-changes action when there are staged edits. */
   declare allowDiscardChanges: boolean;
+  /** Primary accent palette name applied to the host element. */
   declare accent: string;
   declare _activeFormId: string | null;
   declare _initializing: boolean;
@@ -159,6 +183,7 @@ class DeForm extends LitElement {
     applyThemeClass(newTheme, this);
   }
 
+  /** Declarative form configuration including sections, fields, and submit labels. */
   set fields(newValue: FormConfig | undefined) {
     this._fields = newValue;
     if (!newValue?.sections) return;
@@ -217,10 +242,12 @@ class DeForm extends LitElement {
     return this.__loading;
   }
 
+  /** Toggles the initial loading overlay. */
   toggleLoader(): void {
     this._initializing = !this._initializing;
   }
 
+  /** Toggles the celebration state briefly after a successful action. */
   toggleCelebrate(): void {
     // Not an async function
     this._celebrate = true;
@@ -229,12 +256,14 @@ class DeForm extends LitElement {
     }, 1500);
   }
 
+  /** Toggles the inline loading indicator for a field action label. */
   toggleLabelLoader(fieldName: string): void {
     const { labelKey } = this.propKeys(fieldName);
     setDynBoolean(this, labelKey, !getDynBoolean(this, labelKey));
     this.requestUpdate();
   }
 
+  /** Returns the current form values keyed by field name. */
   getFormValues = (): FormDataModel => {
     // Purpose of this method is to return the values of the form
     // In a key/val structure, where key is the field name, val is the field value.
@@ -246,6 +275,7 @@ class DeForm extends LitElement {
     return out;
   };
 
+  /** Returns the current state, resolving selected option objects where available. */
   getState = (): FormStateModel => {
     // Extending getFormValues, this does the same except for any field that has
     // an options property, it will supply the selected option object as the value.
@@ -267,6 +297,7 @@ class DeForm extends LitElement {
     return out;
   };
 
+  /** Returns the supported accent palettes and the currently active accent. */
   getAccents(): { accents: AccentInfo[]; current: AccentInfo | undefined } {
     return {
       accents: supportedAccents,
@@ -274,12 +305,14 @@ class DeForm extends LitElement {
     };
   }
 
+  /** Sets a single field value and recomputes dirty-state tracking. */
   setValue(fieldName: string, newValue: FormValue): void {
     const { currentKey } = this.propKeys(fieldName);
     setDynFormValue(this, currentKey, newValue);
     this._checkForChanges();
   }
 
+  /** Returns the dynamic property keys used internally for a given field name. */
   propKeys(fieldName: string): PropKeys {
     const lowerName = fieldName.toLowerCase();
     return {
