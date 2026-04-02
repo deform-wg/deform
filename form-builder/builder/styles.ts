@@ -194,8 +194,60 @@ export const builderStyles = css`
     gap: var(--sl-spacing-medium);
   }
 
+  .canvas sl-tab-group {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+    flex-direction: column;
+  }
+
+  .canvas sl-tab-group::part(base) {
+    display: flex;
+    flex: 1 1 auto !important;
+    height: 100% !important;
+    min-height: 100% !important;
+    flex-direction: column;
+  }
+
+  .canvas sl-tab-group::part(body) {
+    display: flex;
+    flex: 1 1 auto !important;
+    height: 100% !important;
+    min-height: 0 !important;
+  }
+
+  .canvas sl-tab-panel {
+    display: none;
+  }
+
+  .canvas sl-tab-panel[active] {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    height: 100%;
+    min-height: 0;
+  }
+
+  .canvas sl-tab-panel::part(base) {
+    display: flex;
+    flex: 1 1 auto;
+    min-height: 0;
+    height: 100%;
+  }
+
+  .section-canvas-drop-surface {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-height: 320px;
+  }
+
   .canvas-list {
-    min-height: 100%;
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-height: 0;
+    gap: var(--sl-spacing-medium);
     padding-bottom: calc(var(--sl-spacing-large) * 2);
   }
 
@@ -304,6 +356,13 @@ export const builderStyles = css`
     box-shadow: 0 0 0 1px var(--sl-color-primary-200);
   }
 
+  .canvas-drop-zone-empty {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+  }
+
   .canvas-item-header {
     display: flex;
     align-items: center;
@@ -405,6 +464,17 @@ export const builderStyles = css`
     text-align: center;
     color: var(--sl-color-neutral-500);
     margin-top: var(--sl-spacing-x-large);
+  }
+
+  .canvas-empty-drop-target {
+    flex: 1 1 auto;
+    min-height: 320px;
+    height: 100%;
+    position: relative;
+    margin-top: 0;
+    display: grid;
+    place-content: center;
+    gap: var(--sl-spacing-small);
   }
 
   .preview-card {
@@ -543,4 +613,40 @@ export const builderStyles = css`
     }
   }
 
+  .list-editor {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sl-spacing-x-small);
+    margin-top: var(--sl-spacing-medium);
+  }
+
+  .list-editor-header {
+    margin-bottom: var(--sl-spacing-2x-small);
+  }
+
+  .list-editor-label {
+    font-size: var(--sl-font-size-small);
+    font-weight: var(--sl-font-weight-semibold);
+    color: var(--sl-color-neutral-700);
+  }
+
+  .list-editor-columns,
+  .list-editor-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 28px;
+    gap: var(--sl-spacing-x-small);
+    align-items: center;
+  }
+
+  .list-editor-col-title {
+    font-size: var(--sl-font-size-x-small);
+    color: var(--sl-color-neutral-500);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  .list-editor-row sl-input {
+    min-width: 0;
+    overflow: hidden;
+  }
 `;

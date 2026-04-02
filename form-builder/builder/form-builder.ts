@@ -1,5 +1,6 @@
 import type { TemplateResult } from 'lit';
 import { html, LitElement, nothing } from 'lit';
+import { keyed } from 'lit/directives/keyed.js';
 import { createRef, ref } from 'lit/directives/ref.js';
 import { accents, supportedAccents } from '../../src/theme/accents.js';
 import type {
@@ -10,12 +11,14 @@ import type {
   SelectOption,
 } from '../../src/typedefs/index.js';
 import '../../src/index.ts';
+import debounce from '../../src/utils/debounce.js';
 import { defaultConfig } from './default-config.js';
 import {
   buildFieldSettingsValues,
   collectConfigWarnings,
   FIELD_TYPE_OPTIONS,
   getFieldSettingsFields,
+  hasOptions,
   isFieldType,
 } from './field-registry.js';
 import { builderStyles } from './styles.js';
@@ -78,6 +81,7 @@ export class FormBuilder extends LitElement {
 
   static properties = {
     config: { type: Object },
+    displayConfig: { type: Object },
     activeSectionIndex: { type: Number },
     selectedField: { type: Object },
     showPreview: { type: Boolean },
@@ -96,6 +100,7 @@ export class FormBuilder extends LitElement {
   };
 
   declare config: FormConfig;
+  declare displayConfig: FormConfig;
   declare activeSectionIndex: number;
   declare selectedField: SelectedField | null;
   declare showPreview: boolean;
@@ -112,13 +117,18 @@ export class FormBuilder extends LitElement {
   declare showToolboxDrawer: boolean;
   declare showSettingsDrawer: boolean;
 
+  private settingsRevision = 0;
   private readonly fileInputRef = createRef<HTMLInputElement>();
   private readonly storageKey = 'deform-form-builder-config';
   private mobileQuery: MediaQueryList | null = null;
+  private readonly debouncedSyncDisplay = debounce(function (this: FormBuilder) {
+    this.displayConfig = this.config;
+  }, 200);
 
   constructor() {
     super();
     this.config = cloneConfig(defaultConfig);
+    this.displayConfig = this.config;
     this.activeSectionIndex = 0;
     this.selectedField = null;
     this.showPreview = false;
@@ -157,13 +167,24 @@ export class FormBuilder extends LitElement {
     return this.config.sections[this.activeSectionIndex];
   }
 
+  // Structural changes (add/remove/move fields, sections, clear, reset, import)
+  // update the canvas immediately. Settings panel changes go through
+  // this.config = updated directly and reach the canvas via debouncedSyncDisplay.
+  private setConfig(newConfig: FormConfig): void {
+    this.config = newConfig;
+    this.displayConfig = newConfig;
+  }
+
   override updated(changedProperties: Map<string, unknown>): void {
     if (changedProperties.has('config')) {
       this.applyThemeClass();
-      this.persistConfig();
+      this.debouncedSyncDisplay();
     }
-    if (changedProperties.has('activeSectionIndex') || changedProperties.has('config')) {
+    if (changedProperties.has('activeSectionIndex') || changedProperties.has('displayConfig')) {
       void this.syncActiveTab();
+    }
+    if (changedProperties.has('displayConfig')) {
+      this.persistConfig();
     }
     if (changedProperties.has('activeSettingsTab')) {
       void this.syncSettingsTab();
@@ -501,7 +522,7 @@ export class FormBuilder extends LitElement {
   }
 
   private renderCanvas(): TemplateResult {
-    if (!this.config.sections.length) {
+    if (!this.displayConfig.sections.length) {
       return html`
         <div class="empty-state">
           <sl-icon name="plus-circle" style="font-size: 2rem;"></sl-icon>
@@ -518,7 +539,7 @@ export class FormBuilder extends LitElement {
         <div>
           <h2 style="margin: 0;">Sections</h2>
           <div style="color: var(--sl-color-neutral-600); font-size: 0.9rem;">
-            ${this.config.sections.length} tab${this.config.sections.length === 1 ? '' : 's'}
+            ${this.displayConfig.sections.length} tab${this.displayConfig.sections.length === 1 ? '' : 's'}
           </div>
         </div>
         <div class="section-actions builder-section-actions">
@@ -529,7 +550,7 @@ export class FormBuilder extends LitElement {
           <sl-button
             size="small"
             variant="danger"
-            ?disabled=${this.config.sections.length <= 1}
+            ?disabled=${this.displayConfig.sections.length <= 1}
             @click=${this.removeSection}
           >
             <sl-icon slot="prefix" name="trash"></sl-icon>
@@ -543,7 +564,7 @@ export class FormBuilder extends LitElement {
         .active=${this.sectionPanelName(this.activeSectionIndex)}
         @sl-tab-show=${this.handleSectionTabShow}
       >
-        ${this.config.sections.map(
+        ${this.displayConfig.sections.map(
           (section, index) => html`
             <sl-tab
               slot="nav"
@@ -553,7 +574,7 @@ export class FormBuilder extends LitElement {
           `,
         )}
 
-        ${this.config.sections.map(
+        ${this.displayConfig.sections.map(
           (section, index) => html`
             <sl-tab-panel .name=${this.sectionPanelName(index)}>
               ${this.renderSectionCanvas(section, index)}
@@ -565,133 +586,139 @@ export class FormBuilder extends LitElement {
   }
 
   private renderSectionCanvas(section: FormSection, sectionIndex: number): TemplateResult {
-    if (!section.fields.length) {
-      return html`
-        <div
-          class="empty-state"
-          @dragover=${this.handleCanvasDragOver}
-          @dragleave=${this.handleCanvasDragLeave}
-          @drop=${(event: DragEvent) => this.handleCanvasDrop(event, sectionIndex)}
-        >
-          <sl-icon name=${this.isMobile ? 'plus-circle' : 'arrow-left'} style="font-size: 2rem;"></sl-icon>
-          <p>${this.isMobile ? 'Tap + to add fields.' : 'Drag fields here from the toolbox.'}</p>
-        </div>
-      `;
-    }
-
     return html`
       <div
-        class="canvas-list"
-        style="display: flex; flex-direction: column; gap: var(--sl-spacing-medium);"
+        class="section-canvas-drop-surface"
         @dragover=${this.handleCanvasDragOver}
         @dragleave=${this.handleCanvasDragLeave}
         @drop=${(event: DragEvent) => this.handleCanvasDrop(event, sectionIndex)}
       >
-        ${section.fields.map((field, index) => {
-          const isSelected =
-            this.selectedField?.sectionIndex === sectionIndex &&
-            this.selectedField?.fieldIndex === index;
-          const previewField: FieldConfig = {
-            ...field,
-            revealOn: undefined,
-          };
-          const previewConfig: FormConfig = {
-            sections: [{ name: 'preview', fields: [previewField] }],
-            theme: this.config.theme,
-            orientation: this.config.orientation,
-            accent: this.config.accent,
-            requireCommit: this.config.requireCommit,
-            markModifiedFields: this.config.markModifiedFields,
-            showModifiedCount: this.config.showModifiedCount,
-            allowDiscardChanges: this.config.allowDiscardChanges,
-          };
-          return html`
-            <div class="canvas-drop-zone ${this.dragOverIndex === index ? 'active' : ''}"></div>
-            <div
-              class="canvas-item ${isSelected ? 'selected' : ''}"
-              @click=${() => this.handleCanvasItemClick(sectionIndex, index)}
-              @dragend=${this.handleDragEnd}
-            >
-              <div class="canvas-item-header">
-                <div class="canvas-item-meta">
-                  ${
-                    this.isTouchDevice
-                      ? nothing
-                      : html`
-                          <span
-                            class="canvas-item-drag"
-                            aria-label="Drag to reorder field"
-                            draggable="true"
-                            @dragstart=${(event: DragEvent) => {
-                              event.stopPropagation();
-                              this.handleCanvasDragStart(event, sectionIndex, index);
-                            }}
-                          >
-                            <sl-icon name="grip-vertical"></sl-icon>
-                          </span>
-                        `
-                  }
-                  <span class="canvas-item-type">${field.type}</span>
+        ${
+          section.fields.length === 0
+            ? html`
+                <div class="empty-state canvas-empty-drop-target">
+                  <div
+                    class="canvas-drop-zone canvas-drop-zone-empty ${
+                      this.dragOverIndex === 0 ? 'active' : ''
+                    }"
+                  ></div>
+                  <sl-icon
+                    name=${this.isMobile ? 'plus-circle' : 'arrow-left'}
+                    style="font-size: 2rem;"
+                  ></sl-icon>
+                  <p>${this.isMobile ? 'Tap + to add fields.' : 'Drag fields here from the toolbox.'}</p>
                 </div>
-                <div class="canvas-item-actions">
-                  ${
-                    this.isTouchDevice
-                      ? html`
-                          <button
-                            type="button"
-                            class="touch-reorder-button"
-                            aria-label="Move field up"
-                            ?disabled=${index === 0}
-                            @click=${(event: Event) =>
-                              this.moveFieldByOffset(event, sectionIndex, index, -1)}
-                          >
-                            <sl-icon name="chevron-up"></sl-icon>
-                          </button>
-                          <button
-                            type="button"
-                            class="touch-reorder-button"
-                            aria-label="Move field down"
-                            ?disabled=${index === section.fields.length - 1}
-                            @click=${(event: Event) =>
-                              this.moveFieldByOffset(event, sectionIndex, index, 1)}
-                          >
-                            <sl-icon name="chevron-down"></sl-icon>
-                          </button>
-                        `
-                      : nothing
-                  }
-                  ${
-                    this.isMobile
-                      ? html`
-                          <sl-icon-button
-                            name="pencil"
-                            label="Edit field settings"
-                            @click=${(event: Event) =>
-                              this.openFieldSettings(event, sectionIndex, index)}
-                          ></sl-icon-button>
-                        `
-                      : nothing
-                  }
-                  <sl-icon-button
-                    name="trash"
-                    label="Delete field"
-                    @click=${(event: Event) => this.deleteField(event, sectionIndex, index)}
-                  ></sl-icon-button>
+              `
+            : html`
+                <div class="canvas-list">
+                  ${section.fields.map((field, index) => {
+                    const isSelected =
+                      this.selectedField?.sectionIndex === sectionIndex &&
+                      this.selectedField?.fieldIndex === index;
+                    const previewField: FieldConfig = {
+                      ...field,
+                      revealOn: undefined,
+                    };
+                    const previewConfig: FormConfig = {
+                      sections: [{ name: 'preview', fields: [previewField] }],
+                      theme: this.displayConfig.theme,
+                      orientation: this.displayConfig.orientation,
+                      accent: this.displayConfig.accent,
+                      requireCommit: this.displayConfig.requireCommit,
+                      markModifiedFields: this.displayConfig.markModifiedFields,
+                      showModifiedCount: this.displayConfig.showModifiedCount,
+                      allowDiscardChanges: this.displayConfig.allowDiscardChanges,
+                    };
+                    return html`
+                      <div class="canvas-drop-zone ${this.dragOverIndex === index ? 'active' : ''}"></div>
+                      <div
+                        class="canvas-item ${isSelected ? 'selected' : ''}"
+                        @click=${() => this.handleCanvasItemClick(sectionIndex, index)}
+                        @dragend=${this.handleDragEnd}
+                      >
+                        <div class="canvas-item-header">
+                          <div class="canvas-item-meta">
+                            ${
+                              this.isTouchDevice
+                                ? nothing
+                                : html`
+                                    <span
+                                      class="canvas-item-drag"
+                                      aria-label="Drag to reorder field"
+                                      draggable="true"
+                                      @dragstart=${(event: DragEvent) => {
+                                        event.stopPropagation();
+                                        this.handleCanvasDragStart(event, sectionIndex, index);
+                                      }}
+                                    >
+                                      <sl-icon name="grip-vertical"></sl-icon>
+                                    </span>
+                                  `
+                            }
+                            <span class="canvas-item-type">${field.type}</span>
+                          </div>
+                          <div class="canvas-item-actions">
+                            ${
+                              this.isTouchDevice
+                                ? html`
+                                    <button
+                                      type="button"
+                                      class="touch-reorder-button"
+                                      aria-label="Move field up"
+                                      ?disabled=${index === 0}
+                                      @click=${(event: Event) =>
+                                        this.moveFieldByOffset(event, sectionIndex, index, -1)}
+                                    >
+                                      <sl-icon name="chevron-up"></sl-icon>
+                                    </button>
+                                    <button
+                                      type="button"
+                                      class="touch-reorder-button"
+                                      aria-label="Move field down"
+                                      ?disabled=${index === section.fields.length - 1}
+                                      @click=${(event: Event) =>
+                                        this.moveFieldByOffset(event, sectionIndex, index, 1)}
+                                    >
+                                      <sl-icon name="chevron-down"></sl-icon>
+                                    </button>
+                                  `
+                                : nothing
+                            }
+                            ${
+                              this.isMobile
+                                ? html`
+                                    <sl-icon-button
+                                      name="pencil"
+                                      label="Edit field settings"
+                                      @click=${(event: Event) =>
+                                        this.openFieldSettings(event, sectionIndex, index)}
+                                    ></sl-icon-button>
+                                  `
+                                : nothing
+                            }
+                            <sl-icon-button
+                              name="trash"
+                              label="Delete field"
+                              @click=${(event: Event) => this.deleteField(event, sectionIndex, index)}
+                            ></sl-icon-button>
+                          </div>
+                        </div>
+                        <div class="canvas-preview">
+                          <de-form
+                            .fields=${previewConfig}
+                            theme=${previewConfig.theme ?? 'dark'}
+                            accent=${previewConfig.accent ?? 'sky'}
+                          ></de-form>
+                        </div>
+                      </div>
+                    `;
+                  })}
+                  <div
+                    class="canvas-drop-zone ${this.dragOverIndex === section.fields.length ? 'active' : ''}"
+                  ></div>
                 </div>
-              </div>
-              <div class="canvas-preview">
-                <de-form
-                  .fields=${previewConfig}
-                  theme=${previewConfig.theme ?? 'dark'}
-                  accent=${previewConfig.accent ?? 'sky'}
-                ></de-form>
-              </div>
-            </div>
-          `;
-        })}
-        <div
-          class="canvas-drop-zone ${this.dragOverIndex === section.fields.length ? 'active' : ''}"
-        ></div>
+              `
+        }
       </div>
     `;
   }
@@ -700,14 +727,14 @@ export class FormBuilder extends LitElement {
     return html`
       <div class="preview-card">
         <de-form
-          .fields=${this.config}
-          theme=${this.config.theme ?? 'dark'}
-          accent=${this.config.accent ?? 'sky'}
-          orientation=${this.config.orientation ?? 'portrait'}
-          .requireCommit=${this.config.requireCommit ?? false}
-          .markModifiedFields=${this.config.markModifiedFields ?? false}
-          .showModifiedCount=${this.config.showModifiedCount ?? false}
-          .allowDiscardChanges=${this.config.allowDiscardChanges ?? false}
+          .fields=${this.displayConfig}
+          theme=${this.displayConfig.theme ?? 'dark'}
+          accent=${this.displayConfig.accent ?? 'sky'}
+          orientation=${this.displayConfig.orientation ?? 'portrait'}
+          .requireCommit=${this.displayConfig.requireCommit ?? false}
+          .markModifiedFields=${this.displayConfig.markModifiedFields ?? false}
+          .showModifiedCount=${this.displayConfig.showModifiedCount ?? false}
+          .allowDiscardChanges=${this.displayConfig.allowDiscardChanges ?? false}
           @deform-tab-change=${this.handlePreviewTabChange}
         ></de-form>
       </div>
@@ -849,16 +876,168 @@ export class FormBuilder extends LitElement {
   private renderFieldSettings(field: FieldConfig): TemplateResult {
     const fields = getFieldSettingsFields(field);
     const values = buildFieldSettingsValues(field);
+    const fieldKey = `${this.selectedField?.sectionIndex}-${this.selectedField?.fieldIndex}-${this.settingsRevision}`;
 
     return html`
-      <de-form
-        .fields=${{ sections: [{ name: 'field', fields }] }}
-        .values=${values}
-        theme=${this.config.theme ?? 'dark'}
-        accent=${this.config.accent ?? 'sky'}
-        @deform-value-change=${this.handleFieldSettingsChange}
-      ></de-form>
+      ${keyed(
+        fieldKey,
+        html`<de-form
+          .fields=${{ sections: [{ name: 'field', fields }] }}
+          .values=${values}
+          theme=${this.config.theme ?? 'dark'}
+          accent=${this.config.accent ?? 'sky'}
+          @deform-value-change=${this.handleFieldSettingsChange}
+        ></de-form>`,
+      )}
+      ${hasOptions(field) ? this.renderOptionsEditor(field.options) : nothing}
+      ${field.type === 'toggleField' ? this.renderLabelsEditor(field.labels) : nothing}
     `;
+  }
+
+  private renderOptionsEditor(options: SelectOption[]): TemplateResult {
+    return html`
+      <div class="list-editor">
+        <div class="list-editor-header">
+          <label class="list-editor-label">Options</label>
+        </div>
+        <div class="list-editor-columns">
+          <span class="list-editor-col-title">Value</span>
+          <span class="list-editor-col-title">Label</span>
+          <span class="list-editor-col-action"></span>
+        </div>
+        ${options.map(
+          (option, index) => html`
+            <div class="list-editor-row">
+              <sl-input
+                size="small"
+                value=${String(option.value)}
+                @sl-change=${(e: Event) => this.handleOptionChange(index, 'value', e)}
+              ></sl-input>
+              <sl-input
+                size="small"
+                value=${option.label}
+                @sl-change=${(e: Event) => this.handleOptionChange(index, 'label', e)}
+              ></sl-input>
+              <sl-icon-button
+                name="dash-circle"
+                label="Remove option"
+                @click=${() => this.removeOption(index)}
+              ></sl-icon-button>
+            </div>
+          `,
+        )}
+        <sl-button size="small" @click=${this.addOption}>
+          <sl-icon slot="prefix" name="plus-circle"></sl-icon>
+          Add Option
+        </sl-button>
+      </div>
+    `;
+  }
+
+  private renderLabelsEditor(labels: string[]): TemplateResult {
+    return html`
+      <div class="list-editor">
+        <label class="list-editor-label">Toggle Labels</label>
+        ${labels.map(
+          (label, index) => html`
+            <div class="list-editor-row">
+              <sl-input
+                size="small"
+                placeholder="Label"
+                value=${label}
+                @sl-change=${(e: Event) => this.handleToggleLabelChange(index, e)}
+              ></sl-input>
+              <sl-icon-button
+                name="dash-circle"
+                label="Remove label"
+                @click=${() => this.removeToggleLabel(index)}
+              ></sl-icon-button>
+            </div>
+          `,
+        )}
+        <sl-button size="small" @click=${this.addToggleLabel}>
+          <sl-icon slot="prefix" name="plus-circle"></sl-icon>
+          Add Label
+        </sl-button>
+      </div>
+    `;
+  }
+
+  private getInputValue(target: EventTarget | null): string {
+    if (target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement) {
+      return target.value;
+    }
+    if (isRecord(target) && typeof target.value === 'string') {
+      return target.value;
+    }
+    return '';
+  }
+
+  private updateSelectedFieldConfig(mutate: (field: FieldConfig) => void): void {
+    if (!this.selectedField) return;
+    const { sectionIndex, fieldIndex } = this.selectedField;
+    const updated = cloneConfig(this.config);
+    const field = updated.sections[sectionIndex]?.fields[fieldIndex];
+    if (!field) return;
+    mutate(field);
+    updated.sections[sectionIndex].fields[fieldIndex] = field;
+    this.config = updated;
+  }
+
+  private handleOptionChange(index: number, part: 'value' | 'label', event: Event): void {
+    const val = this.getInputValue(event.target);
+    this.updateSelectedFieldConfig((field) => {
+      if (!hasOptions(field)) return;
+      const option = field.options[index];
+      if (!option) return;
+      if (part === 'value' && String(field.value) === String(option.value)) {
+        field.value = val;
+      }
+      option[part] = val;
+    });
+    this.settingsRevision += 1;
+    this.requestUpdate();
+  }
+
+  private addOption = (): void => {
+    this.updateSelectedFieldConfig((field) => {
+      if (!hasOptions(field)) return;
+      const n = field.options.length + 1;
+      field.options.push({ value: `option${n}`, label: `Option ${n}` });
+    });
+    this.settingsRevision += 1;
+    this.requestUpdate();
+  };
+
+  private removeOption(index: number): void {
+    this.updateSelectedFieldConfig((field) => {
+      if (!hasOptions(field)) return;
+      field.options.splice(index, 1);
+    });
+    this.settingsRevision += 1;
+    this.requestUpdate();
+  }
+
+  private handleToggleLabelChange(index: number, event: Event): void {
+    const val = this.getInputValue(event.target);
+    this.updateSelectedFieldConfig((field) => {
+      if (field.type !== 'toggleField') return;
+      field.labels[index] = val;
+    });
+  }
+
+  private addToggleLabel = (): void => {
+    this.updateSelectedFieldConfig((field) => {
+      if (field.type !== 'toggleField') return;
+      field.labels.push(`Label ${field.labels.length + 1}`);
+    });
+  };
+
+  private removeToggleLabel(index: number): void {
+    this.updateSelectedFieldConfig((field) => {
+      if (field.type !== 'toggleField') return;
+      field.labels.splice(index, 1);
+    });
   }
 
   private handleToolboxDragStart(event: DragEvent, type: FieldType): void {
@@ -918,6 +1097,7 @@ export class FormBuilder extends LitElement {
   private handleCanvasDrop(event: DragEvent, sectionIndex: number): void {
     event.preventDefault();
     event.stopPropagation();
+    this.cancelDragOverFrame();
     const container = event.currentTarget;
     const dropIndex =
       container instanceof HTMLElement ? this.getDropIndex(container, event.clientY) : undefined;
@@ -942,7 +1122,6 @@ export class FormBuilder extends LitElement {
   private dragPayload: SelectedField | null = null;
   private dragOverFrame: number | null = null;
   private lastDragOverY: number | null = null;
-  private lastDropIndex: number | null = null;
 
   private scheduleDragOverUpdate(container: HTMLElement, clientY: number): void {
     this.lastDragOverY = clientY;
@@ -952,8 +1131,7 @@ export class FormBuilder extends LitElement {
       const latestY = this.lastDragOverY;
       if (latestY === null) return;
       const nextIndex = this.getDropIndex(container, latestY);
-      if (nextIndex !== this.lastDropIndex) {
-        this.lastDropIndex = nextIndex;
+      if (nextIndex !== this.dragOverIndex) {
         this.dragOverIndex = nextIndex;
       }
     });
@@ -964,7 +1142,6 @@ export class FormBuilder extends LitElement {
     window.cancelAnimationFrame(this.dragOverFrame);
     this.dragOverFrame = null;
     this.lastDragOverY = null;
-    this.lastDropIndex = null;
   }
 
   private getDropIndex(container: HTMLElement, clientY: number): number {
@@ -1021,7 +1198,7 @@ export class FormBuilder extends LitElement {
     };
     const updated = cloneConfig(this.config);
     updated.sections.push(newSection);
-    this.config = updated;
+    this.setConfig(updated);
     this.activeSectionIndex = updated.sections.length - 1;
     this.selectedField = null;
     this.activeSettingsTab = 'section-settings';
@@ -1034,7 +1211,7 @@ export class FormBuilder extends LitElement {
     if (this.config.sections.length <= 1) return;
     const updated = cloneConfig(this.config);
     updated.sections.splice(this.activeSectionIndex, 1);
-    this.config = updated;
+    this.setConfig(updated);
     this.activeSectionIndex = Math.max(0, this.activeSectionIndex - 1);
     this.selectedField = null;
     this.activeSettingsTab = 'section-settings';
@@ -1048,7 +1225,7 @@ export class FormBuilder extends LitElement {
     const newField = this.createField(type, updated);
     const insertIndex = typeof targetIndex === 'number' ? targetIndex : section.fields.length;
     section.fields.splice(insertIndex, 0, newField);
-    this.config = updated;
+    this.setConfig(updated);
     this.selectedField = { sectionIndex: resolvedSectionIndex, fieldIndex: insertIndex };
     this.activeSettingsTab = 'field-settings';
   }
@@ -1059,7 +1236,7 @@ export class FormBuilder extends LitElement {
     const section = updated.sections[sectionIndex];
     if (!section) return;
     section.fields.splice(fieldIndex, 1);
-    this.config = updated;
+    this.setConfig(updated);
     if (
       this.selectedField &&
       this.selectedField.sectionIndex === sectionIndex &&
@@ -1087,7 +1264,7 @@ export class FormBuilder extends LitElement {
     }
     insertIndex = Math.max(0, Math.min(insertIndex, toSection.fields.length));
     toSection.fields.splice(insertIndex, 0, moved);
-    this.config = updated;
+    this.setConfig(updated);
     this.selectedField = { sectionIndex: toSectionIndex, fieldIndex: insertIndex };
   }
 
@@ -1208,14 +1385,7 @@ export class FormBuilder extends LitElement {
       updated.sections[this.selectedField.sectionIndex]?.fields[this.selectedField.fieldIndex];
     if (!field) return;
 
-    if (fieldName === 'optionsRaw') {
-      const options = this.parseOptions(newValue);
-      if ('options' in field) {
-        field.options = options;
-      }
-    } else if (fieldName === 'toggleLabels' && field.type === 'toggleField') {
-      field.labels = this.parseToggleLabels(newValue);
-    } else if (fieldName === 'labelActionName' || fieldName === 'labelActionLabel') {
+    if (fieldName === 'labelActionName' || fieldName === 'labelActionLabel') {
       const name = fieldName === 'labelActionName' ? newValue : (field.labelAction?.name ?? '');
       const label = fieldName === 'labelActionLabel' ? newValue : (field.labelAction?.label ?? '');
       const nextName = toOptionalString(name) ?? '';
@@ -1485,8 +1655,13 @@ export class FormBuilder extends LitElement {
         return;
       case 'defaultTo':
         if (field.type === 'toggleField') {
-          const value = toOptionalNumber(rawValue);
-          field.defaultTo = value === 1 ? 1 : 0;
+          const boolValue = toOptionalBoolean(rawValue);
+          if (boolValue !== undefined) {
+            field.defaultTo = boolValue ? 1 : 0;
+            return;
+          }
+          const numberValue = toOptionalNumber(rawValue);
+          field.defaultTo = numberValue === 1 ? 1 : 0;
         } else if (field.type === 'checkbox' || field.type === 'toggle') {
           field.defaultTo = toOptionalBoolean(rawValue);
         } else if (field.type === 'color') {
@@ -1503,29 +1678,6 @@ export class FormBuilder extends LitElement {
     }
   }
 
-  private parseOptions(value: FormValue): SelectOption[] {
-    const raw = typeof value === 'string' ? value : '';
-    return raw
-      .split('\n')
-      .map((line) => line.trim())
-      .filter(Boolean)
-      .map((line) => {
-        const [valuePart, labelPart] = line.split(':');
-        const value = valuePart?.trim() ?? '';
-        const label = labelPart?.trim() ?? value;
-        return { value, label };
-      })
-      .filter((option) => option.value.length > 0);
-  }
-
-  private parseToggleLabels(value: FormValue): string[] {
-    if (typeof value !== 'string') return [];
-    return value
-      .split('\n')
-      .map((line) => line.trim())
-      .filter(Boolean);
-  }
-
   private getChangeDetail(event: Event): { fieldName: string; newValue: FormValue } | null {
     if (!(event instanceof CustomEvent)) return null;
     if (!isDeFormValueChangeDetail(event.detail)) return null;
@@ -1538,7 +1690,7 @@ export class FormBuilder extends LitElement {
         ? true
         : window.confirm('Clear the current form and start fresh?');
     if (!shouldClear) return;
-    this.config = { sections: [{ name: 'main', fields: [] }] };
+    this.setConfig({ sections: [{ name: 'main', fields: [] }] });
     this.activeSectionIndex = 0;
     this.selectedField = null;
     this.closeMobileDrawers();
@@ -1556,7 +1708,7 @@ export class FormBuilder extends LitElement {
     } catch {
       // Ignore storage failures.
     }
-    this.config = cloneConfig(defaultConfig);
+    this.setConfig(cloneConfig(defaultConfig));
     this.activeSectionIndex = 0;
     this.selectedField = null;
     this.closeMobileDrawers();
@@ -1677,8 +1829,8 @@ export class FormBuilder extends LitElement {
   };
 
   private handleCodeEditorInput = (event: Event): void => {
-    const nextValue = this.getInputValue(event);
-    if (nextValue === null) return;
+    const nextValue = this.getInputValue(event.target);
+    if (!nextValue) return;
     this.codeEditorValue = nextValue;
     this.codeValidation = this.validateCodeInput(nextValue);
   };
@@ -1731,16 +1883,9 @@ export class FormBuilder extends LitElement {
     }
   }
 
-  private getInputValue(event: Event): string | null {
-    const target = event.target;
-    if (!isRecord(target)) return null;
-    const value = target.value;
-    return typeof value === 'string' ? value : null;
-  }
-
   private applyImportedConfig(config: FormConfig, source: 'file' | 'code'): void {
     const warnings = collectConfigWarnings(config);
-    this.config = cloneConfig(config);
+    this.setConfig(cloneConfig(config));
     this.activeSectionIndex = 0;
     this.selectedField = null;
     this.closeMobileDrawers();
@@ -1931,7 +2076,7 @@ export class FormBuilder extends LitElement {
       if (!raw) return;
       const parsed: unknown = JSON.parse(raw);
       if (!isFormConfig(parsed)) return;
-      this.config = cloneConfig(parsed);
+      this.setConfig(cloneConfig(parsed));
     } catch {
       // Ignore storage failures and keep default config.
     }
