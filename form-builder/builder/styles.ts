@@ -34,6 +34,7 @@ export const builderStyles = css`
     gap: var(--sl-spacing-small);
     align-items: center;
     margin-left: auto;
+    flex-wrap: wrap;
   }
 
   .header-actions sl-button::part(base) {
@@ -184,6 +185,7 @@ export const builderStyles = css`
 
   .canvas {
     flex: 1;
+    min-width: 0;
     background: var(--sl-color-neutral-100);
     padding: var(--sl-spacing-large);
     overflow-y: auto;
@@ -241,8 +243,18 @@ export const builderStyles = css`
   }
 
   .canvas-list {
+    display: flex;
+    flex-direction: column;
     flex: 1 1 auto;
     min-height: 0;
+    gap: var(--sl-spacing-medium);
+    padding-bottom: calc(var(--sl-spacing-large) * 2);
+  }
+
+  .canvas-list::after {
+    content: '';
+    display: block;
+    height: var(--sl-spacing-large);
   }
 
   .properties {
@@ -261,6 +273,32 @@ export const builderStyles = css`
     margin-bottom: var(--sl-spacing-medium);
   }
 
+  .section-actions {
+    display: flex;
+    gap: var(--sl-spacing-small);
+  }
+
+  .builder-section-header {
+    flex-wrap: wrap;
+    align-items: flex-start;
+  }
+
+  .builder-section-header > div:first-child {
+    min-width: 0;
+  }
+
+  .builder-section-actions {
+    min-width: 0;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+  }
+
+  .toolbox-grid {
+    display: grid;
+    gap: var(--sl-spacing-small);
+    grid-template-columns: minmax(0, 1fr);
+  }
+
   .field-item {
     display: flex;
     align-items: center;
@@ -271,6 +309,9 @@ export const builderStyles = css`
     border-radius: var(--sl-border-radius-medium);
     cursor: grab;
     transition: border-color 0.2s ease, color 0.2s ease;
+    min-height: 44px;
+    box-sizing: border-box;
+    user-select: none;
   }
 
   .field-item:hover {
@@ -285,6 +326,7 @@ export const builderStyles = css`
     border-radius: var(--sl-border-radius-medium);
     cursor: pointer;
     position: relative;
+    min-height: 44px;
   }
 
   .canvas-item.selected {
@@ -326,6 +368,47 @@ export const builderStyles = css`
     align-items: center;
     justify-content: space-between;
     margin-bottom: var(--sl-spacing-small);
+  }
+
+  .canvas-item-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--sl-spacing-2x-small);
+  }
+
+  .touch-reorder-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    padding: 0;
+    border: 0;
+    border-radius: var(--sl-border-radius-medium);
+    background: transparent;
+    color: var(--sl-color-neutral-600);
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    appearance: none;
+  }
+
+  .touch-reorder-button sl-icon {
+    font-size: 1rem;
+  }
+
+  .touch-reorder-button:disabled {
+    color: var(--sl-color-neutral-400);
+    cursor: default;
+  }
+
+  .touch-reorder-button:hover,
+  .touch-reorder-button:focus,
+  .touch-reorder-button:focus-visible,
+  .touch-reorder-button:active {
+    background: transparent;
+    color: var(--sl-color-neutral-600);
+    outline: none;
+    box-shadow: none;
   }
 
   .canvas-item-meta {
@@ -418,6 +501,116 @@ export const builderStyles = css`
     color: var(--sl-color-neutral-600);
     text-transform: uppercase;
     letter-spacing: 0.05em;
+  }
+
+  .mobile-header-button::part(base) {
+    box-shadow: none;
+  }
+
+  .mobile-fab {
+    position: fixed;
+    right: max(var(--sl-spacing-medium), env(safe-area-inset-right, 0px));
+    bottom: max(var(--sl-spacing-medium), env(safe-area-inset-bottom, 0px));
+    z-index: 15;
+  }
+
+  .mobile-fab::part(base) {
+    width: 3.5rem;
+    height: 3.5rem;
+    box-shadow: var(--sl-shadow-large);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+  }
+
+  .mobile-fab::part(label) {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    line-height: 1;
+  }
+
+  .mobile-drawer {
+    --size: min(78vh, 40rem);
+  }
+
+  .mobile-drawer::part(panel) {
+    border-top-left-radius: var(--sl-border-radius-large);
+    border-top-right-radius: var(--sl-border-radius-large);
+  }
+
+  .mobile-drawer::part(body) {
+    padding-bottom: calc(var(--sl-spacing-large) + env(safe-area-inset-bottom, 0px));
+  }
+
+  @media (max-width: 960px) {
+    .header {
+      padding: 0 var(--sl-spacing-small);
+    }
+
+    .header-actions {
+      width: 100%;
+      justify-content: flex-end;
+    }
+
+    .main {
+      height: calc(100% - var(--header-height));
+    }
+
+    .canvas {
+      padding: var(--sl-spacing-medium);
+      padding-bottom: calc(5rem + env(safe-area-inset-bottom, 0px));
+    }
+
+    .preview-card {
+      padding: var(--sl-spacing-medium);
+      border-radius: var(--sl-border-radius-medium);
+    }
+
+    .section-header {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      align-items: flex-start;
+      justify-content: stretch;
+    }
+
+    .section-header > div:first-child {
+      width: 100%;
+    }
+
+    .section-actions {
+      width: 100%;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: var(--sl-spacing-medium);
+      margin-top: var(--sl-spacing-small);
+    }
+
+    .section-actions sl-button {
+      display: block;
+      width: 100%;
+    }
+
+    .toolbox-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .field-item {
+      cursor: pointer;
+    }
+
+    .canvas-item {
+      cursor: default;
+    }
+
+    .import-summary {
+      top: var(--sl-spacing-small);
+      right: var(--sl-spacing-small);
+      width: min(420px, calc(100% - 1rem));
+    }
   }
 
   .list-editor {

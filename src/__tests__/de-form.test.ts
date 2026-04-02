@@ -47,6 +47,29 @@ describe('DeForm component', () => {
     expect(getDynBoolean(form, '__name_is_dirty')).toBe(false);
   });
 
+  it('applies top-level form configuration properties when fields are assigned', () => {
+    const form = new DeForm();
+
+    form.fields = {
+      ...sampleFields,
+      theme: 'light',
+      accent: 'rose',
+      orientation: 'landscape',
+      requireCommit: true,
+      markModifiedFields: true,
+      showModifiedCount: true,
+      allowDiscardChanges: true,
+    };
+
+    expect(form.theme).toBe('light');
+    expect(form.accent).toBe('rose');
+    expect(form.orientation).toBe('landscape');
+    expect(form.requireCommit).toBe(true);
+    expect(form.markModifiedFields).toBe(true);
+    expect(form.showModifiedCount).toBe(true);
+    expect(form.allowDiscardChanges).toBe(true);
+  });
+
   it('preserves dirty edits when new values arrive', () => {
     const form = new DeForm();
     form.fields = sampleFields;

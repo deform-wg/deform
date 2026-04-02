@@ -1,7 +1,7 @@
 {
-  "name": "deform",
-  "version": "0.1.0",
-  "description": "An open-source form builder that renders forms from structured config",
+  "name": "@deform-wg/deform",
+  "version": "1.0.0-alpha.1",
+  "description": "An open-source, config-driven dynamic form renderer built with web components.",
   "type": "module",
   "alias": {
     "deform": "./src/index.ts"
@@ -20,19 +20,16 @@
     }
   },
   "typings": "./dist/index.d.ts",
-  "files": [
-    "dist",
-    "src"
-  ],
   "scripts": {
-    "build": "npm run check:builder-field-types && parcel build --target lib && npm run build:types",
-    "build:types": "tsc --emitDeclarationOnly --outDir dist",
-    "build:watch": "parcel watch --target lib",
+    "build": "npm run check:builder-field-types && parcel build --target lib --cache-dir .parcel-cache/lib --no-source-maps && npm run build:types",
+    "build:types": "tsc --project tsconfig.build.json",
+    "build:watch": "parcel watch --target lib --cache-dir .parcel-cache/lib",
     "check:builder-field-types": "node scripts/check-builder-field-types.js",
     "dev": "npm run check:builder-field-types && npm run build:watch",
-    "preform-builder": "npm run clean",
-    "form-builder": "npm run check:builder-field-types && parcel form-builder/index.html --port 8000 --no-source-maps",
-    "form-builder:build": "npm run check:builder-field-types && parcel build --target form-builder --public-url ./ --no-source-maps",
+    "preform-builder": "npm run clean:form-builder",
+    "preform-builder:build": "npm run clean:form-builder",
+    "form-builder": "npm run check:builder-field-types && parcel serve --target form-builder --dist-dir form-builder/dist --cache-dir .parcel-cache/form-builder --port 8000 --no-source-maps",
+    "form-builder:build": "npm run check:builder-field-types && parcel build --target form-builder --cache-dir .parcel-cache/form-builder --public-url ./ --no-source-maps",
     "type-check": "tsc --noEmit",
     "lint:biome": "biome check .",
     "lint:biome:fix": "biome check --write .",
@@ -41,8 +38,10 @@
     "lint": "npm run lint:biome && npm run lint:eslint",
     "lint:fix": "npm run lint:biome:fix && npm run lint:eslint:fix",
     "format": "biome format --write .",
-    "clean": "rm -rf dist .parcel-cache form-builder/dist form-builder/.parcel-cache",
-    "prebuild": "npm run clean",
+    "clean": "rm -rf dist form-builder/dist .parcel-cache",
+    "clean:lib": "rm -rf dist .parcel-cache/lib",
+    "clean:form-builder": "rm -rf form-builder/dist .parcel-cache/form-builder",
+    "prebuild": "npm run clean:lib",
     "test": "npm run type-check && npm run lint && npx vitest run"
   },
   "keywords": [
@@ -52,7 +51,6 @@
     "web-components",
     "typescript"
   ],
-  "author": "DeForm Team",
   "license": "MIT",
   "devDependencies": {
     "@biomejs/biome": "^2.3.11",
@@ -74,5 +72,30 @@
   "dependencies": {
     "@shoelace-style/shoelace": "^2.20.1",
     "lit": "^3.3.1"
-  }
+  },
+  "homepage": "https://github.com/deform-wg/deform#readme",
+  "bugs": {
+    "url": "https://github.com/deform-wg/deform/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/deform-wg/deform.git"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "publishConfig": {
+    "access": "public",
+    "tag": "alpha"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ]
 }

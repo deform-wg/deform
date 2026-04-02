@@ -11,13 +11,44 @@ An open-source, config-driven dynamic form renderer built with web components.
 
 ## Quick Start
 
-...
+Import the package once, then render a form:
 
-## Installation (not yet published)
+```ts
+import '@deform-wg/deform';
+
+const form = document.querySelector('de-form');
+
+form.fields = {
+  theme: 'light',
+  accent: 'sky',
+  sections: [
+    {
+      name: 'profile',
+      submitLabel: 'Save',
+      fields: [
+        {
+          name: 'name',
+          type: 'text',
+          label: 'Name',
+          required: true,
+        },
+      ],
+    },
+  ],
+};
+```
+
+The `@deform-wg/deform` entrypoint registers the custom element and loads both Shoelace light/dark theme styles automatically, so the form renders correctly with a single import.
+
+## Installation
 
 ```bash
-npm install deform (or something)
+npm install @deform-wg/deform@alpha
 ```
+
+The component also respects top-level form config such as `theme`, `accent`, `orientation`, `requireCommit`, `markModifiedFields`, `showModifiedCount`, and `allowDiscardChanges`.
+
+If consumers want to switch themes later, they can set `theme: 'light' | 'dark'` in the config or update the `de-form` element's `theme` property directly.
 
 ## Development
 

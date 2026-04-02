@@ -1,5 +1,9 @@
 // Main entry point for the deform package
+import { ensureAllThemeStyles } from './theme/shoelace-theme.js';
 import './de-form.js';
+
+// Load both theme styles so consumers only need one import.
+ensureAllThemeStyles();
 
 // Export the DeForm class for programmatic usage
 export { DeForm } from './de-form.js';
