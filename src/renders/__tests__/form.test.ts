@@ -1,5 +1,5 @@
 import { render } from 'lit';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { DeForm } from '../../de-form.js';
 import type { FormConfig, TextFieldConfig } from '../../typedefs/index.js';
 import { setDynNumber } from '../../utils/dynamic-props.js';
@@ -61,6 +61,7 @@ describe('renderers/form', () => {
     const form = new DeForm();
     form.allowDiscardChanges = true;
     form.onSubmit = async () => {};
+    form.onBack = vi.fn();
     form._celebrate = false;
     form._loading = false;
 
@@ -71,9 +72,47 @@ describe('renderers/form', () => {
     render(template, container);
 
     expect(container.querySelector('#profile__reset_button')).not.toBeNull();
+    const backButton = container.querySelector('sl-button[variant="default"]');
+    expect(backButton).not.toBeNull();
+    backButton?.dispatchEvent(new Event('click'));
+    expect(form.onBack).toHaveBeenCalledTimes(1);
     const saveButton = container.querySelector('#profile__save_button');
     expect(saveButton).not.toBeNull();
     expect(saveButton?.hasAttribute('disabled')).toBe(false);
+  });
+
+  it('does not render a back button when onBack is unset', () => {
+    const form = new DeForm();
+    form.onSubmit = async () => {};
+
+    setDynNumber(form, '_form_profile_count', 1);
+
+    const template = _generateFormControls.call(form, { formId: 'profile' });
+    const container = document.createElement('div');
+    render(template, container);
+
+    expect(container.querySelector('sl-button[variant="default"]')).toBeNull();
+  });
+
+  it('preserves submit width when celebrating without a success label', () => {
+    const form = new DeForm();
+    form.onSubmit = async () => {};
+    form._celebrate = true;
+    form._loading = false;
+
+    setDynNumber(form, '_form_profile_count', 1);
+
+    const template = _generateFormControls.call(form, {
+      formId: 'profile',
+      submitLabel: 'Much Connect',
+    });
+    const container = document.createElement('div');
+    render(template, container);
+
+    expect(container.querySelector('.submit-success-state')).not.toBeNull();
+    expect(container.querySelector('.submit-success-placeholder')?.textContent).toContain(
+      'Much Connect',
+    );
   });
 
   it('renders multiple sections as tab group', () => {

@@ -30,6 +30,8 @@ describe('DeForm component', () => {
 
     expect(form.theme).toBe('dark');
     expect(form.accent).toBe('sky');
+    expect(form.onBack).toBeUndefined();
+    expect(form.backLabel).toBe('Back');
     expect(form.requireCommit).toBe(false);
     expect(form.markModifiedFields).toBe(false);
     expect(form.allowDiscardChanges).toBe(false);
