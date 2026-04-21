@@ -1,6 +1,7 @@
 import type { TemplateResult } from 'lit';
 import { html } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
+import { repeat } from 'lit/directives/repeat.js';
 import type { DeForm, SelectFieldConfig, SelectOption } from '../../typedefs/index.js';
 import { getDynBoolean, getDynFormValue } from '../../utils/dynamic-props.js';
 
@@ -36,7 +37,9 @@ export function _render_select(
       @sl-hide=${(e: Event) => e.stopPropagation()}
       >
       ${options.labelEl}
-      ${field.options.map(
+      ${repeat(
+        field.options,
+        (option: SelectOption) => `${String(option.value)}:${option.label}`,
         (option: SelectOption) => html`
         <sl-option .value=${option.value}>${option.label}</sl-option>
       `,

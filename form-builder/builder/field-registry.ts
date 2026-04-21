@@ -1,4 +1,4 @@
-import type { FieldConfig, FormConfig, FormValue } from '../../src/typedefs/index.js';
+import type { FieldConfig, FormConfig, FormValue, SelectOption } from '../../src/typedefs/index.js';
 import type { FieldDefinition, FieldType, FieldTypeOption } from './types.js';
 import { stringifyRevealOn, suggestKey } from './utils.js';
 
@@ -71,41 +71,48 @@ const SEEDPHRASE_SETTINGS: FieldConfig[] = [
 ];
 
 const SELECT_SETTINGS: FieldConfig[] = [
-  {
-    name: 'optionsRaw',
-    type: 'textarea',
-    label: 'Options (value:label)',
-    help: 'One option per line. Example: us:United States',
-  },
   { name: 'multiple', type: 'toggle', label: 'Multiple' },
   { name: 'clearable', type: 'toggle', label: 'Clearable' },
   { name: 'maxOptionsVisible', type: 'number', label: 'Max Options Visible' },
   { name: 'hoist', type: 'toggle', label: 'Hoist' },
 ];
 
-const RADIO_SETTINGS: FieldConfig[] = [
-  {
-    name: 'optionsRaw',
-    type: 'textarea',
-    label: 'Options (value:label)',
-    help: 'One option per line. Example: us:United States',
-  },
-];
+const RADIO_SETTINGS: FieldConfig[] = [];
 
 const CHECKBOX_SETTINGS: FieldConfig[] = [
-  { name: 'defaultTo', type: 'toggle', label: 'Default Checked' },
+  {
+    name: 'defaultTo',
+    type: 'select',
+    label: 'Default Value',
+    options: [
+      { value: 'true', label: 'true' },
+      { value: 'false', label: 'false' },
+    ],
+  },
   { name: 'indeterminate', type: 'toggle', label: 'Indeterminate' },
 ];
 
-const TOGGLE_SETTINGS: FieldConfig[] = [{ name: 'defaultTo', type: 'toggle', label: 'Default On' }];
+const TOGGLE_SETTINGS: FieldConfig[] = [
+  {
+    name: 'defaultTo',
+    type: 'select',
+    label: 'Default Value',
+    options: [
+      { value: 'true', label: 'true' },
+      { value: 'false', label: 'false' },
+    ],
+  },
+];
 
 const TOGGLE_FIELD_SETTINGS: FieldConfig[] = [
-  { name: 'defaultTo', type: 'number', label: 'Default Variant (0 or 1)' },
   {
-    name: 'toggleLabels',
-    type: 'textarea',
-    label: 'Toggle Labels',
-    help: 'One label per line.',
+    name: 'defaultTo',
+    type: 'select',
+    label: 'Default Value',
+    options: [
+      { value: 'true', label: 'true' },
+      { value: 'false', label: 'false' },
+    ],
   },
 ];
 
@@ -213,8 +220,34 @@ export const FIELD_TYPE_OPTIONS: FieldTypeOption[] = FIELD_TYPE_ORDER.map((type)
 
 export function getFieldSettingsFields(field: FieldConfig): FieldConfig[] {
   const definition = isFieldType(field.type) ? FIELD_DEFINITIONS[field.type] : undefined;
-  if (!definition) return [...BASE_FIELD_SETTINGS];
-  return [...BASE_FIELD_SETTINGS, ...definition.settings];
+  const base = BASE_FIELD_SETTINGS.flatMap((f) => {
+    if (f.name !== 'value') return [f];
+    if (field.type === 'checkbox' || field.type === 'toggle' || field.type === 'toggleField') {
+      return [];
+    }
+    if (hasOptions(field)) {
+      return [
+        {
+          name: 'value',
+          type: 'select' as const,
+          label: 'Default Value',
+          options: field.options,
+          clearable: true,
+        },
+      ];
+    }
+    return [f];
+  });
+  if (!definition) return base;
+  return [...base, ...definition.settings];
+}
+
+export function hasOptions(field: FieldConfig): field is FieldConfig & { options: SelectOption[] } {
+  return (
+    (field.type === 'select' || field.type === 'radio' || field.type === 'radioButton') &&
+    'options' in field &&
+    Array.isArray(field.options)
+  );
 }
 
 export function buildFieldSettingsValues(field: FieldConfig): Record<string, FormValue> {
@@ -342,15 +375,8 @@ export function buildFieldSettingsValues(field: FieldConfig): Record<string, For
     baseValues.swatches = field.swatches;
   }
 
-  if (field.type === 'select' || field.type === 'radio' || field.type === 'radioButton') {
-    baseValues.optionsRaw = (field.options ?? [])
-      .map((option) => `${option.value}:${option.label}`)
-      .join('\n');
-  }
-
   if (field.type === 'toggleField') {
-    baseValues.defaultTo = field.defaultTo ?? 0;
-    baseValues.toggleLabels = field.labels?.join('\n') ?? '';
+    baseValues.defaultTo = field.defaultTo === 1 ? 'true' : 'false';
   }
 
   return baseValues;
