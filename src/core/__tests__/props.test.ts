@@ -82,6 +82,15 @@ describe('_initializeFormFieldProperties', () => {
             { name: 'title', type: 'text', value: 'hello' },
             { name: 'volume', type: 'range', min: 0, max: 10, value: 5 },
             { name: 'enabled', type: 'toggle', value: true },
+            {
+              name: 'network',
+              type: 'select',
+              value: 'mainnet',
+              options: [
+                { value: 'mainnet', label: 'Mainnet' },
+                { value: 'testnet', label: 'Testnet' },
+              ],
+            },
           ],
         },
       ],
@@ -92,5 +101,6 @@ describe('_initializeFormFieldProperties', () => {
     expect(getDynFormValue(form, '_title')).toBe('hello');
     expect(getDynFormValue(form, '_volume')).toBe(5);
     expect(getDynFormValue(form, '_enabled')).toBe(true);
+    expect(getDynFormValue(form, '_network')).toBe('mainnet');
   });
 });

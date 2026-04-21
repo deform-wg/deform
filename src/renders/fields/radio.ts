@@ -11,6 +11,7 @@ const ifd = ifDefined;
  */
 export function _render_radio(this: DeForm, field: RadioFieldConfig): TemplateResult {
   const { currentKey, isDirtyKey } = this.propKeys(field.name);
+  const fieldOptions = Array.isArray(field.options) ? field.options : [];
   return html`
     <sl-radio-group
       name=${field.name}
@@ -21,7 +22,7 @@ export function _render_radio(this: DeForm, field: RadioFieldConfig): TemplateRe
       ?data-dirty-field=${getDynBoolean(this, isDirtyKey)}
       @sl-change=${this._handleChoice}
     >
-      ${field.options.map(
+      ${fieldOptions.map(
         (option: SelectOption) => html`
         <sl-radio
           value=${option.value}

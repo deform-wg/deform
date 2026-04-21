@@ -20,6 +20,7 @@ export function _render_select(
   options: RenderOptions,
 ): TemplateResult {
   const { currentKey, isDirtyKey } = this.propKeys(field.name);
+  const fieldOptions = Array.isArray(field.options) ? field.options : [];
   return html`
     <sl-select
       name=${field.name}
@@ -38,7 +39,7 @@ export function _render_select(
       >
       ${options.labelEl}
       ${repeat(
-        field.options,
+        fieldOptions,
         (option: SelectOption) => `${String(option.value)}:${option.label}`,
         (option: SelectOption) => html`
         <sl-option .value=${option.value}>${option.label}</sl-option>
