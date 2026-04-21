@@ -166,23 +166,19 @@ export function _generateField(this: DeForm, field: FieldConfig): TemplateResult
     `;
   } catch (fieldRenderError) {
     console.error('Dynamic form field error:', { field, fieldRenderError });
-    return this._generateErrorField(field, `Failed to render ${field.type} field`);
+    return this._generateErrorField(field);
   }
 }
 
 /**
  * Generates an error field display when a field fails to render.
  */
-export function _generateErrorField(
-  this: DeForm,
-  field: FieldConfig,
-  helpText: string = `${field.type} is not a valid field type`,
-): TemplateResult {
+export function _generateErrorField(this: DeForm, field: FieldConfig): TemplateResult {
   return html`
     <div class="form-control render-error" no-collect>
       <sl-input
         label="Field Error"
-        help-text=${helpText}
+        help-text="${field.type} is not a valid field type"
         value=${field.type}
       >
         <sl-icon name="exclamation-diamond" slot="prefix"></sl-icon>

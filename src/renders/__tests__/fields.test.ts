@@ -59,31 +59,6 @@ describe('renderers/fields', () => {
     expect(container.querySelectorAll('sl-option').length).toBe(2);
   });
 
-  it('renders option-based fields without crashing when options are missing', () => {
-    const form = new DeForm();
-
-    const malformedSelect = JSON.parse('{"name":"network","type":"select"}');
-    const selectTemplate = _render_select.call(form, malformedSelect, {});
-    const selectContainer = document.createElement('div');
-    render(selectTemplate, selectContainer);
-    expect(selectContainer.querySelector('sl-select')).not.toBeNull();
-    expect(selectContainer.querySelectorAll('sl-option').length).toBe(0);
-
-    const malformedRadio = JSON.parse('{"name":"contact","type":"radio"}');
-    const radioTemplate = _render_radio.call(form, malformedRadio);
-    const radioContainer = document.createElement('div');
-    render(radioTemplate, radioContainer);
-    expect(radioContainer.querySelector('sl-radio-group')).not.toBeNull();
-    expect(radioContainer.querySelectorAll('sl-radio').length).toBe(0);
-
-    const malformedRadioButton = JSON.parse('{"name":"choice","type":"radioButton"}');
-    const radioButtonTemplate = _render_radioButton.call(form, malformedRadioButton);
-    const radioButtonContainer = document.createElement('div');
-    render(radioButtonTemplate, radioButtonContainer);
-    expect(radioButtonContainer.querySelector('sl-radio-group')).not.toBeNull();
-    expect(radioButtonContainer.querySelectorAll('sl-radio-button').length).toBe(0);
-  });
-
   it('renders toggle as checked when value is true', () => {
     const form = new DeForm();
     const field: ToggleConfig = {

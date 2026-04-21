@@ -536,7 +536,7 @@ export interface DeForm {
   _generateField: (
     field: FieldConfig,
   ) => import('lit').TemplateResult | typeof import('lit').nothing;
-  _generateErrorField: (field: FieldConfig, helpText?: string) => import('lit').TemplateResult;
+  _generateErrorField: (field: FieldConfig) => import('lit').TemplateResult;
   _generateFormControls: (options: {
     formId: string;
     submitLabel?: string;
