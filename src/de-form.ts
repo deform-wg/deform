@@ -94,7 +94,7 @@ class DeForm extends LitElement {
   declare _dispatchEvent: (name: string, detail: Record<string, unknown>) => void;
   declare _generateOneOrManyForms: (data: FormConfig) => TemplateResult;
   declare _generateField: (field: FieldConfig) => TemplateResult | typeof import('lit').nothing;
-  declare _generateErrorField: (field: FieldConfig) => TemplateResult;
+  declare _generateErrorField: (field: FieldConfig, helpText?: string) => TemplateResult;
   declare _generateFormControls: (options: {
     formId: string;
     submitLabel?: string;

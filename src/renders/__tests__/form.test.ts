@@ -57,6 +57,24 @@ describe('renderers/form', () => {
     expect(container.querySelector('.render-error')).not.toBeNull();
   });
 
+  it('shows a render error message when a field renderer throws', () => {
+    const form = new DeForm();
+    const field = { name: 'network', type: 'text', label: 'Network' } as const;
+    Object.defineProperty(form, '_render_text', {
+      value: () => {
+        throw new Error('boom');
+      },
+    });
+
+    const template = _generateField.call(form, field);
+    const container = document.createElement('div');
+    render(template, container);
+
+    const errorField = container.querySelector('.render-error sl-input');
+    expect(errorField).not.toBeNull();
+    expect(errorField?.getAttribute('help-text')).toBe('Failed to render text field');
+  });
+
   it('renders form controls based on change count and options', () => {
     const form = new DeForm();
     form.allowDiscardChanges = true;
