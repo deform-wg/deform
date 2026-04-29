@@ -514,6 +514,10 @@ export interface DeForm {
   allowDiscardChanges: boolean;
   /** Color accent */
   accent: string;
+  /** Optional back action rendered at the start of the footer actions row */
+  onBack: (() => void) | undefined;
+  /** Label for the optional back action button */
+  backLabel: string;
 
   // Internal state properties
   _activeFormId: string | null;

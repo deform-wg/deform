@@ -81,6 +81,8 @@ class DeForm extends LitElement {
   declare allowDiscardChanges: boolean;
   /** Primary accent palette name applied to the host element. */
   declare accent: string;
+  declare onBack: (() => void) | undefined;
+  declare backLabel: string;
   declare _activeFormId: string | null;
   declare _initializing: boolean;
   declare _rules: ValidationRule[];
@@ -137,6 +139,8 @@ class DeForm extends LitElement {
       theme: { type: String },
       orientation: { type: String },
       onSubmit: { type: Object, attribute: false },
+      onBack: { type: Object, attribute: false },
+      backLabel: { type: String },
       requireCommit: { type: Boolean },
       markModifiedFields: { type: Boolean },
       showModifiedCount: { type: Boolean },
@@ -165,6 +169,8 @@ class DeForm extends LitElement {
     this.theme = 'dark';
     this.orientation = '';
     this.accent = 'sky';
+    this.onBack = undefined;
+    this.backLabel = 'Back';
     this.requireCommit = false;
     this.markModifiedFields = false;
     this.showModifiedCount = false;
