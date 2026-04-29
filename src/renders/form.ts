@@ -198,6 +198,17 @@ export function _generateFormControls(
   return html`
     <div class="footer-controls">
       ${
+        this.onBack
+          ? html`
+      <sl-button variant="default" @click=${() => this.onBack?.()}>
+        ${this.backLabel}
+      </sl-button>
+      `
+          : nothing
+      }
+
+      <div class="footer-actions-end">
+      ${
         this.allowDiscardChanges && changeCount
           ? html`
             <sl-button
@@ -224,9 +235,20 @@ export function _generateFormControls(
         >
           ${
             this._celebrate
-              ? html`
-            <sl-icon name="check-lg" slot=${options.submitLabelSuccess ? 'prefix' : ''}></sl-icon>
+              ? options.submitLabelSuccess
+                ? html`
+            <sl-icon name="check-lg" slot="prefix"></sl-icon>
             ${options.submitLabelSuccess}
+            `
+                : html`
+            <span class="submit-success-state">
+              <span class="submit-success-icon" aria-hidden="true">
+                <sl-icon name="check-lg"></sl-icon>
+              </span>
+              <span class="submit-success-placeholder">
+                ${options.submitLabel || 'Save'}
+              </span>
+            </span>
             `
               : options.submitLabel || 'Save'
           }
@@ -234,6 +256,7 @@ export function _generateFormControls(
       `
           : nothing
       }
+      </div>
     </div>
   `;
 }
