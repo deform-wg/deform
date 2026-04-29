@@ -326,6 +326,7 @@ export const builderStyles = css`
     border-radius: var(--sl-border-radius-medium);
     cursor: pointer;
     position: relative;
+    flex: 0 0 auto;
     min-height: 44px;
   }
 
