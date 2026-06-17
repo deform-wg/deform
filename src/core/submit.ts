@@ -4,7 +4,7 @@ import { isNamedElement, isValidatableElement } from '../utils/dom-guards.js';
 import { getDynFormValue, setDynFormValue } from '../utils/dynamic-props.js';
 
 /**
- * Validates all form controls within a form element.
+ * Validates all form controls within a form element, reporting constraint violations.
  * Returns true if all controls pass validation.
  */
 export function checkValidity(this: DeForm, form: HTMLFormElement): boolean {
@@ -13,7 +13,7 @@ export function checkValidity(this: DeForm, form: HTMLFormElement): boolean {
   }
   const formControls = getFormControls(form);
   const isValid = [...formControls].every(
-    (control) => !isValidatableElement(control) || control.checkValidity(),
+    (control) => !isValidatableElement(control) || control.reportValidity(),
   );
   return isValid;
 }

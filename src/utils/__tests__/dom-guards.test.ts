@@ -14,6 +14,7 @@ describe('dom-guards', () => {
   it('detects validatable elements', () => {
     const input = document.createElement('input');
     input.checkValidity = () => true;
+    input.reportValidity = () => true;
     const div = document.createElement('div');
 
     expect(isValidatableElement(input)).toBe(true);
