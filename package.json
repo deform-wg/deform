@@ -1,6 +1,6 @@
 {
   "name": "@deform-wg/deform",
-  "version": "1.0.0-alpha.1",
+  "version": "1.0.0-rc.1",
   "description": "An open-source, config-driven dynamic form renderer built with web components.",
   "type": "module",
   "alias": {
@@ -94,8 +94,7 @@
     "./dist/custom-elements.json": "./dist/custom-elements.json"
   },
   "publishConfig": {
-    "access": "public",
-    "tag": "alpha"
+    "access": "public"
   },
   "files": [
     "dist",
