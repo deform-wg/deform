@@ -1,4 +1,4 @@
-import type { ChangePayload, DeForm } from '../typedefs/index.js';
+import type { ChangePayload, deform } from '../typedefs/index.js';
 
 type EventDetail = Record<string, string | number | boolean | null | undefined | object>;
 
@@ -6,12 +6,12 @@ interface TabChangeOptions {
   priorTabName?: string;
   newTabName: string;
   timestamp?: number;
-  deForm: DeForm;
+  deform: deform;
 }
 
 interface DiscardOptions {
   timestamp?: number;
-  deForm: DeForm;
+  deform: deform;
 }
 
 /**
@@ -38,7 +38,7 @@ function validateTabChangeEvent(options: Partial<TabChangeOptions>): void {
 /**
  * Dispatches an internal form event.
  */
-export function _dispatchEvent(this: DeForm, name: string, detail: EventDetail): void {
+export function _dispatchEvent(this: deform, name: string, detail: EventDetail): void {
   this.dispatchEvent(
     new CustomEvent(`form-${name}`, {
       detail,
@@ -51,7 +51,7 @@ export function _dispatchEvent(this: DeForm, name: string, detail: EventDetail):
 /**
  * Dispatches a public deform event.
  */
-export const _dispatchPublicEvent = (name: string, detail: EventDetail, deForm: DeForm): void => {
+export const _dispatchPublicEvent = (name: string, detail: EventDetail, deform: deform): void => {
   if (!name) {
     throw new Error('Event name is required');
   }
@@ -59,7 +59,7 @@ export const _dispatchPublicEvent = (name: string, detail: EventDetail, deForm: 
     throw new Error('Event detail is required');
   }
 
-  deForm.dispatchEvent(
+  deform.dispatchEvent(
     new CustomEvent(`deform-${name}`, {
       detail,
       composed: true,
@@ -82,7 +82,7 @@ export const emitChangeEvent = (options: ChangePayload): void => {
       newValue: options.newValue,
       timestamp: options.timestamp,
     },
-    options.deForm,
+    options.deform,
   );
 };
 
@@ -98,7 +98,7 @@ export const emitTabChangeEvent = (options: TabChangeOptions): void => {
       newTabName: options.newTabName,
       timestamp: options.timestamp,
     },
-    options.deForm,
+    options.deform,
   );
 };
 
@@ -111,6 +111,6 @@ export const emitDiscardEvent = (options: DiscardOptions): void => {
     {
       timestamp: options.timestamp,
     },
-    options.deForm,
+    options.deform,
   );
 };

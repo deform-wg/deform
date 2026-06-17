@@ -1,9 +1,9 @@
-import type { DeForm } from '../typedefs/index.js';
+import type { deform } from '../typedefs/index.js';
 import { customElementsReady } from '../utils/custom-elements-ready.js';
 
 type PropertyKey = string;
 
-function getShadowRoot(host: DeForm): ShadowRoot | null {
+function getShadowRoot(host: deform): ShadowRoot | null {
   const maybe = host as unknown as { shadowRoot?: ShadowRoot | null };
   return maybe.shadowRoot ?? null;
 }
@@ -12,7 +12,7 @@ function getShadowRoot(host: DeForm): ShadowRoot | null {
  * Handles property updates and triggers form initialization when needed.
  */
 export async function _onUpdate(
-  this: DeForm,
+  this: deform,
   changedProperties: Map<PropertyKey, unknown>,
 ): Promise<void> {
   // Initialize field values when the values property changes
@@ -46,7 +46,7 @@ export async function _onUpdate(
  * Determines if the form should be updated based on changed properties.
  */
 export function _shouldUpdateForm(
-  this: DeForm,
+  this: deform,
   changedProperties: Map<PropertyKey, unknown>,
 ): boolean {
   return changedProperties.has('fields') || changedProperties.has('_activeFormId');
@@ -56,7 +56,7 @@ export function _shouldUpdateForm(
  * Gets the target form element based on initialization state.
  */
 export function _getTargetForm(
-  this: DeForm,
+  this: deform,
   changedProperties: Map<PropertyKey, unknown>,
 ): HTMLFormElement | null {
   const isDataInitialization =
@@ -72,7 +72,7 @@ export function _getTargetForm(
  * Updates the active form ID during initialization.
  */
 export function _updateActiveFormId(
-  this: DeForm,
+  this: deform,
   form: HTMLFormElement,
   changedProperties: Map<PropertyKey, unknown>,
 ): void {

@@ -5,12 +5,12 @@ import * as renders from './renders/index.js';
 import { accents, supportedAccents } from './theme/accents.js';
 import {
   applyThemeClass,
-  type DeformTheme,
+  type deformTheme,
   ensureShoelaceBasePath,
 } from './theme/shoelace-theme.js';
 import { styles } from './theme/styles.js';
 import type {
-  DeForm as DeFormInterface,
+  deform as deformInterface,
   FieldConfig,
   FormConfig,
   FormDataModel,
@@ -52,23 +52,23 @@ interface AccentInfo {
  * @cssproperty [--submit-btn-anchor=flex-end] Controls footer button alignment.
  * @cssproperty [--submit-btn-width=100%] Controls non-text button width on narrow screens.
  */
-class DeForm extends LitElement {
+class deform extends LitElement {
   // Reactive properties
   /** Current form values keyed by field name. */
   declare values: FormDataModel;
   /** Visual theme applied to the component and nested Shoelace controls. */
-  declare theme: DeformTheme;
+  declare theme: deformTheme;
   /** Optional layout orientation override for supported renderers. */
   declare orientation: string;
   /** Async submit handler invoked with staged changes, form node, and component instance. */
   declare onSubmit:
-    | ((changes: FormDataModel, form: HTMLFormElement, deform: DeFormInterface) => Promise<unknown>)
+    | ((changes: FormDataModel, form: HTMLFormElement, deform: deformInterface) => Promise<unknown>)
     | undefined;
   /** Change callback invoked whenever a field value changes. */
   declare onChange:
     | ((
-        change: Omit<import('./typedefs/index.js').ChangePayload, 'deForm'>,
-        deForm: DeFormInterface,
+        change: Omit<import('./typedefs/index.js').ChangePayload, 'deform'>,
+        deform: deformInterface,
       ) => void)
     | undefined;
   /** Requires consumers to call `commitChanges()` manually after a successful submit. */
@@ -185,7 +185,7 @@ class DeForm extends LitElement {
     this._updateThemeStylesheet(this.theme);
   }
 
-  private _updateThemeStylesheet(newTheme: DeformTheme): void {
+  private _updateThemeStylesheet(newTheme: deformTheme): void {
     applyThemeClass(newTheme, this);
   }
 
@@ -363,7 +363,7 @@ class DeForm extends LitElement {
   }
 }
 
-customElements.define('de-form', DeForm);
+customElements.define('de-form', deform);
 
-// Export the DeForm class for programmatic usage
-export { DeForm };
+// Export the deform class for programmatic usage
+export { deform };

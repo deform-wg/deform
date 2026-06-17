@@ -1,7 +1,7 @@
 import type { TemplateResult } from 'lit';
 import { html } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
-import type { DeForm, RadioButtonFieldConfig, SelectOption } from '../../typedefs/index.js';
+import type { deform, RadioButtonFieldConfig, SelectOption } from '../../typedefs/index.js';
 import { getDynBoolean, getDynFormValue } from '../../utils/dynamic-props.js';
 
 const ifd = ifDefined;
@@ -9,7 +9,7 @@ const ifd = ifDefined;
 /**
  * Renders a radio button group field.
  */
-export function _render_radioButton(this: DeForm, field: RadioButtonFieldConfig): TemplateResult {
+export function _render_radioButton(this: deform, field: RadioButtonFieldConfig): TemplateResult {
   const { currentKey, isDirtyKey } = this.propKeys(field.name);
   const fieldOptions = Array.isArray(field.options) ? field.options : [];
   return html`

@@ -1,7 +1,7 @@
 import type { TemplateResult } from 'lit';
 import { html } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
-import type { DeForm, TextFieldConfig } from '../../typedefs/index.js';
+import type { deform, TextFieldConfig } from '../../typedefs/index.js';
 import { getDynBoolean, getDynFormValue } from '../../utils/dynamic-props.js';
 
 const ifd = ifDefined;
@@ -9,7 +9,7 @@ const ifd = ifDefined;
 /**
  * Renders a number input field.
  */
-export function _render_number(this: DeForm, field: TextFieldConfig): TemplateResult {
+export function _render_number(this: deform, field: TextFieldConfig): TemplateResult {
   const { currentKey, isDirtyKey } = this.propKeys(field.name);
   return html`
     <sl-input

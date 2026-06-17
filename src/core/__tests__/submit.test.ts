@@ -1,32 +1,32 @@
 import { describe, expect, it, vi } from 'vitest';
-import { DeForm } from '../../de-form.js';
+import { deform } from '../../deform.js';
 import { getDynFormValue, setDynFormValue } from '../../utils/dynamic-props.js';
 import { checkValidity, commitChanges, getChanges, retainChanges } from '../submit.js';
 
 describe('submit helpers', () => {
   it('checkValidity throws when form is missing', () => {
-    const deForm = new DeForm();
-    expect(() => checkValidity.call(deForm, null as unknown as HTMLFormElement)).toThrow(
+    const form = new deform();
+    expect(() => checkValidity.call(form, null as unknown as HTMLFormElement)).toThrow(
       'dynamic-form checkValidity called without providing form Node',
     );
   });
 
   it('getChanges throws when form is missing', () => {
-    const deForm = new DeForm();
-    expect(() => getChanges.call(deForm, null as unknown as HTMLFormElement)).toThrow(
+    const form = new deform();
+    expect(() => getChanges.call(form, null as unknown as HTMLFormElement)).toThrow(
       'dynamic-form getChanges called without providing form Node',
     );
   });
 
   it('commitChanges throws when form is missing', () => {
-    const deForm = new DeForm();
-    expect(() => commitChanges.call(deForm, null as unknown as HTMLFormElement)).toThrow(
+    const form = new deform();
+    expect(() => commitChanges.call(form, null as unknown as HTMLFormElement)).toThrow(
       'dynamic-form commitChanges called without providing form Node',
     );
   });
 
   it('commitChanges syncs original values and emits success', () => {
-    const form = new DeForm();
+    const form = new deform();
     const formEl = document.createElement('form');
     const input = document.createElement('input');
     input.name = 'title';
@@ -46,7 +46,7 @@ describe('submit helpers', () => {
   });
 
   it('handleSubmit calls onSubmit and commits when allowed', async () => {
-    const form = new DeForm();
+    const form = new deform();
     const formEl = document.createElement('form');
     const event = new Event('submit');
     Object.defineProperty(event, 'preventDefault', { value: vi.fn() });
@@ -66,7 +66,7 @@ describe('submit helpers', () => {
   });
 
   it('handleSubmit does not call onSubmit when validation fails', async () => {
-    const form = new DeForm();
+    const form = new deform();
     const formEl = document.createElement('form');
     const event = new Event('submit');
     Object.defineProperty(event, 'preventDefault', { value: vi.fn() });
@@ -83,7 +83,7 @@ describe('submit helpers', () => {
   });
 
   it('retainChanges clears loading state without committing', () => {
-    const form = new DeForm();
+    const form = new deform();
     form._loading = true;
 
     retainChanges.call(form);

@@ -1,5 +1,5 @@
 import type {
-  DeForm,
+  deform,
   FieldConfig,
   FormDataModel,
   FormSection,
@@ -13,7 +13,7 @@ import { getDynFormValue, setDynBoolean, setDynNumber } from '../utils/dynamic-p
  * Checks all form fields for changes and updates dirty state.
  * Also triggers evaluation of reveal conditions.
  */
-export function _checkForChanges(this: DeForm): void {
+export function _checkForChanges(this: deform): void {
   const fields = this.fields;
   if (!fields?.sections) return;
   let dirty = 0;
@@ -59,7 +59,7 @@ export function _checkForChanges(this: DeForm): void {
  * Evaluates reveal conditions for a field based on its rule definition.
  */
 export function _checkAndSetConditionMetFlags(
-  this: DeForm,
+  this: deform,
   rule: ValidationRule,
   currentState: FormStateModel,
   currentValues: FormDataModel,
@@ -101,7 +101,7 @@ export function _checkAndSetConditionMetFlags(
  * Checks if a field's current value differs from its original value
  * and updates the dirty flag accordingly.
  */
-export function _checkAndSetFieldDirtyStatus(this: DeForm, fieldName: string): boolean {
+export function _checkAndSetFieldDirtyStatus(this: deform, fieldName: string): boolean {
   const { currentKey, originalKey, isDirtyKey } = this.propKeys(fieldName);
 
   // Replace undefined with an empty string for comparison

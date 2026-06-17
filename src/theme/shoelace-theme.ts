@@ -1,6 +1,6 @@
 import { getBasePath, setBasePath } from '@shoelace-style/shoelace/dist/utilities/base-path.js';
 
-export type DeformTheme = 'light' | 'dark';
+export type deformTheme = 'light' | 'dark';
 type ThemeTarget = Element;
 
 // Shoelace version derived from package.json dependency
@@ -8,7 +8,7 @@ const SHOELACE_VERSION = '2.20.1';
 const THEME_CLASS_BY_NAME = {
   light: 'sl-theme-light',
   dark: 'sl-theme-dark',
-} satisfies Record<DeformTheme, string>;
+} satisfies Record<deformTheme, string>;
 
 function getDocument(): Document | null {
   if (typeof document === 'undefined') {
@@ -18,11 +18,11 @@ function getDocument(): Document | null {
   return document;
 }
 
-function getThemeStylesheetHref(theme: DeformTheme): string {
+function getThemeStylesheetHref(theme: deformTheme): string {
   return `https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@${SHOELACE_VERSION}/cdn/themes/${theme}.css`;
 }
 
-function getThemeClassName(theme: DeformTheme): string {
+function getThemeClassName(theme: deformTheme): string {
   return THEME_CLASS_BY_NAME[theme];
 }
 
@@ -35,7 +35,7 @@ export function ensureShoelaceBasePath(): void {
   }
 }
 
-export function ensureThemeStyles(theme: DeformTheme): void {
+export function ensureThemeStyles(theme: deformTheme): void {
   const currentDocument = getDocument();
 
   if (!currentDocument) {
@@ -61,7 +61,7 @@ export function ensureAllThemeStyles(): void {
   ensureThemeStyles('dark');
 }
 
-export function applyThemeClass(theme: DeformTheme, target: ThemeTarget): void {
+export function applyThemeClass(theme: deformTheme, target: ThemeTarget): void {
   ensureThemeStyles(theme);
   target.classList.remove(getThemeClassName('light'));
   target.classList.remove(getThemeClassName('dark'));

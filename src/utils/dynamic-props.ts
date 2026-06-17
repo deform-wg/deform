@@ -1,7 +1,7 @@
 import type { FormDataModel, FormValue } from '../typedefs/index.js';
 
 /**
- * DeForm uses computed property keys (Lit reactive properties).
+ * deform uses computed property keys (Lit reactive properties).
  * This module provides typed access to those dynamic keys without using `any`.
  */
 

@@ -1,7 +1,7 @@
 /**
- * DeForm Type Definitions
+ * deform type definitions
  *
- * This file contains the core type definitions for the DeForm library.
+ * This file contains the core type definitions for the deform component.
  * These types are designed to provide comprehensive type safety while
  * maintaining backward compatibility during the JavaScript to TypeScript migration.
  */
@@ -446,8 +446,8 @@ export interface ChangePayload {
   newValue: FormValue;
   /** Timestamp of the change */
   timestamp?: number;
-  /** Reference to the DeForm instance */
-  deForm: DeForm;
+  /** Reference to the deform instance */
+  deform: deform;
 }
 
 /**
@@ -462,8 +462,8 @@ export interface SubmitPayload {
   originalValues: FormDataModel;
   /** Whether the form has unsaved changes */
   hasChanges: boolean;
-  /** Reference to the DeForm instance */
-  deForm: DeForm;
+  /** Reference to the deform instance */
+  deform: deform;
 }
 
 // ============================================================================
@@ -486,9 +486,9 @@ export interface RenderOptions {
 }
 
 /**
- * DeForm component interface
+ * deform component interface
  */
-export interface DeForm {
+export interface deform {
   /** Current form values */
   values: FormDataModel;
   /** Field configurations */
@@ -498,12 +498,12 @@ export interface DeForm {
   /** Orientation setting */
   orientation: string;
   /** Submit handler function */
-  onSubmit?: (changes: FormDataModel, form: HTMLFormElement, deForm: DeForm) => Promise<unknown>;
+  onSubmit?: (changes: FormDataModel, form: HTMLFormElement, deform: deform) => Promise<unknown>;
   /**
    * Optional change handler invoked after value-change events.
    * Kept for backward compatibility with prior JS API.
    */
-  onChange?: (change: Omit<ChangePayload, 'deForm'>, deForm: DeForm) => void;
+  onChange?: (change: Omit<ChangePayload, 'deform'>, deform: deform) => void;
   /** Whether to require commit of changes */
   requireCommit: boolean;
   /** Whether to mark modified fields */
@@ -612,7 +612,7 @@ export type FormChangeEvent = CustomEvent<ChangePayload>;
  */
 export type TabChangeEvent = CustomEvent<{
   tabName: string;
-  deForm: DeForm;
+  deform: deform;
 }>;
 
 /**
@@ -624,7 +624,7 @@ export type FormSubmitEvent = CustomEvent<SubmitPayload>;
  * Discard changes event
  */
 export type DiscardEvent = CustomEvent<{
-  deForm: DeForm;
+  deform: deform;
 }>;
 
 // ============================================================================

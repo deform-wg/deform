@@ -1,10 +1,10 @@
 import { describe, expect, it, vi } from 'vitest';
-import { DeForm } from '../../de-form.js';
+import { deform } from '../../deform.js';
 import { getDynFormValue, setDynFormValue } from '../../utils/dynamic-props.js';
 
 describe('handlers', () => {
   it('handleInput updates value and dispatches change event', () => {
-    const form = new DeForm();
+    const form = new deform();
     const { currentKey, originalKey } = form.propKeys('name');
     setDynFormValue(form, originalKey, 'old');
 
@@ -24,7 +24,7 @@ describe('handlers', () => {
   });
 
   it('handleToggle updates boolean value', () => {
-    const form = new DeForm();
+    const form = new deform();
     const { currentKey, originalKey } = form.propKeys('enabled');
     setDynFormValue(form, originalKey, false);
 
@@ -41,7 +41,7 @@ describe('handlers', () => {
   });
 
   it('handleChoice updates selection value', () => {
-    const form = new DeForm();
+    const form = new deform();
     const { currentKey, originalKey } = form.propKeys('color');
     setDynFormValue(form, originalKey, 'red');
 
@@ -55,7 +55,7 @@ describe('handlers', () => {
   });
 
   it('handleRating uses dataset name and numeric value', () => {
-    const form = new DeForm();
+    const form = new deform();
     const { currentKey, originalKey } = form.propKeys('rating');
     setDynFormValue(form, originalKey, 1);
 
@@ -69,7 +69,7 @@ describe('handlers', () => {
   });
 
   it('handleTabChange updates active id', () => {
-    const form = new DeForm();
+    const form = new deform();
     form._activeFormId = 'profile';
 
     form._handleTabChange(new Event('click'), 'settings');
@@ -78,7 +78,7 @@ describe('handlers', () => {
   });
 
   it('handleDiscardChanges resets current values', async () => {
-    const form = new DeForm();
+    const form = new deform();
 
     const { currentKey, originalKey } = form.propKeys('name');
     setDynFormValue(form, currentKey, 'new');

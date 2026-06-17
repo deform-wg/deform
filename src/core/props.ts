@@ -1,5 +1,5 @@
 import type {
-  DeForm,
+  deform,
   FieldConfig,
   FormConfig,
   FormDataModel,
@@ -44,7 +44,7 @@ function getFieldPropertyType(field: FieldConfig): FieldPropertyType {
  * Initializes reactive properties for all form fields.
  * Creates current value, original value, dirty tracking, and other state properties.
  */
-export function _initializeFormFieldProperties(this: DeForm, newValue: FormConfig): void {
+export function _initializeFormFieldProperties(this: deform, newValue: FormConfig): void {
   newValue.sections.forEach((section) => {
     // For each section, create a property to track modified field count
     const elementCtor = this.constructor as unknown as LitElementConstructor;
@@ -160,7 +160,7 @@ export function _initializeFormFieldProperties(this: DeForm, newValue: FormConfi
  * When new values come from external sources (parent component, websocket),
  * dirty fields keep their current values.
  */
-export function _initializeValuesPreservingEdits(this: DeForm, newValue: FormDataModel): void {
+export function _initializeValuesPreservingEdits(this: deform, newValue: FormDataModel): void {
   const _newValue: FormDataModel = {};
   // When dynamic-form is provided new values via an external actor
   // We should not immediately adopt them as the user may have edits.

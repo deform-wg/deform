@@ -1,12 +1,12 @@
 import { render } from 'lit';
 import { describe, expect, it, vi } from 'vitest';
-import { DeForm } from '../../de-form.js';
+import { deform } from '../../deform.js';
 import { setDynBoolean } from '../../utils/dynamic-props.js';
 import { generateActionLabel } from '../action.js';
 
 describe('renders/action', () => {
   it('renders action button with correct label and attributes', () => {
-    const form = new DeForm();
+    const form = new deform();
     const template = generateActionLabel(form, 'email', 'verify', 'Verify Email');
     const container = document.createElement('div');
     render(template, container);
@@ -20,7 +20,7 @@ describe('renders/action', () => {
   });
 
   it('shows loading state when label key is true', () => {
-    const form = new DeForm();
+    const form = new deform();
     const { labelKey } = form.propKeys('email');
     setDynBoolean(form, labelKey, true);
 
@@ -33,7 +33,7 @@ describe('renders/action', () => {
   });
 
   it('does not show loading state when label key is false', () => {
-    const form = new DeForm();
+    const form = new deform();
     const { labelKey } = form.propKeys('email');
     setDynBoolean(form, labelKey, false);
 
@@ -46,7 +46,7 @@ describe('renders/action', () => {
   });
 
   it('dispatches action-label-triggered event on click', async () => {
-    const form = new DeForm();
+    const form = new deform();
     const eventHandler = vi.fn();
     form.addEventListener('action-label-triggered', eventHandler);
 
@@ -64,7 +64,7 @@ describe('renders/action', () => {
   });
 
   it('prevents default behavior on click', () => {
-    const form = new DeForm();
+    const form = new deform();
     const template = generateActionLabel(form, 'email', 'verify', 'Verify');
     const container = document.createElement('div');
     render(template, container);
@@ -78,7 +78,7 @@ describe('renders/action', () => {
   });
 
   it('event bubbles and is composed', async () => {
-    const form = new DeForm();
+    const form = new deform();
     const events: CustomEvent[] = [];
     form.addEventListener('action-label-triggered', (e) => {
       events.push(e as CustomEvent);

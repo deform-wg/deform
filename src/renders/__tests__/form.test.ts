@@ -1,6 +1,6 @@
 import { render } from 'lit';
 import { describe, expect, it, vi } from 'vitest';
-import { DeForm } from '../../de-form.js';
+import { deform } from '../../deform.js';
 import type { FormConfig, TextFieldConfig } from '../../typedefs/index.js';
 import { setDynNumber } from '../../utils/dynamic-props.js';
 import { _generateField, _generateFormControls, _generateOneOrManyForms } from '../form.js';
@@ -20,7 +20,7 @@ const sampleFields: FormConfig = {
 
 describe('renderers/form', () => {
   it('renders nothing for hidden fields', () => {
-    const form = new DeForm();
+    const form = new deform();
     const field: TextFieldConfig = { name: 'secret', type: 'text', hidden: true };
 
     const template = _generateField.call(form, field);
@@ -31,7 +31,7 @@ describe('renderers/form', () => {
   });
 
   it('renders a field wrapper with label', () => {
-    const form = new DeForm();
+    const form = new deform();
     const field: TextFieldConfig = { name: 'name', type: 'text', label: 'Name' };
 
     const template = _generateField.call(form, field);
@@ -46,7 +46,7 @@ describe('renderers/form', () => {
   });
 
   it('falls back to error field when renderer is missing', () => {
-    const form = new DeForm();
+    const form = new deform();
     const field = { name: 'mystery', type: 'text' } as const;
     Object.defineProperty(form, '_render_text', { value: undefined });
 
@@ -58,7 +58,7 @@ describe('renderers/form', () => {
   });
 
   it('shows a render error message when a field renderer throws', () => {
-    const form = new DeForm();
+    const form = new deform();
     const field = { name: 'network', type: 'text', label: 'Network' } as const;
     Object.defineProperty(form, '_render_text', {
       value: () => {
@@ -76,7 +76,7 @@ describe('renderers/form', () => {
   });
 
   it('renders form controls based on change count and options', () => {
-    const form = new DeForm();
+    const form = new deform();
     form.allowDiscardChanges = true;
     form.onSubmit = async () => {};
     form.onBack = vi.fn();
@@ -100,7 +100,7 @@ describe('renderers/form', () => {
   });
 
   it('does not render a back button when onBack is unset', () => {
-    const form = new DeForm();
+    const form = new deform();
     form.onSubmit = async () => {};
 
     setDynNumber(form, '_form_profile_count', 1);
@@ -113,7 +113,7 @@ describe('renderers/form', () => {
   });
 
   it('preserves submit width when celebrating without a success label', () => {
-    const form = new DeForm();
+    const form = new deform();
     form.onSubmit = async () => {};
     form._celebrate = true;
     form._loading = false;
@@ -134,7 +134,7 @@ describe('renderers/form', () => {
   });
 
   it('renders multiple sections as tab group', () => {
-    const form = new DeForm();
+    const form = new deform();
     form.showModifiedCount = true;
     form._loading = false;
 
@@ -153,7 +153,7 @@ describe('renderers/form', () => {
   });
 
   it('renders a single section as a form', () => {
-    const form = new DeForm();
+    const form = new deform();
     const single: FormConfig = {
       sections: [
         {

@@ -1,10 +1,10 @@
-import type { DeForm } from '../typedefs/index.js';
+import type { deform } from '../typedefs/index.js';
 
 /**
  * Focuses a form field by name.
  * Safely handles cases where the field doesn't exist or doesn't support focus.
  */
-export function focus(this: DeForm, fieldName: string): void {
+export function focus(this: deform, fieldName: string): void {
   if (!fieldName) return;
   const shadowRoot = (this as unknown as { shadowRoot?: ShadowRoot | null }).shadowRoot ?? null;
   const node = shadowRoot?.querySelector<HTMLElement>(`[name=${fieldName}]`) ?? null;

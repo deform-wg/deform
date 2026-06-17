@@ -1,7 +1,7 @@
 import type { TemplateResult } from 'lit';
 import { html, nothing } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
-import type { DeForm, TextFieldConfig } from '../../typedefs/index.js';
+import type { deform, TextFieldConfig } from '../../typedefs/index.js';
 import { getDynBoolean, getDynFormValue } from '../../utils/dynamic-props.js';
 
 const ifd = ifDefined;
@@ -11,7 +11,7 @@ type CustomValidatable = HTMLElement & { setCustomValidity: (message: string) =>
 /**
  * Renders a password input field with optional confirmation.
  */
-export function _render_password(this: DeForm, field: TextFieldConfig): TemplateResult {
+export function _render_password(this: deform, field: TextFieldConfig): TemplateResult {
   const { currentKey, isDirtyKey, repeatKey } = this.propKeys(field.name);
 
   // Custom validation to check if both passwords match

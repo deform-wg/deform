@@ -1,5 +1,5 @@
 import { getFormControls } from '@shoelace-style/shoelace/dist/utilities/form.js';
-import type { DeForm, FormDataModel } from '../typedefs/index.js';
+import type { deform, FormDataModel } from '../typedefs/index.js';
 import { isNamedElement, isValidatableElement } from '../utils/dom-guards.js';
 import { getDynFormValue, setDynFormValue } from '../utils/dynamic-props.js';
 
@@ -7,7 +7,7 @@ import { getDynFormValue, setDynFormValue } from '../utils/dynamic-props.js';
  * Validates all form controls within a form element.
  * Returns true if all controls pass validation.
  */
-export function checkValidity(this: DeForm, form: HTMLFormElement): boolean {
+export function checkValidity(this: deform, form: HTMLFormElement): boolean {
   if (!form) {
     throw new Error('dynamic-form checkValidity called without providing form Node');
   }
@@ -22,7 +22,7 @@ export function checkValidity(this: DeForm, form: HTMLFormElement): boolean {
  * Collects all modified (dirty) field values from a form.
  * Returns an object with field names as keys and current values.
  */
-export function getChanges(this: DeForm, form: HTMLFormElement): FormDataModel {
+export function getChanges(this: deform, form: HTMLFormElement): FormDataModel {
   if (!form) {
     throw new Error('dynamic-form getChanges called without providing form Node');
   }
@@ -47,7 +47,7 @@ export function getChanges(this: DeForm, form: HTMLFormElement): FormDataModel {
  * Handles form submission.
  * Validates the form, collects changes, and calls the onSubmit handler.
  */
-export async function _handleSubmit(this: DeForm, event: Event): Promise<void> {
+export async function _handleSubmit(this: deform, event: Event): Promise<void> {
   event.preventDefault();
   const formEl = event.currentTarget as HTMLFormElement;
   const isValid = this.checkValidity(formEl);
@@ -76,7 +76,7 @@ export async function _handleSubmit(this: DeForm, event: Event): Promise<void> {
  * Commits staged changes by syncing current values to original values.
  * Resets dirty flags and dispatches a success event.
  */
-export function commitChanges(this: DeForm, form: HTMLFormElement): void {
+export function commitChanges(this: deform, form: HTMLFormElement): void {
   if (!form) {
     throw new Error('dynamic-form commitChanges called without providing form Node');
   }
@@ -109,6 +109,6 @@ export function commitChanges(this: DeForm, form: HTMLFormElement): void {
 /**
  * Retains changes without committing, just clears the loading state.
  */
-export function retainChanges(this: DeForm): void {
+export function retainChanges(this: deform): void {
   this._loading = false;
 }

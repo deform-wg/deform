@@ -1,7 +1,7 @@
 import type { TemplateResult } from 'lit';
 import { html } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
-import type { ColorFieldConfig, DeForm } from '../../typedefs/index.js';
+import type { ColorFieldConfig, deform } from '../../typedefs/index.js';
 import { getDynBoolean, getDynFormValue } from '../../utils/dynamic-props.js';
 
 const ifd = ifDefined;
@@ -9,7 +9,7 @@ const ifd = ifDefined;
 /**
  * Renders a color picker field.
  */
-export function _render_color(this: DeForm, field: ColorFieldConfig): TemplateResult {
+export function _render_color(this: deform, field: ColorFieldConfig): TemplateResult {
   const { currentKey, isDirtyKey } = this.propKeys(field.name);
   return html`
     <sl-color-picker

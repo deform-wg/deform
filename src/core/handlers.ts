@@ -1,4 +1,4 @@
-import type { ChangePayload, DeForm, FormValue } from '../typedefs/index.js';
+import type { ChangePayload, deform, FormValue } from '../typedefs/index.js';
 import { isNamedElement } from '../utils/dom-guards.js';
 import { getDynFormValue, setDynFormValue } from '../utils/dynamic-props.js';
 import { emitChangeEvent, emitDiscardEvent, emitTabChangeEvent } from './events.js';
@@ -35,7 +35,7 @@ function readChecked(target: unknown): boolean | null {
 /**
  * Handles input events for text-based form controls.
  */
-export function _handleInput(this: DeForm, event: Event): void {
+export function _handleInput(this: deform, event: Event): void {
   const name = readName(event.target);
   const value = readValue(event.target);
   if (!name || typeof value !== 'string') return;
@@ -55,7 +55,7 @@ export function _handleInput(this: DeForm, event: Event): void {
     priorValue,
     newValue,
     timestamp: Date.now(),
-    deForm: this,
+    deform: this,
   };
 
   emitChangeEvent(changePayload);
@@ -65,7 +65,7 @@ export function _handleInput(this: DeForm, event: Event): void {
 /**
  * Handles toggle/checkbox events for boolean form controls.
  */
-export function _handleToggle(this: DeForm, event: Event): void {
+export function _handleToggle(this: deform, event: Event): void {
   const name = readName(event.target);
   const checked = readChecked(event.target);
   if (!name || checked === null) return;
@@ -85,7 +85,7 @@ export function _handleToggle(this: DeForm, event: Event): void {
     priorValue,
     newValue,
     timestamp: Date.now(),
-    deForm: this,
+    deform: this,
   };
 
   emitChangeEvent(changePayload);
@@ -95,7 +95,7 @@ export function _handleToggle(this: DeForm, event: Event): void {
 /**
  * Handles choice events for select/radio form controls.
  */
-export function _handleChoice(this: DeForm, event: Event): void {
+export function _handleChoice(this: deform, event: Event): void {
   const name = readName(event.target);
   const value = readValue(event.target);
   if (!name || value === null) return;
@@ -115,7 +115,7 @@ export function _handleChoice(this: DeForm, event: Event): void {
     priorValue,
     newValue,
     timestamp: Date.now(),
-    deForm: this,
+    deform: this,
   };
 
   emitChangeEvent(changePayload);
@@ -125,7 +125,7 @@ export function _handleChoice(this: DeForm, event: Event): void {
 /**
  * Handles rating control events.
  */
-export function _handleRating(this: DeForm, event: Event): void {
+export function _handleRating(this: deform, event: Event): void {
   const target = event.target;
   if (!isObject(target)) return;
   const dataset = target['dataset'];
@@ -148,7 +148,7 @@ export function _handleRating(this: DeForm, event: Event): void {
     priorValue,
     newValue,
     timestamp: Date.now(),
-    deForm: this,
+    deform: this,
   };
 
   emitChangeEvent(changePayload);
@@ -158,7 +158,7 @@ export function _handleRating(this: DeForm, event: Event): void {
 /**
  * Handles tab change events for multi-section forms.
  */
-export function _handleTabChange(this: DeForm, _event: Event, tabName: string): void {
+export function _handleTabChange(this: deform, _event: Event, tabName: string): void {
   const priorTabName = this._activeFormId;
   this._activeFormId = tabName;
 
@@ -166,7 +166,7 @@ export function _handleTabChange(this: DeForm, _event: Event, tabName: string): 
     ...(priorTabName ? { priorTabName } : {}),
     newTabName: tabName,
     timestamp: Date.now(),
-    deForm: this,
+    deform: this,
   });
 }
 
@@ -174,7 +174,7 @@ export function _handleTabChange(this: DeForm, _event: Event, tabName: string): 
  * Handles discard changes button click.
  * Resets all modified fields to their original values.
  */
-export function _handleDiscardChanges(this: DeForm, event: Event): void {
+export function _handleDiscardChanges(this: deform, event: Event): void {
   event.preventDefault();
 
   // Reset fields of active form to initial data state
@@ -192,7 +192,7 @@ export function _handleDiscardChanges(this: DeForm, event: Event): void {
 
   this._checkForChanges();
   emitDiscardEvent({
-    deForm: this,
+    deform: this,
   });
 }
 
@@ -200,9 +200,9 @@ export function _handleDiscardChanges(this: DeForm, event: Event): void {
  * Internal callback that invokes the user-provided onChange handler if present.
  */
 function onChangeCallback(options: ChangePayload): void {
-  const { fieldName, originalValue, priorValue, newValue, timestamp, deForm } = options;
+  const { fieldName, originalValue, priorValue, newValue, timestamp, deform } = options;
 
-  if (deForm.onChange && typeof deForm.onChange === 'function') {
+  if (deform.onChange && typeof deform.onChange === 'function') {
     try {
       const change = {
         fieldName,
@@ -211,7 +211,7 @@ function onChangeCallback(options: ChangePayload): void {
         newValue,
         ...(timestamp !== undefined ? { timestamp } : {}),
       };
-      deForm.onChange(change, deForm);
+      deform.onChange(change, deform);
     } catch (onChangeErr) {
       console.error('An error occured when executing the provided onChange function', onChangeErr);
     }

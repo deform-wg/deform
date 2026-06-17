@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { DeForm } from '../../de-form.js';
+import { deform } from '../../deform.js';
 import type { ValidationRule } from '../../typedefs/index.js';
 import { getDynBoolean, setDynFormValue } from '../../utils/dynamic-props.js';
 import { _checkAndSetConditionMetFlags, _checkAndSetFieldDirtyStatus } from '../diff.js';
 
 describe('_checkAndSetFieldDirtyStatus', () => {
   it('marks field as dirty when current value differs', () => {
-    const form = new DeForm();
+    const form = new deform();
     const { currentKey, originalKey, isDirtyKey } = form.propKeys('name');
 
     setDynFormValue(form, currentKey, 'new');
@@ -19,7 +19,7 @@ describe('_checkAndSetFieldDirtyStatus', () => {
   });
 
   it('treats undefined and empty string as equal', () => {
-    const form = new DeForm();
+    const form = new deform();
     const { currentKey, originalKey, isDirtyKey } = form.propKeys('nickname');
 
     setDynFormValue(form, currentKey, undefined);
@@ -32,7 +32,7 @@ describe('_checkAndSetFieldDirtyStatus', () => {
   });
 
   it('detects changes for non-string values', () => {
-    const form = new DeForm();
+    const form = new deform();
     const { currentKey, originalKey, isDirtyKey } = form.propKeys('count');
 
     setDynFormValue(form, currentKey, 2);
@@ -47,7 +47,7 @@ describe('_checkAndSetFieldDirtyStatus', () => {
 
 describe('_checkAndSetConditionMetFlags', () => {
   it('evaluates "=" rules and sets reveal flag', () => {
-    const form = new DeForm();
+    const form = new deform();
     const targetKey = form.propKeys('target').currentKey;
     setDynFormValue(form, targetKey, 'yes');
 
@@ -64,7 +64,7 @@ describe('_checkAndSetConditionMetFlags', () => {
   });
 
   it('evaluates "!=" rules and sets reveal flag', () => {
-    const form = new DeForm();
+    const form = new deform();
     const targetKey = form.propKeys('target').currentKey;
     setDynFormValue(form, targetKey, 'no');
 
@@ -81,7 +81,7 @@ describe('_checkAndSetConditionMetFlags', () => {
   });
 
   it('evaluates function rules and sets reveal flag', () => {
-    const form = new DeForm();
+    const form = new deform();
     const rule: ValidationRule = {
       self: 'revealField',
       fn: () => true,
@@ -93,7 +93,7 @@ describe('_checkAndSetConditionMetFlags', () => {
   });
 
   it('returns false when rule has no target value', () => {
-    const form = new DeForm();
+    const form = new deform();
     const rule: ValidationRule = {
       self: 'revealField',
       operator: '=',
