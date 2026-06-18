@@ -1,7 +1,7 @@
 import type { TemplateResult } from 'lit';
 import { html } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
-import type { DeForm, RatingFieldConfig } from '../../typedefs/index.js';
+import type { deform, RatingFieldConfig } from '../../typedefs/index.js';
 import { getDynBoolean, getDynFormValue } from '../../utils/dynamic-props.js';
 
 const ifd = ifDefined;
@@ -11,7 +11,7 @@ const ifd = ifDefined;
 /**
  * Renders a rating field.
  */
-export function _render_rating(this: DeForm, field: RatingFieldConfig): TemplateResult {
+export function _render_rating(this: deform, field: RatingFieldConfig): TemplateResult {
   const { currentKey, isDirtyKey } = this.propKeys(field.name);
   return html`
     <sl-rating

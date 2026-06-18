@@ -3,7 +3,7 @@ import { html, nothing } from 'lit';
 import { classMap } from 'lit/directives/class-map.js';
 import { repeat } from 'lit/directives/repeat.js';
 import type {
-  DeForm,
+  deform,
   FieldConfig,
   FormConfig,
   FormSection,
@@ -22,7 +22,7 @@ interface FormControlOptions {
  * Generates one or multiple forms based on the number of sections.
  * Multiple sections render as a tabbed interface.
  */
-export function _generateOneOrManyForms(this: DeForm, data: FormConfig): TemplateResult {
+export function _generateOneOrManyForms(this: deform, data: FormConfig): TemplateResult {
   const tabs = data.sections.map((section) => {
     const changeCount = getDynNumber(this, `_form_${section.name}_count`);
     return html`
@@ -118,7 +118,7 @@ export function _generateOneOrManyForms(this: DeForm, data: FormConfig): Templat
 /**
  * Generates a single form field with label and wrapper.
  */
-export function _generateField(this: DeForm, field: FieldConfig): TemplateResult | typeof nothing {
+export function _generateField(this: deform, field: FieldConfig): TemplateResult | typeof nothing {
   try {
     // Hidden fields, never render HTML
     if ('hidden' in field && field.hidden) return nothing;
@@ -174,7 +174,7 @@ export function _generateField(this: DeForm, field: FieldConfig): TemplateResult
  * Generates an error field display when a field fails to render.
  */
 export function _generateErrorField(
-  this: DeForm,
+  this: deform,
   field: FieldConfig,
   helpText: string = `${field.type} is not a valid field type`,
 ): TemplateResult {
@@ -195,7 +195,7 @@ export function _generateErrorField(
  * Generates the form control buttons (submit, discard).
  */
 export function _generateFormControls(
-  this: DeForm,
+  this: deform,
   options: FormControlOptions = { formId: '' },
 ): TemplateResult {
   const changeCount = getDynNumber(this, `_form_${options.formId}_count`);

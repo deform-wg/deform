@@ -1,6 +1,6 @@
 import { render } from 'lit';
 import { describe, expect, it } from 'vitest';
-import { DeForm } from '../../de-form.js';
+import { deform } from '../../deform.js';
 import type {
   CheckboxFieldConfig,
   ColorFieldConfig,
@@ -36,7 +36,7 @@ import { _render_toggleField } from '../fields/toggle-field.js';
 
 describe('renderers/fields', () => {
   it('renders select options and respects multiple flag', () => {
-    const form = new DeForm();
+    const form = new deform();
     const field: SelectFieldConfig = {
       name: 'color',
       type: 'select',
@@ -60,7 +60,7 @@ describe('renderers/fields', () => {
   });
 
   it('renders option-based fields without crashing when options are missing', () => {
-    const form = new DeForm();
+    const form = new deform();
 
     const malformedSelect = JSON.parse('{"name":"network","type":"select"}');
     const selectTemplate = _render_select.call(form, malformedSelect, {});
@@ -85,7 +85,7 @@ describe('renderers/fields', () => {
   });
 
   it('renders toggle as checked when value is true', () => {
-    const form = new DeForm();
+    const form = new deform();
     const field: ToggleConfig = {
       name: 'enabled',
       type: 'toggle',
@@ -105,7 +105,7 @@ describe('renderers/fields', () => {
   });
 
   it('renders checkbox with indeterminate flag', () => {
-    const form = new DeForm();
+    const form = new deform();
     const field: CheckboxFieldConfig = {
       name: 'accept',
       type: 'checkbox',
@@ -126,7 +126,7 @@ describe('renderers/fields', () => {
   });
 
   it('renders range with min, max, and step', () => {
-    const form = new DeForm();
+    const form = new deform();
     const field: RangeFieldConfig = {
       name: 'volume',
       type: 'range',
@@ -150,7 +150,7 @@ describe('renderers/fields', () => {
   });
 
   it('renders radio options with checked and disabled states', () => {
-    const form = new DeForm();
+    const form = new deform();
     const field: RadioFieldConfig = {
       name: 'size',
       type: 'radio',
@@ -174,7 +174,7 @@ describe('renderers/fields', () => {
   });
 
   it('renders radio-button options', () => {
-    const form = new DeForm();
+    const form = new deform();
     const field: RadioButtonFieldConfig = {
       name: 'mode',
       type: 'radioButton',
@@ -196,7 +196,7 @@ describe('renderers/fields', () => {
   });
 
   it('renders textarea with rows and placeholder', () => {
-    const form = new DeForm();
+    const form = new deform();
     const field: TextareaFieldConfig = {
       name: 'bio',
       type: 'textarea',
@@ -216,7 +216,7 @@ describe('renderers/fields', () => {
   });
 
   it('renders seedphrase with words and rows', () => {
-    const form = new DeForm();
+    const form = new deform();
     const field: SeedphraseFieldConfig = {
       name: 'seed',
       type: 'seedphrase',
@@ -235,7 +235,7 @@ describe('renderers/fields', () => {
   });
 
   it('renders date with min and max', () => {
-    const form = new DeForm();
+    const form = new deform();
     const field: DateFieldConfig = {
       name: 'dob',
       type: 'date',
@@ -256,7 +256,7 @@ describe('renderers/fields', () => {
   });
 
   it('renders color picker with options', () => {
-    const form = new DeForm();
+    const form = new deform();
     const field: ColorFieldConfig = {
       name: 'color',
       type: 'color',
@@ -276,7 +276,7 @@ describe('renderers/fields', () => {
   });
 
   it('renders rating with max and precision', () => {
-    const form = new DeForm();
+    const form = new deform();
     const field: RatingFieldConfig = {
       name: 'rating',
       type: 'rating',
@@ -296,7 +296,7 @@ describe('renderers/fields', () => {
   });
 
   it('renders text input with placeholder and required', () => {
-    const form = new DeForm();
+    const form = new deform();
     const field: TextFieldConfig = {
       name: 'title',
       type: 'text',
@@ -317,7 +317,7 @@ describe('renderers/fields', () => {
   });
 
   it('renders email input with label', () => {
-    const form = new DeForm();
+    const form = new deform();
     const field: TextFieldConfig = {
       name: 'email',
       type: 'email',
@@ -336,7 +336,7 @@ describe('renderers/fields', () => {
   });
 
   it('renders number input with min, max, and step', () => {
-    const form = new DeForm();
+    const form = new deform();
     const field: TextFieldConfig = {
       name: 'age',
       type: 'number',
@@ -359,7 +359,7 @@ describe('renderers/fields', () => {
   });
 
   it('renders password confirmation when required', () => {
-    const form = new DeForm();
+    const form = new deform();
     const field: TextFieldConfig = {
       name: 'password',
       type: 'password',
@@ -379,7 +379,7 @@ describe('renderers/fields', () => {
   });
 
   it('renders password without confirmation when not required', () => {
-    const form = new DeForm();
+    const form = new deform();
     const field: TextFieldConfig = {
       name: 'password',
       type: 'password',
@@ -398,7 +398,7 @@ describe('renderers/fields', () => {
   });
 
   it('renders password with all optional attributes', () => {
-    const form = new DeForm();
+    const form = new deform();
     const field: TextFieldConfig = {
       name: 'password',
       type: 'password',
@@ -435,7 +435,7 @@ describe('renderers/fields', () => {
   });
 
   it('renders password repeat field with correct attributes when confirmation required', () => {
-    const form = new DeForm();
+    const form = new deform();
     const field: TextFieldConfig = {
       name: 'pass',
       type: 'password',
@@ -464,7 +464,7 @@ describe('renderers/fields', () => {
   });
 
   it('renders toggle-field with active variant only', () => {
-    const form = new DeForm();
+    const form = new deform();
     const field: ToggleFieldConfig = {
       name: 'contact',
       type: 'toggleField',
@@ -487,7 +487,7 @@ describe('renderers/fields', () => {
   });
 
   it('renders toggle-field with second variant when index is 1', () => {
-    const form = new DeForm();
+    const form = new deform();
     const field: ToggleFieldConfig = {
       name: 'contact',
       type: 'toggleField',
@@ -513,7 +513,7 @@ describe('renderers/fields', () => {
   });
 
   it('toggle-field button switches variant from 0 to 1 on click', () => {
-    const form = new DeForm();
+    const form = new deform();
     const field: ToggleFieldConfig = {
       name: 'mode',
       type: 'toggleField',
@@ -542,7 +542,7 @@ describe('renderers/fields', () => {
   });
 
   it('toggle-field button switches variant from 1 to 0 on click', () => {
-    const form = new DeForm();
+    const form = new deform();
     const field: ToggleFieldConfig = {
       name: 'mode',
       type: 'toggleField',
@@ -571,7 +571,7 @@ describe('renderers/fields', () => {
   });
 
   it('toggle-field renders nothing for fields at non-active index', () => {
-    const form = new DeForm();
+    const form = new deform();
     const field: ToggleFieldConfig = {
       name: 'picker',
       type: 'toggleField',
@@ -596,7 +596,7 @@ describe('renderers/fields', () => {
   });
 
   it('toggle-field handles unknown field type gracefully', () => {
-    const form = new DeForm();
+    const form = new deform();
     const field: ToggleFieldConfig = {
       name: 'unknown',
       type: 'toggleField',

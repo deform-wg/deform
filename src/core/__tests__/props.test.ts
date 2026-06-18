@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { DeForm } from '../../de-form.js';
+import { deform } from '../../deform.js';
 import type { FormConfig } from '../../typedefs/index.js';
 import { getDynFormValue, getDynNumber } from '../../utils/dynamic-props.js';
 import { propKeys } from '../props.js';
@@ -22,7 +22,7 @@ describe('propKeys', () => {
 
 describe('_initializeFormFieldProperties', () => {
   it('initializes multi-select fields with empty arrays', () => {
-    const form = new DeForm();
+    const form = new deform();
     const config: FormConfig = {
       sections: [
         {
@@ -46,7 +46,7 @@ describe('_initializeFormFieldProperties', () => {
   });
 
   it('initializes toggle-field variant index from default', () => {
-    const form = new DeForm();
+    const form = new deform();
     const config: FormConfig = {
       sections: [
         {
@@ -73,7 +73,7 @@ describe('_initializeFormFieldProperties', () => {
   });
 
   it('stores provided default values for multiple field types', () => {
-    const form = new DeForm();
+    const form = new deform();
     const config: FormConfig = {
       sections: [
         {

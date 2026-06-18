@@ -1,12 +1,12 @@
 import type { TemplateResult } from 'lit';
 import { html } from 'lit';
-import type { CheckboxFieldConfig, DeForm } from '../../typedefs/index.js';
+import type { CheckboxFieldConfig, deform } from '../../typedefs/index.js';
 import { getDynBoolean, getDynFormValue } from '../../utils/dynamic-props.js';
 
 /**
  * Renders a checkbox field.
  */
-export function _render_checkbox(this: DeForm, field: CheckboxFieldConfig): TemplateResult {
+export function _render_checkbox(this: deform, field: CheckboxFieldConfig): TemplateResult {
   const { currentKey, isDirtyKey } = this.propKeys(field.name);
   return html`<sl-checkbox
     name=${field.name}

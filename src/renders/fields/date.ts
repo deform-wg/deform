@@ -1,7 +1,7 @@
 import type { TemplateResult } from 'lit';
 import { html } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
-import type { DateFieldConfig, DeForm } from '../../typedefs/index.js';
+import type { DateFieldConfig, deform } from '../../typedefs/index.js';
 import { getDynBoolean, getDynFormValue } from '../../utils/dynamic-props.js';
 
 const ifd = ifDefined;
@@ -9,7 +9,7 @@ const ifd = ifDefined;
 /**
  * Renders a date input field.
  */
-export function _render_date(this: DeForm, field: DateFieldConfig): TemplateResult {
+export function _render_date(this: deform, field: DateFieldConfig): TemplateResult {
   const { currentKey, isDirtyKey } = this.propKeys(field.name);
   return html`
     <sl-input

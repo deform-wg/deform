@@ -1,7 +1,7 @@
 import type { TemplateResult } from 'lit';
 import { html } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
-import type { DeForm, TextFieldConfig } from '../../typedefs/index.js';
+import type { deform, TextFieldConfig } from '../../typedefs/index.js';
 import { getDynBoolean, getDynFormValue } from '../../utils/dynamic-props.js';
 
 const ifd = ifDefined;
@@ -14,7 +14,7 @@ interface RenderOptions {
  * Renders a text input field.
  */
 export function _render_text(
-  this: DeForm,
+  this: deform,
   field: TextFieldConfig,
   options: RenderOptions,
 ): TemplateResult {

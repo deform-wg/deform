@@ -1,7 +1,7 @@
 import { render } from 'lit';
 import { describe, expect, it, vi } from 'vitest';
 import { _initializeValuesPreservingEdits } from '../core/props.js';
-import { DeForm } from '../de-form.js';
+import { deform } from '../deform.js';
 import type { FormConfig } from '../typedefs/index.js';
 import { getDynBoolean, getDynFormValue, getDynNumber } from '../utils/dynamic-props.js';
 
@@ -24,9 +24,9 @@ const sampleFields: FormConfig = {
   ],
 };
 
-describe('DeForm component', () => {
+describe('deForm component', () => {
   it('keeps non-primitive config on properties and internal flags in state only', () => {
-    const properties = DeForm.properties;
+    const properties = deform.properties;
 
     expect(properties.values).toMatchObject({ type: Object, attribute: false });
     expect(properties.fields).toMatchObject({ type: Object, attribute: false });
@@ -36,7 +36,7 @@ describe('DeForm component', () => {
   });
 
   it('initializes with default properties', () => {
-    const form = new DeForm();
+    const form = new deform();
 
     expect(form.theme).toBe('dark');
     expect(form.accent).toBe('sky');
@@ -49,7 +49,7 @@ describe('DeForm component', () => {
   });
 
   it('creates reactive properties for field definitions', () => {
-    const form = new DeForm();
+    const form = new deform();
 
     form.fields = sampleFields;
     form._checkForChanges();
@@ -60,7 +60,7 @@ describe('DeForm component', () => {
   });
 
   it('applies top-level form configuration properties when fields are assigned', () => {
-    const form = new DeForm();
+    const form = new deform();
 
     form.fields = {
       ...sampleFields,
@@ -83,7 +83,7 @@ describe('DeForm component', () => {
   });
 
   it('preserves dirty edits when new values arrive', () => {
-    const form = new DeForm();
+    const form = new deform();
     form.fields = sampleFields;
     _initializeValuesPreservingEdits.call(form, { name: 'Alice', color: 'red' });
 
@@ -97,7 +97,7 @@ describe('DeForm component', () => {
   });
 
   it('returns form values and state', () => {
-    const form = new DeForm();
+    const form = new deform();
     form.fields = sampleFields;
     _initializeValuesPreservingEdits.call(form, { name: 'Alice', color: 'blue' });
 
@@ -109,7 +109,7 @@ describe('DeForm component', () => {
   });
 
   it('tracks dirty count when fields are modified', () => {
-    const form = new DeForm();
+    const form = new deform();
     form.fields = sampleFields;
     _initializeValuesPreservingEdits.call(form, { name: 'Alice', color: 'red' });
 
@@ -120,7 +120,7 @@ describe('DeForm component', () => {
   });
 
   it('renders a loader when fields are missing', () => {
-    const form = new DeForm();
+    const form = new deform();
     const container = document.createElement('div');
 
     render(form.render(), container);
@@ -129,7 +129,7 @@ describe('DeForm component', () => {
   });
 
   it('renders form wrapper when fields are present', () => {
-    const form = new DeForm();
+    const form = new deform();
     form.fields = sampleFields;
     const container = document.createElement('div');
 
@@ -139,7 +139,7 @@ describe('DeForm component', () => {
   });
 
   it('updates theme classes when theme changes', async () => {
-    const form = new DeForm();
+    const form = new deform();
     document.body.appendChild(form);
     await form.updateComplete;
 
@@ -150,7 +150,7 @@ describe('DeForm component', () => {
   });
 
   it('toggleLoader toggles _initializing state', () => {
-    const form = new DeForm();
+    const form = new deform();
     expect(form._initializing).toBe(false);
 
     form.toggleLoader();
@@ -162,7 +162,7 @@ describe('DeForm component', () => {
 
   it('toggleCelebrate sets and clears _celebrate flag', async () => {
     vi.useFakeTimers();
-    const form = new DeForm();
+    const form = new deform();
     expect(form._celebrate).toBe(false);
 
     form.toggleCelebrate();
@@ -175,7 +175,7 @@ describe('DeForm component', () => {
   });
 
   it('toggleLabelLoader toggles label loading state for a field', () => {
-    const form = new DeForm();
+    const form = new deform();
     form.fields = sampleFields;
     const { labelKey } = form.propKeys('name');
 
@@ -189,7 +189,7 @@ describe('DeForm component', () => {
   });
 
   it('getAccents returns available accents and current selection', () => {
-    const form = new DeForm();
+    const form = new deform();
     form.accent = 'sky';
 
     const { accents, current } = form.getAccents();
@@ -200,7 +200,7 @@ describe('DeForm component', () => {
   });
 
   it('initializes field values when values property is set', async () => {
-    const form = new DeForm();
+    const form = new deform();
     form.fields = {
       sections: [
         {

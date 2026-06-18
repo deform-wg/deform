@@ -1,7 +1,7 @@
 import type { TemplateResult } from 'lit';
 import { css, html, nothing } from 'lit';
 import type {
-  DeForm,
+  deform,
   FieldConfig,
   RenderOptions,
   ToggleFieldConfig,
@@ -17,7 +17,7 @@ const fieldToggleStyles = css`
 /**
  * Renders a toggle field that switches between multiple field variants.
  */
-export function _render_toggleField(this: DeForm, field: ToggleFieldConfig): TemplateResult {
+export function _render_toggleField(this: deform, field: ToggleFieldConfig): TemplateResult {
   const { variantIndexKey } = this.propKeys(field.name);
 
   const switchField = (showingIndex: number): void => {

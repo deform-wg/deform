@@ -1,10 +1,10 @@
 import { describe, expect, it, vi } from 'vitest';
-import { DeForm } from '../../de-form.js';
+import { deform } from '../../deform.js';
 import { focus } from '../focus.js';
 
 describe('focus', () => {
   it('focuses a field by name', () => {
-    const form = new DeForm();
+    const form = new deform();
     const shadowRoot = document.createElement('div');
     const input = document.createElement('input');
     input.setAttribute('name', 'email');
@@ -18,7 +18,7 @@ describe('focus', () => {
   });
 
   it('does nothing when fieldName is empty', () => {
-    const form = new DeForm();
+    const form = new deform();
     const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
     focus.call(form, '');
@@ -28,7 +28,7 @@ describe('focus', () => {
   });
 
   it('warns when field is not found', () => {
-    const form = new DeForm();
+    const form = new deform();
     const shadowRoot = document.createElement('div');
     Object.defineProperty(form, 'shadowRoot', { value: shadowRoot });
     const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
@@ -40,7 +40,7 @@ describe('focus', () => {
   });
 
   it('warns when focus method does not exist', () => {
-    const form = new DeForm();
+    const form = new deform();
     const shadowRoot = document.createElement('div');
     const element = document.createElement('div');
     element.setAttribute('name', 'custom');

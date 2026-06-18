@@ -21,7 +21,7 @@ function deformPublicApiFilterPlugin() {
 }
 
 export default {
-  globs: ['src/de-form.ts'],
+  globs: ['src/deform.ts'],
   exclude: ['src/__tests__/**', 'form-builder/**'],
   outdir: 'dist',
   litelement: true,

@@ -35,7 +35,7 @@ import {
   toOptionalString,
 } from './utils.js';
 
-type DeFormValueChangeDetail = {
+type deformValueChangeDetail = {
   fieldName: string;
   newValue: FormValue;
 };
@@ -64,7 +64,7 @@ const MOBILE_FAB_HOST_STYLE = [
 const MOBILE_TOOLBOX_DRAWER_STYLE = '--size: 90dvh;';
 const MOBILE_SETTINGS_DRAWER_STYLE = '--size: 90dvh;';
 
-function isDeFormValueChangeDetail(value: unknown): value is DeFormValueChangeDetail {
+function isdeformValueChangeDetail(value: unknown): value is deformValueChangeDetail {
   if (!isRecord(value)) return false;
   const fieldName = value.fieldName;
   const newValue = value.newValue;
@@ -1680,7 +1680,7 @@ export class FormBuilder extends LitElement {
 
   private getChangeDetail(event: Event): { fieldName: string; newValue: FormValue } | null {
     if (!(event instanceof CustomEvent)) return null;
-    if (!isDeFormValueChangeDetail(event.detail)) return null;
+    if (!isdeformValueChangeDetail(event.detail)) return null;
     return { fieldName: event.detail.fieldName, newValue: event.detail.newValue };
   }
 

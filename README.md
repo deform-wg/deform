@@ -38,7 +38,19 @@ form.fields = {
 };
 ```
 
-The `@deform-wg/deform` entrypoint registers the custom element and loads both Shoelace light/dark theme styles automatically, so the form renders correctly with a single import.
+The `@deform-wg/deform` entrypoint registers the `<de-form>` custom element and loads both Shoelace light/dark theme styles automatically, so the form renders correctly with a single import.
+
+For programmatic access, import the `deform` class:
+
+```ts
+import { deform } from '@deform-wg/deform';
+```
+
+## Naming
+
+- **Product name (titles, headings):** deForm
+- **Package, files, code identifiers:** `deform`, `@deform-wg/deform`, `import { deform }`
+- **Custom element tag:** `<de-form>` (HTML requires a hyphen in custom element names)
 
 ## Installation
 

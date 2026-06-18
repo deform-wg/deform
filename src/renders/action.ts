@@ -1,6 +1,6 @@
 import type { TemplateResult } from 'lit';
 import { html } from 'lit';
-import type { DeForm } from '../typedefs/index.js';
+import type { deform } from '../typedefs/index.js';
 import { getDynBoolean } from '../utils/dynamic-props.js';
 
 /**
@@ -8,7 +8,7 @@ import { getDynBoolean } from '../utils/dynamic-props.js';
  * When clicked, dispatches an 'action-label-triggered' event.
  */
 export function generateActionLabel(
-  formInstance: DeForm,
+  formInstance: deform,
   fieldName: string,
   actionName: string,
   actionLabel: string,
