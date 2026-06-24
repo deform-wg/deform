@@ -13,6 +13,7 @@ interface RenderOptions {
 
 interface SearchableState {
   filter: string;
+  activeIndex: number;
 }
 
 const searchableSelectStates = new WeakMap<deform, Map<string, SearchableState>>();
@@ -28,7 +29,7 @@ export function _render_select(
   const { currentKey, isDirtyKey } = this.propKeys(field.name);
   const currentValue = getDynFormValue(this, currentKey);
   const fieldOptions = Array.isArray(field.options) ? field.options : [];
-  const searchable = field.searchable && !field.multiple;
+  const searchable = field.searchable;
 
   if (searchable) {
     return renderSearchableSelect(this, field, fieldOptions, {
@@ -82,11 +83,16 @@ function renderSearchableSelect(
   },
 ): TemplateResult {
   const state = getSearchableSelectState(host, field.name);
-  const selectedOption = fieldOptions.find((option) => option.value === options.currentValue);
-  const hasValue = !!selectedOption;
+  const selectedOptions = getSelectedOptions(fieldOptions, options.currentValue, field.multiple);
+  const hasValue = selectedOptions.length > 0;
   const showClear = field.clearable && hasValue && !field.disabled;
   const filteredOptions = getFilteredOptions(fieldOptions, state.filter);
-  const currentValue = String(options.currentValue ?? '');
+  const activeIndex = getSearchableActiveIndex(state, filteredOptions);
+  const currentValue = field.multiple
+    ? selectedOptions.map((option) => String(option.value))
+    : String(options.currentValue ?? '');
+  const triggerLabel = getSearchableTriggerLabel(field, selectedOptions);
+  const maxVisibleOptions = getMaxVisibleOptions(field.maxOptionsVisible);
 
   return html`
     <div class="searchable-select-field">
@@ -103,19 +109,24 @@ function renderSearchableSelect(
       <select
         class="searchable-select-native-control"
         name=${field.name}
-        .value=${currentValue}
+        .value=${field.multiple ? '' : currentValue}
+        ?multiple=${field.multiple}
         ?required=${field.required}
         ?disabled=${field.disabled}
         ?data-dirty-field=${options.dirty}
         tabindex="-1"
         aria-hidden="true"
       >
-        <option value="" ?selected=${currentValue === ''}></option>
+        ${
+          field.multiple
+            ? nothing
+            : html`<option value="" ?selected=${currentValue === ''}></option>`
+        }
         ${fieldOptions.map(
           (option) =>
             html`<option
               value=${String(option.value)}
-              ?selected=${String(option.value) === currentValue}
+              ?selected=${isOptionSelected(option, options.currentValue, field.multiple)}
             ></option>`,
         )}
       </select>
@@ -126,7 +137,8 @@ function renderSearchableSelect(
         distance="0"
         sync="width"
         ?hoist=${field.hoist}
-        @sl-show=${() => resetSearchableFilter(host, field.name)}
+        @sl-show=${() => resetSearchableFilter(host, field.name, filteredOptions)}
+        @sl-after-show=${focusSearchableInput}
         @sl-hide=${(event: Event) => event.stopPropagation()}
       >
         <button
@@ -139,7 +151,7 @@ function renderSearchableSelect(
           aria-haspopup="listbox"
         >
           <span class="searchable-select-trigger-label ${hasValue ? '' : 'placeholder'}">
-            ${hasValue ? selectedOption.label : field.placeholder || 'Select an option'}
+            ${triggerLabel}
           </span>
           ${
             showClear
@@ -148,7 +160,7 @@ function renderSearchableSelect(
                 class="searchable-select-clear"
                 name="x-lg"
                 label="Clear"
-                @click=${(event: Event) => clearSearchableSelection(host, field.name, event)}
+                @click=${(event: Event) => clearSearchableSelection(host, field, event)}
               ></sl-icon-button>
             `
               : nothing
@@ -156,7 +168,11 @@ function renderSearchableSelect(
           <sl-icon name="chevron-down" class="searchable-select-chevron"></sl-icon>
         </button>
 
-        <div class="searchable-select-panel" role="dialog">
+        <div
+          class="searchable-select-panel"
+          role="dialog"
+          style=${`--searchable-select-visible-options: ${maxVisibleOptions};`}
+        >
           <div class="searchable-select-header">
             <sl-icon-button
               name="arrow-left"
@@ -175,6 +191,8 @@ function renderSearchableSelect(
               .value=${state.filter}
               @sl-input=${(event: Event) => updateSearchableFilter(host, field.name, event)}
               @sl-clear=${() => setSearchableFilter(host, field.name, '')}
+              @keydown=${(event: KeyboardEvent) =>
+                handleSearchableKeyDown(host, field, filteredOptions, event)}
             >
               <sl-icon slot="prefix" name="search"></sl-icon>
             </sl-input>
@@ -187,8 +205,14 @@ function renderSearchableSelect(
                 : repeat(
                     filteredOptions,
                     (option) => `${String(option.value)}:${option.label}`,
-                    (option) =>
-                      renderSearchableOption(host, field.name, option, options.currentValue),
+                    (option, index) =>
+                      renderSearchableOption(
+                        host,
+                        field,
+                        option,
+                        options.currentValue,
+                        index === activeIndex,
+                      ),
                   )
             }
           </div>
@@ -202,20 +226,22 @@ function renderSearchableSelect(
 
 function renderSearchableOption(
   host: deform,
-  fieldName: string,
+  field: SelectFieldConfig,
   option: SelectOption,
   currentValue: FormValue,
+  active: boolean,
 ): TemplateResult {
-  const selected = option.value === currentValue;
+  const selected = isOptionSelected(option, currentValue, field.multiple);
 
   return html`
     <button
       type="button"
       role="option"
       aria-selected=${selected ? 'true' : 'false'}
-      class="searchable-select-option ${selected ? 'selected' : ''}"
+      class="searchable-select-option ${selected ? 'selected' : ''} ${active ? 'active' : ''}"
       ?disabled=${option.disabled}
-        @click=${(event: Event) => selectSearchableOption(host, fieldName, option, event)}
+      tabindex=${active ? '0' : '-1'}
+      @click=${(event: Event) => selectSearchableOption(host, field, option, event)}
     >
       <span class="searchable-select-option-label">${option.label}</span>
       ${selected ? html`<sl-icon name="check2" class="searchable-select-check"></sl-icon>` : nothing}
@@ -238,6 +264,55 @@ function getFilteredOptions(options: SelectOption[], filter: string): SelectOpti
   });
 }
 
+function getSelectedOptions(
+  options: SelectOption[],
+  value: FormValue,
+  multiple: boolean | undefined,
+): SelectOption[] {
+  if (multiple) {
+    const values = Array.isArray(value) ? value.map(String) : [];
+    return options.filter((option) => values.includes(String(option.value)));
+  }
+
+  return options.filter((option) => option.value === value);
+}
+
+function isOptionSelected(
+  option: SelectOption,
+  value: FormValue,
+  multiple: boolean | undefined,
+): boolean {
+  if (multiple) {
+    return Array.isArray(value) && value.map(String).includes(String(option.value));
+  }
+
+  return option.value === value;
+}
+
+function getSearchableTriggerLabel(
+  field: SelectFieldConfig,
+  selectedOptions: SelectOption[],
+): string {
+  if (selectedOptions.length === 0) return field.placeholder || 'Select an option';
+  if (!field.multiple) return selectedOptions[0]?.label ?? field.placeholder ?? 'Select an option';
+  return `${selectedOptions.length} option${selectedOptions.length === 1 ? '' : 's'} selected`;
+}
+
+function getMaxVisibleOptions(maxOptionsVisible: number | undefined): number {
+  if (typeof maxOptionsVisible !== 'number' || maxOptionsVisible <= 0) return 3;
+  return maxOptionsVisible;
+}
+
+function getSearchableActiveIndex(state: SearchableState, options: SelectOption[]): number {
+  const enabledIndexes = getEnabledOptionIndexes(options);
+  if (enabledIndexes.length === 0) return -1;
+  return enabledIndexes.includes(state.activeIndex) ? state.activeIndex : (enabledIndexes[0] ?? -1);
+}
+
+function getEnabledOptionIndexes(options: SelectOption[]): number[] {
+  return options.flatMap((option, index) => (option.disabled ? [] : [index]));
+}
+
 function getSearchableSelectState(host: deform, fieldName: string): SearchableState {
   let hostState = searchableSelectStates.get(host);
   if (!hostState) {
@@ -247,7 +322,7 @@ function getSearchableSelectState(host: deform, fieldName: string): SearchableSt
 
   let fieldState = hostState.get(fieldName);
   if (!fieldState) {
-    fieldState = { filter: '' };
+    fieldState = { filter: '', activeIndex: 0 };
     hostState.set(fieldName, fieldState);
   }
 
@@ -259,34 +334,100 @@ function updateSearchableFilter(host: deform, fieldName: string, event: Event): 
   setSearchableFilter(host, fieldName, typeof value === 'string' ? value : '');
 }
 
-function resetSearchableFilter(host: deform, fieldName: string): void {
-  getSearchableSelectState(host, fieldName).filter = '';
+function resetSearchableFilter(host: deform, fieldName: string, options: SelectOption[]): void {
+  const state = getSearchableSelectState(host, fieldName);
+  state.filter = '';
+  state.activeIndex = getEnabledOptionIndexes(options)[0] ?? -1;
   requestHostUpdate(host);
 }
 
 function setSearchableFilter(host: deform, fieldName: string, filter: string): void {
   const state = getSearchableSelectState(host, fieldName);
   state.filter = filter;
+  state.activeIndex = 0;
   requestHostUpdate(host);
 }
 
-function clearSearchableSelection(host: deform, fieldName: string, event: Event): void {
+function clearSearchableSelection(host: deform, field: SelectFieldConfig, event: Event): void {
   event.stopPropagation();
-  dispatchChoice(host, fieldName, '');
+  dispatchChoice(host, field.name, field.multiple ? [] : '');
 }
 
 function selectSearchableOption(
   host: deform,
-  fieldName: string,
+  field: SelectFieldConfig,
   option: SelectOption,
   event: Event,
 ): void {
   if (option.disabled) return;
-  dispatchChoice(host, fieldName, option.value);
-  hideSearchableDropdown(event);
+  dispatchChoice(host, field.name, getNextSearchableValue(host, field, option));
+  if (!field.multiple) {
+    hideSearchableDropdown(event);
+  }
 }
 
-function dispatchChoice(host: deform, fieldName: string, value: string | number): void {
+function getNextSearchableValue(
+  host: deform,
+  field: SelectFieldConfig,
+  option: SelectOption,
+): string | number | Array<string | number> {
+  if (!field.multiple) return option.value;
+
+  const { currentKey } = host.propKeys(field.name);
+  const currentValue = getDynFormValue(host, currentKey);
+  const values = Array.isArray(currentValue) ? currentValue : [];
+  const optionValue = option.value;
+  const optionValueText = String(optionValue);
+  const exists = values.some((value) => String(value) === optionValueText);
+  return exists
+    ? values.filter((value) => String(value) !== optionValueText)
+    : [...values, optionValue];
+}
+
+function handleSearchableKeyDown(
+  host: deform,
+  field: SelectFieldConfig,
+  filteredOptions: SelectOption[],
+  event: KeyboardEvent,
+): void {
+  if (!['ArrowDown', 'ArrowUp', 'Enter', 'Escape'].includes(event.key)) return;
+
+  event.preventDefault();
+  event.stopPropagation();
+
+  if (event.key === 'Escape') {
+    hideSearchableDropdown(event);
+    return;
+  }
+
+  const state = getSearchableSelectState(host, field.name);
+  const enabledIndexes = getEnabledOptionIndexes(filteredOptions);
+  if (enabledIndexes.length === 0) return;
+
+  const currentEnabledIndex = enabledIndexes.indexOf(
+    getSearchableActiveIndex(state, filteredOptions),
+  );
+
+  if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+    const movement = event.key === 'ArrowDown' ? 1 : -1;
+    const nextEnabledIndex =
+      (currentEnabledIndex + movement + enabledIndexes.length) % enabledIndexes.length;
+    state.activeIndex = enabledIndexes[nextEnabledIndex] ?? enabledIndexes[0] ?? -1;
+    requestHostUpdate(host);
+    return;
+  }
+
+  const activeOption = filteredOptions[getSearchableActiveIndex(state, filteredOptions)];
+  if (event.key === 'Enter' && activeOption) {
+    selectSearchableOption(host, field, activeOption, event);
+  }
+}
+
+function dispatchChoice(
+  host: deform,
+  fieldName: string,
+  value: string | number | Array<string | number>,
+): void {
   host._handleChoice({
     target: {
       name: fieldName,
@@ -300,6 +441,13 @@ function hideSearchableDropdown(event: Event): void {
     | { hide?: () => void }
     | undefined;
   dropdown?.hide?.();
+}
+
+function focusSearchableInput(event: Event): void {
+  const input = (event.currentTarget as Element | null)?.querySelector(
+    '.searchable-select-search',
+  ) as { focus?: () => void } | null;
+  input?.focus?.();
 }
 
 function requestHostUpdate(host: deform): void {

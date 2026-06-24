@@ -119,13 +119,14 @@ describe('renderers/fields', () => {
     );
   });
 
-  it('keeps multiple searchable selects on the native sl-select path', () => {
+  it('renders searchable select when searchable is enabled for multiple selects', () => {
     const form = new deform();
     const field: SelectFieldConfig = {
       name: 'colours',
       type: 'select',
       searchable: true,
       multiple: true,
+      maxOptionsVisible: 2,
       options: [
         { value: 'red', label: 'Red' },
         { value: 'blue', label: 'Blue' },
@@ -138,10 +139,47 @@ describe('renderers/fields', () => {
     const container = document.createElement('div');
     render(template, container);
 
-    expect(container.querySelector('.searchable-select-field')).toBeNull();
-    const select = container.querySelector('sl-select');
-    expect(select).not.toBeNull();
-    expect(select?.hasAttribute('multiple')).toBe(true);
+    expect(container.querySelector('.searchable-select-field')).not.toBeNull();
+    expect(container.querySelector('sl-select')).toBeNull();
+    const nativeControl = container.querySelector(
+      '.searchable-select-native-control',
+    ) as HTMLSelectElement | null;
+    expect(nativeControl?.hasAttribute('multiple')).toBe(true);
+    expect(nativeControl?.selectedOptions.length).toBe(1);
+    expect(nativeControl?.selectedOptions[0]?.value).toBe('red');
+    expect(container.querySelector('.searchable-select-trigger')?.textContent).toContain(
+      '1 option selected',
+    );
+    expect(container.querySelector('.searchable-select-panel')?.getAttribute('style')).toContain(
+      '--searchable-select-visible-options: 2',
+    );
+  });
+
+  it('supports keyboard selection in searchable selects', () => {
+    const form = new deform();
+    const choices: unknown[] = [];
+    form._handleChoice = ((event: Event) => {
+      choices.push((event.target as { value?: unknown }).value);
+    }) as typeof form._handleChoice;
+    const field: SelectFieldConfig = {
+      name: 'colour',
+      type: 'select',
+      searchable: true,
+      options: [
+        { value: 'red', label: 'Red' },
+        { value: 'blue', label: 'Blue' },
+      ],
+    };
+
+    const template = _render_select.call(form, field, {});
+    const container = document.createElement('div');
+    render(template, container);
+
+    const search = container.querySelector('.searchable-select-search');
+    search?.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }));
+    search?.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+
+    expect(choices).toEqual(['blue']);
   });
 
   it('renders option-based fields without crashing when options are missing', () => {

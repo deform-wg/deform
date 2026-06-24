@@ -269,7 +269,13 @@ export const styles = css`
     box-shadow: var(--sl-shadow-large);
     display: flex;
     flex-direction: column;
-    max-height: min(19rem, var(--auto-size-available-height, 19rem));
+    max-height: min(
+      calc(
+        var(--searchable-select-search-height, 3.5rem) +
+        var(--searchable-select-option-height, 2.6rem) * var(--searchable-select-visible-options, 3)
+      ),
+      var(--auto-size-available-height, 19rem)
+    );
     overflow: hidden;
   }
 
@@ -303,9 +309,15 @@ export const styles = css`
     font-family: var(--sl-input-font-family);
     font-size: var(--sl-input-font-size-medium);
     justify-content: space-between;
+    min-height: var(--searchable-select-option-height, 2.6rem);
     padding: 0.65rem 1rem;
     text-align: left;
     width: 100%;
+  }
+
+  .searchable-select-option.active:not(.selected):not(:disabled) {
+    background-color: var(--sl-color-neutral-100);
+    color: var(--sl-color-neutral-900);
   }
 
   .searchable-select-option:hover:not(:disabled) {

@@ -128,7 +128,7 @@ export interface SelectFieldConfig extends BaseFieldConfig {
   maxOptionsVisible?: number;
   /** Hoist dropdown to avoid clipping in overflow containers */
   hoist?: boolean;
-  /** Whether to show a search input inside the dropdown (single-select only) */
+  /** Whether to show a search input inside the dropdown */
   searchable?: boolean;
 }
 
