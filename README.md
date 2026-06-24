@@ -70,16 +70,10 @@ Install dependencies
 npm install
 ```
 
-Run the form builder locally (serves at http://localhost:8000):
+Compile and watch for changes:
 
 ```bash
 npm run dev
-```
-
-Watch library builds to `dist/`:
-
-```bash
-npm run build:watch
 ```
 
 Type check:
@@ -87,6 +81,14 @@ Type check:
 ```bash
 npm run type-check
 ```
+
+Run the form builder locally:
+
+```bash
+npm run form-builder
+```
+
+Then open http://localhost:8000
 
 ## License
 
