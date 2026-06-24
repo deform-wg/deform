@@ -59,6 +59,69 @@ describe('renderers/fields', () => {
     expect(container.querySelectorAll('sl-option').length).toBe(2);
   });
 
+  it('renders searchable select when searchable is enabled for single selects', () => {
+    const form = new deform();
+    const field: SelectFieldConfig = {
+      name: 'timezone',
+      type: 'select',
+      label: 'Timezone',
+      searchable: true,
+      required: true,
+      options: [
+        { value: 'Australia/Melbourne', label: 'Melbourne, Australia', searchText: 'Victoria' },
+        {
+          value: 'Australia/Adelaide',
+          label: 'Adelaide, Australia',
+          searchText: 'South Australia',
+        },
+      ],
+    };
+
+    setDynFormValue(form, form.propKeys('timezone').currentKey, 'Australia/Melbourne');
+
+    const template = _render_select.call(form, field, {});
+    const container = document.createElement('div');
+    render(template, container);
+
+    const searchableSelect = container.querySelector('.searchable-select-field');
+    expect(searchableSelect).not.toBeNull();
+    expect(container.querySelector('sl-select')).toBeNull();
+    const nativeControl = container.querySelector(
+      '.searchable-select-native-control',
+    ) as HTMLSelectElement | null;
+    expect(nativeControl?.getAttribute('name')).toBe('timezone');
+    expect(nativeControl?.hasAttribute('required')).toBe(true);
+    expect(nativeControl?.value).toBe('Australia/Melbourne');
+    expect(container.querySelector('.searchable-select-trigger')?.textContent).toContain(
+      'Melbourne, Australia',
+    );
+  });
+
+  it('keeps multiple searchable selects on the native sl-select path', () => {
+    const form = new deform();
+    const field: SelectFieldConfig = {
+      name: 'colours',
+      type: 'select',
+      searchable: true,
+      multiple: true,
+      options: [
+        { value: 'red', label: 'Red' },
+        { value: 'blue', label: 'Blue' },
+      ],
+    };
+
+    setDynFormValue(form, form.propKeys('colours').currentKey, ['red']);
+
+    const template = _render_select.call(form, field, {});
+    const container = document.createElement('div');
+    render(template, container);
+
+    expect(container.querySelector('.searchable-select-field')).toBeNull();
+    const select = container.querySelector('sl-select');
+    expect(select).not.toBeNull();
+    expect(select?.hasAttribute('multiple')).toBe(true);
+  });
+
   it('renders option-based fields without crashing when options are missing', () => {
     const form = new deform();
 

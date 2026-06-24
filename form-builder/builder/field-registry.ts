@@ -71,6 +71,7 @@ const SEEDPHRASE_SETTINGS: FieldConfig[] = [
 ];
 
 const SELECT_SETTINGS: FieldConfig[] = [
+  { name: 'searchable', type: 'toggle', label: 'Searchable' },
   { name: 'multiple', type: 'toggle', label: 'Multiple' },
   { name: 'clearable', type: 'toggle', label: 'Clearable' },
   { name: 'maxOptionsVisible', type: 'number', label: 'Max Options Visible' },
@@ -338,6 +339,9 @@ export function buildFieldSettingsValues(field: FieldConfig): Record<string, For
   if ('multiple' in field && field.multiple !== undefined) {
     baseValues.multiple = field.multiple;
   }
+  if (field.type === 'select') {
+    baseValues.searchable = field.searchable ?? false;
+  }
   if ('maxOptionsVisible' in field && field.maxOptionsVisible !== undefined) {
     baseValues.maxOptionsVisible = field.maxOptionsVisible;
   }
@@ -483,7 +487,7 @@ const TYPE_KEYS: Record<string, string[]> = {
     'spellcheck',
     'inputmode',
   ],
-  select: ['options', 'multiple', 'clearable', 'maxOptionsVisible', 'hoist'],
+  select: ['options', 'searchable', 'multiple', 'clearable', 'maxOptionsVisible', 'hoist'],
   radio: ['options'],
   radioButton: ['options'],
   checkbox: ['defaultTo', 'indeterminate'],
