@@ -26,7 +26,7 @@
     "build:types": "tsc --project tsconfig.build.json",
     "build:watch": "parcel watch --target lib --cache-dir .parcel-cache/lib",
     "check:builder-field-types": "node scripts/check-builder-field-types.js",
-    "dev": "npm run check:builder-field-types && npm run build:watch",
+    "dev": "npm run form-builder",
     "preform-builder": "npm run clean:form-builder",
     "preform-builder:build": "npm run clean:form-builder",
     "form-builder": "npm run check:builder-field-types && parcel serve --target form-builder --dist-dir form-builder/dist --cache-dir .parcel-cache/form-builder --port 8000 --no-source-maps",
