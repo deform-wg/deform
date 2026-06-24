@@ -26,22 +26,27 @@ export function _render_select(
   options: RenderOptions,
 ): TemplateResult {
   const { currentKey, isDirtyKey } = this.propKeys(field.name);
+  const currentValue = getDynFormValue(this, currentKey);
   const fieldOptions = Array.isArray(field.options) ? field.options : [];
   const searchable = field.searchable && !field.multiple;
 
   if (searchable) {
     return renderSearchableSelect(this, field, fieldOptions, {
-      currentValue: getDynFormValue(this, currentKey),
+      currentValue,
       dirty: getDynBoolean(this, isDirtyKey),
       labelEl: options.labelEl,
     });
   }
 
+  const selectValue = field.multiple ? currentValue : String(currentValue ?? '');
+  const isEmptySingleSelect = !field.multiple && selectValue === '';
+
   return html`
     <sl-select
+      class=${isEmptySingleSelect ? 'select-empty' : ''}
       name=${field.name}
-      .value=${getDynFormValue(this, currentKey)}
-      placeholder=${ifd(field.placeholder)}
+      .value=${selectValue}
+      placeholder=${ifd(field.placeholder ?? (isEmptySingleSelect ? 'Select an option' : undefined))}
       ?multiple=${field.multiple}
       size=${ifd(field.size)}
       maxOptionsVisible=${ifd(field.maxOptionsVisible)}

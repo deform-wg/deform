@@ -59,6 +59,28 @@ describe('renderers/fields', () => {
     expect(container.querySelectorAll('sl-option').length).toBe(2);
   });
 
+  it('renders unselected single selects with an empty value', () => {
+    const form = new deform();
+    const field: SelectFieldConfig = {
+      name: 'pizza',
+      type: 'select',
+      options: [
+        { value: 'margherita', label: 'Margherita' },
+        { value: 'supreme', label: 'Supreme' },
+      ],
+    };
+
+    const template = _render_select.call(form, field, {});
+    const container = document.createElement('div');
+    render(template, container);
+
+    const select = container.querySelector('sl-select');
+    expect(select).not.toBeNull();
+    expect(select?.value).toBe('');
+    expect(select?.classList.contains('select-empty')).toBe(true);
+    expect(select?.getAttribute('placeholder')).toBe('Select an option');
+  });
+
   it('renders searchable select when searchable is enabled for single selects', () => {
     const form = new deform();
     const field: SelectFieldConfig = {

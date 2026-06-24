@@ -132,6 +132,11 @@ export const styles = css`
     position: relative;
   }
 
+  sl-select.select-empty sl-option[tabindex='0'][aria-selected='false']::part(base) {
+    background-color: transparent;
+    color: var(--sl-color-neutral-700);
+  }
+
   .searchable-select-field {
     display: flex;
     flex-direction: column;
