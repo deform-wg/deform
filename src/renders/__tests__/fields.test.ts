@@ -59,6 +59,129 @@ describe('renderers/fields', () => {
     expect(container.querySelectorAll('sl-option').length).toBe(2);
   });
 
+  it('renders unselected single selects with an empty value', () => {
+    const form = new deform();
+    const field: SelectFieldConfig = {
+      name: 'pizza',
+      type: 'select',
+      options: [
+        { value: 'margherita', label: 'Margherita' },
+        { value: 'supreme', label: 'Supreme' },
+      ],
+    };
+
+    const template = _render_select.call(form, field, {});
+    const container = document.createElement('div');
+    render(template, container);
+
+    const select = container.querySelector('sl-select');
+    expect(select).not.toBeNull();
+    expect(select?.value).toBe('');
+    expect(select?.classList.contains('select-empty')).toBe(true);
+    expect(select?.getAttribute('placeholder')).toBe('Select an option');
+  });
+
+  it('renders searchable select when searchable is enabled for single selects', () => {
+    const form = new deform();
+    const field: SelectFieldConfig = {
+      name: 'timezone',
+      type: 'select',
+      label: 'Timezone',
+      searchable: true,
+      required: true,
+      options: [
+        { value: 'Australia/Melbourne', label: 'Melbourne, Australia', searchText: 'Victoria' },
+        {
+          value: 'Australia/Adelaide',
+          label: 'Adelaide, Australia',
+          searchText: 'South Australia',
+        },
+      ],
+    };
+
+    setDynFormValue(form, form.propKeys('timezone').currentKey, 'Australia/Melbourne');
+
+    const template = _render_select.call(form, field, {});
+    const container = document.createElement('div');
+    render(template, container);
+
+    const searchableSelect = container.querySelector('.searchable-select-field');
+    expect(searchableSelect).not.toBeNull();
+    expect(container.querySelector('sl-select')).toBeNull();
+    const nativeControl = container.querySelector(
+      '.searchable-select-native-control',
+    ) as HTMLSelectElement | null;
+    expect(nativeControl?.getAttribute('name')).toBe('timezone');
+    expect(nativeControl?.hasAttribute('required')).toBe(true);
+    expect(nativeControl?.value).toBe('Australia/Melbourne');
+    expect(container.querySelector('.searchable-select-trigger')?.textContent).toContain(
+      'Melbourne, Australia',
+    );
+  });
+
+  it('renders searchable select when searchable is enabled for multiple selects', () => {
+    const form = new deform();
+    const field: SelectFieldConfig = {
+      name: 'colours',
+      type: 'select',
+      searchable: true,
+      multiple: true,
+      maxOptionsVisible: 2,
+      options: [
+        { value: 'red', label: 'Red' },
+        { value: 'blue', label: 'Blue' },
+      ],
+    };
+
+    setDynFormValue(form, form.propKeys('colours').currentKey, ['red']);
+
+    const template = _render_select.call(form, field, {});
+    const container = document.createElement('div');
+    render(template, container);
+
+    expect(container.querySelector('.searchable-select-field')).not.toBeNull();
+    expect(container.querySelector('sl-select')).toBeNull();
+    const nativeControl = container.querySelector(
+      '.searchable-select-native-control',
+    ) as HTMLSelectElement | null;
+    expect(nativeControl?.hasAttribute('multiple')).toBe(true);
+    expect(nativeControl?.selectedOptions.length).toBe(1);
+    expect(nativeControl?.selectedOptions[0]?.value).toBe('red');
+    expect(container.querySelector('.searchable-select-trigger')?.textContent).toContain(
+      '1 option selected',
+    );
+    expect(container.querySelector('.searchable-select-panel')?.getAttribute('style')).toContain(
+      '--searchable-select-visible-options: 2',
+    );
+  });
+
+  it('supports keyboard selection in searchable selects', () => {
+    const form = new deform();
+    const choices: unknown[] = [];
+    form._handleChoice = ((event: Event) => {
+      choices.push((event.target as { value?: unknown }).value);
+    }) as typeof form._handleChoice;
+    const field: SelectFieldConfig = {
+      name: 'colour',
+      type: 'select',
+      searchable: true,
+      options: [
+        { value: 'red', label: 'Red' },
+        { value: 'blue', label: 'Blue' },
+      ],
+    };
+
+    const template = _render_select.call(form, field, {});
+    const container = document.createElement('div');
+    render(template, container);
+
+    const search = container.querySelector('.searchable-select-search');
+    search?.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }));
+    search?.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+
+    expect(choices).toEqual(['blue']);
+  });
+
   it('renders option-based fields without crashing when options are missing', () => {
     const form = new deform();
 

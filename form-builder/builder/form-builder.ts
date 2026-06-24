@@ -1565,6 +1565,11 @@ export class FormBuilder extends LitElement {
           field.multiple = toOptionalBoolean(rawValue);
         }
         return;
+      case 'searchable':
+        if (field.type === 'select') {
+          field.searchable = toOptionalBoolean(rawValue);
+        }
+        return;
       case 'hoist':
         if ('hoist' in field) {
           field.hoist = toOptionalBoolean(rawValue);
