@@ -137,8 +137,8 @@ function renderSearchableSelect(
         distance="0"
         sync="width"
         ?hoist=${field.hoist}
-        @sl-show=${() => resetSearchableFilter(host, field.name, filteredOptions)}
-        @sl-after-show=${focusSearchableInput}
+        @sl-show=${() => resetSearchableFilter(host, field, filteredOptions, options.currentValue)}
+        @sl-after-show=${focusSearchableInputAndRevealSelection}
         @sl-hide=${(event: Event) => event.stopPropagation()}
       >
         <button
@@ -334,10 +334,19 @@ function updateSearchableFilter(host: deform, fieldName: string, event: Event): 
   setSearchableFilter(host, fieldName, typeof value === 'string' ? value : '');
 }
 
-function resetSearchableFilter(host: deform, fieldName: string, options: SelectOption[]): void {
-  const state = getSearchableSelectState(host, fieldName);
+function resetSearchableFilter(
+  host: deform,
+  field: SelectFieldConfig,
+  options: SelectOption[],
+  currentValue: FormValue,
+): void {
+  const state = getSearchableSelectState(host, field.name);
+  const selectedIndex = options.findIndex(
+    (option) => !option.disabled && isOptionSelected(option, currentValue, field.multiple),
+  );
   state.filter = '';
-  state.activeIndex = getEnabledOptionIndexes(options)[0] ?? -1;
+  state.activeIndex =
+    selectedIndex >= 0 ? selectedIndex : (getEnabledOptionIndexes(options)[0] ?? -1);
   requestHostUpdate(host);
 }
 
@@ -443,11 +452,15 @@ function hideSearchableDropdown(event: Event): void {
   dropdown?.hide?.();
 }
 
-function focusSearchableInput(event: Event): void {
-  const input = (event.currentTarget as Element | null)?.querySelector(
-    '.searchable-select-search',
-  ) as { focus?: () => void } | null;
+function focusSearchableInputAndRevealSelection(event: Event): void {
+  const dropdown = event.currentTarget as Element | null;
+  const input = dropdown?.querySelector('.searchable-select-search') as {
+    focus?: () => void;
+  } | null;
   input?.focus?.();
+
+  const selectedOption = dropdown?.querySelector('.searchable-select-option[aria-selected="true"]');
+  selectedOption?.scrollIntoView({ block: 'nearest' });
 }
 
 function requestHostUpdate(host: deform): void {

@@ -1,5 +1,5 @@
 import { render } from 'lit';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { deform } from '../../deform.js';
 import type {
   CheckboxFieldConfig,
@@ -153,6 +153,40 @@ describe('renderers/fields', () => {
     expect(container.querySelector('.searchable-select-panel')?.getAttribute('style')).toContain(
       '--searchable-select-visible-options: 2',
     );
+  });
+
+  it('reveals the selected option when a searchable select opens', () => {
+    const form = new deform();
+    const field: SelectFieldConfig = {
+      name: 'timezone',
+      type: 'select',
+      searchable: true,
+      options: [
+        { value: 'Africa/Abidjan', label: 'Abidjan, Côte d’Ivoire' },
+        { value: 'America/New_York', label: 'New York, United States' },
+        { value: 'Australia/Melbourne', label: 'Melbourne, Australia' },
+      ],
+    };
+
+    setDynFormValue(form, form.propKeys('timezone').currentKey, 'Australia/Melbourne');
+
+    const template = _render_select.call(form, field, {});
+    const container = document.createElement('div');
+    render(template, container);
+
+    const selectedOption = container.querySelector<HTMLElement>(
+      '.searchable-select-option[aria-selected="true"]',
+    );
+    if (!selectedOption) throw new Error('Expected the selected option to render');
+    const scrollIntoView = vi.fn();
+    selectedOption.scrollIntoView = scrollIntoView;
+    const searchInput = container.querySelector<HTMLElement>('.searchable-select-search');
+    if (!searchInput) throw new Error('Expected the search input to render');
+    searchInput.focus = vi.fn();
+
+    container.querySelector('sl-dropdown')?.dispatchEvent(new CustomEvent('sl-after-show'));
+
+    expect(scrollIntoView).toHaveBeenCalledWith({ block: 'nearest' });
   });
 
   it('supports keyboard selection in searchable selects', () => {
