@@ -1,6 +1,8 @@
 import type { FormConfig } from '../../src/typedefs/index.js';
 
 export const defaultConfig: FormConfig = {
+  theme: 'dark',
+  accent: 'lime',
   sections: [
     {
       name: 'profile',

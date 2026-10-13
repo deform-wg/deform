@@ -53,6 +53,15 @@ type CodeValidationState = {
 };
 
 const MOBILE_MEDIA_QUERY = '(max-width: 960px)';
+const ACCENT_STEPS = [50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950];
+
+function formAccentStyle(accent: string | undefined): string {
+  const palette = accent && supportedAccents.some(({ name }) => name === accent) ? accent : 'lime';
+  return ACCENT_STEPS.map(
+    (step) => `--sl-color-primary-${step}:var(--sl-color-${palette}-${step})`,
+  ).join(';');
+}
+
 const MOBILE_FAB_HOST_STYLE = [
   'position: fixed',
   'right: max(var(--sl-spacing-medium), env(safe-area-inset-right, 0px))',
@@ -193,6 +202,9 @@ export class FormBuilder extends LitElement {
 
   render() {
     return html`
+      <!-- Theme classes on preview forms live inside this shadow root. -->
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.20.1/cdn/themes/light.css" />
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.20.1/cdn/themes/dark.css" />
       <div class="header">
         <div class="header-actions">
           ${
@@ -707,7 +719,8 @@ export class FormBuilder extends LitElement {
                           <de-form
                             .fields=${previewConfig}
                             theme=${previewConfig.theme ?? 'dark'}
-                            accent=${previewConfig.accent ?? 'sky'}
+                            accent=${previewConfig.accent ?? 'lime'}
+                            style=${formAccentStyle(previewConfig.accent)}
                           ></de-form>
                         </div>
                       </div>
@@ -729,7 +742,8 @@ export class FormBuilder extends LitElement {
         <de-form
           .fields=${this.displayConfig}
           theme=${this.displayConfig.theme ?? 'dark'}
-          accent=${this.displayConfig.accent ?? 'sky'}
+          accent=${this.displayConfig.accent ?? 'lime'}
+          style=${formAccentStyle(this.displayConfig.accent)}
           orientation=${this.displayConfig.orientation ?? 'portrait'}
           .requireCommit=${this.displayConfig.requireCommit ?? false}
           .markModifiedFields=${this.displayConfig.markModifiedFields ?? false}
@@ -833,7 +847,7 @@ export class FormBuilder extends LitElement {
     const values = {
       theme: this.config.theme ?? 'dark',
       orientation: this.config.orientation ?? 'portrait',
-      accent: this.config.accent ?? 'sky',
+      accent: this.config.accent ?? 'lime',
       requireCommit: this.config.requireCommit ?? false,
       markModifiedFields: this.config.markModifiedFields ?? false,
       showModifiedCount: this.config.showModifiedCount ?? false,
@@ -844,8 +858,9 @@ export class FormBuilder extends LitElement {
       <de-form
         .fields=${{ sections: [{ name: 'form', fields }] }}
         .values=${values}
-        theme=${this.config.theme ?? 'dark'}
-        accent=${this.config.accent ?? 'sky'}
+        theme="dark"
+        accent="lime"
+        style=${formAccentStyle('lime')}
         @deform-value-change=${this.handleFormSettingsChange}
       ></de-form>
     `;
@@ -866,8 +881,9 @@ export class FormBuilder extends LitElement {
           submitLabel: section.submitLabel,
           submitLabelSuccess: section.submitLabelSuccess,
         }}
-        theme=${this.config.theme ?? 'dark'}
-        accent=${this.config.accent ?? 'sky'}
+        theme="dark"
+        accent="lime"
+        style=${formAccentStyle('lime')}
         @deform-value-change=${this.handleSectionSettingsChange}
       ></de-form>
     `;
@@ -884,8 +900,9 @@ export class FormBuilder extends LitElement {
         html`<de-form
           .fields=${{ sections: [{ name: 'field', fields }] }}
           .values=${values}
-          theme=${this.config.theme ?? 'dark'}
-          accent=${this.config.accent ?? 'sky'}
+          theme="dark"
+          accent="lime"
+          style=${formAccentStyle('lime')}
           @deform-value-change=${this.handleFieldSettingsChange}
         ></de-form>`,
       )}
@@ -2039,13 +2056,16 @@ export class FormBuilder extends LitElement {
 
   private applyThemeClass(): void {
     const theme = this.config.theme ?? 'dark';
-    const accent = this.config.accent ?? 'sky';
     this.setAttribute('data-theme', theme);
-    this.setAttribute('accent', accent);
+    // The editor chrome stays dark; the form being edited keeps its own theme.
+    this.setAttribute('accent', 'lime');
+    this.classList.add('sl-theme-dark');
+    this.style.setProperty('--sl-font-sans', '"IBM Plex Sans", Arial, sans-serif');
+    this.style.setProperty('--sl-font-mono', '"IBM Plex Mono", monospace');
     const body = this.ownerDocument?.body;
     if (body) {
-      body.classList.toggle('sl-theme-dark', theme === 'dark');
-      body.classList.toggle('sl-theme-light', theme === 'light');
+      body.classList.add('sl-theme-dark');
+      body.classList.remove('sl-theme-light');
     }
   }
 
