@@ -8,6 +8,8 @@
       "!coverage",
       "!form-builder/dist",
       "!form-builder/.parcel-cache",
+      "!landing/dist",
+      "!landing/.parcel-cache",
       "!src/vendor",
       "!**/*.d.ts",
       "!**/*.svg"
