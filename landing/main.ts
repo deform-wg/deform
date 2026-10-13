@@ -2,74 +2,39 @@ import '../src/index.js';
 import { deform } from '../src/deform.js';
 import type { FieldConfig, FormConfig } from '../src/typedefs/index.js';
 
-type CustomerType = 'person' | 'organisation';
+type ExampleSize = 'small' | 'big' | 'all';
 type ExampleTab = 'form' | 'code';
 
-// This is application data: the form is assembled from the selected record type.
-const intakeData: {
-  common: FieldConfig[];
-  byCustomerType: Record<CustomerType, { description: string; fields: FieldConfig[] }>;
-} = {
-  common: [
-    {
-      name: 'contact',
-      type: 'text',
-      label: 'Contact name',
-      required: true,
-      placeholder: 'Your name',
-    },
-    {
-      name: 'email',
-      type: 'email',
-      label: 'Email address',
-      required: true,
-      placeholder: 'you@example.com',
-    },
-  ],
-  byCustomerType: {
-    person: {
-      description: 'A few details for an individual customer.',
+const examples: Record<ExampleSize, { label: string; description: string; fields: FieldConfig[] }> =
+  {
+    small: {
+      label: 'Small form',
+      description: 'Three questions, one concise configuration.',
       fields: [
         {
-          name: 'project',
-          type: 'select',
-          label: 'What are you planning?',
+          name: 'name',
+          type: 'text',
+          label: 'Your name',
           required: true,
-          options: [
-            { value: 'website', label: 'A website' },
-            { value: 'application', label: 'An application' },
-            { value: 'other', label: 'Something else' },
-          ],
+          placeholder: 'Your name',
         },
         {
-          name: 'timeline',
-          type: 'select',
-          label: 'When would you like to start?',
-          options: [
-            { value: 'soon', label: 'As soon as possible' },
-            { value: 'later', label: 'In a few months' },
-            { value: 'exploring', label: 'Just exploring' },
-          ],
+          name: 'email',
+          type: 'email',
+          label: 'Email address',
+          required: true,
+          placeholder: 'you@example.com',
         },
-        {
-          name: 'details',
-          type: 'textarea',
-          label: 'Tell us a little more',
-          placeholder: 'What are you working on?',
-          rows: 3,
-        },
+        { name: 'message', type: 'textarea', label: 'Message', rows: 3, placeholder: 'Say hello' },
       ],
     },
-    organisation: {
-      description: 'A different set of questions for an organisation.',
+    big: {
+      label: 'Big form',
+      description: 'A fuller intake form that changes when you select Invoice.',
       fields: [
-        {
-          name: 'company',
-          type: 'text',
-          label: 'Organisation name',
-          required: true,
-          placeholder: 'Company or team name',
-        },
+        { name: 'contact', type: 'text', label: 'Contact name', required: true },
+        { name: 'email', type: 'email', label: 'Email address', required: true },
+        { name: 'company', type: 'text', label: 'Organisation name', required: true },
         {
           name: 'team',
           type: 'select',
@@ -78,6 +43,15 @@ const intakeData: {
             { value: 'small', label: '1–10 people' },
             { value: 'medium', label: '11–50 people' },
             { value: 'large', label: 'More than 50' },
+          ],
+        },
+        {
+          name: 'project',
+          type: 'radio',
+          label: 'What are you building?',
+          options: [
+            { value: 'website', label: 'A website' },
+            { value: 'app', label: 'An application' },
           ],
         },
         {
@@ -97,42 +71,98 @@ const intakeData: {
           placeholder: 'Optional reference',
           revealOn: ['billing', '=', 'invoice'],
         },
-        {
-          name: 'details',
-          type: 'textarea',
-          label: 'What does your team need?',
-          placeholder: 'Tell us about the project',
-          rows: 3,
-        },
+        { name: 'details', type: 'textarea', label: 'Tell us about the project', rows: 3 },
       ],
     },
-  },
-};
+    all: {
+      label: 'All fields',
+      description: 'Every supported field type, rendered by the same component.',
+      fields: [
+        { name: 'text', type: 'text', label: 'Text', placeholder: 'A short answer' },
+        { name: 'email', type: 'email', label: 'Email', placeholder: 'you@example.com' },
+        { name: 'password', type: 'password', label: 'Password (demo only)', passwordToggle: true },
+        { name: 'number', type: 'number', label: 'Number', min: 0, max: 100 },
+        { name: 'textarea', type: 'textarea', label: 'Long text', rows: 2 },
+        { name: 'date', type: 'date', label: 'Date' },
+        { name: 'color', type: 'color', label: 'Color', defaultTo: '#d3ff5a' },
+        {
+          name: 'seedphrase',
+          type: 'seedphrase',
+          label: 'Seed phrase (disabled in demo)',
+          help: 'Never enter real recovery words into a demo.',
+          disabled: true,
+          rows: 2,
+        },
+        {
+          name: 'select',
+          type: 'select',
+          label: 'Select',
+          options: [
+            { value: 'one', label: 'First option' },
+            { value: 'two', label: 'Second option' },
+          ],
+        },
+        {
+          name: 'radio',
+          type: 'radio',
+          label: 'Radio group',
+          options: [
+            { value: 'one', label: 'First choice' },
+            { value: 'two', label: 'Second choice' },
+          ],
+        },
+        {
+          name: 'radioButton',
+          type: 'radioButton',
+          label: 'Radio buttons',
+          options: [
+            { value: 'one', label: 'First' },
+            { value: 'two', label: 'Second' },
+          ],
+        },
+        { name: 'checkbox', type: 'checkbox', label: 'Checkbox' },
+        { name: 'toggle', type: 'toggle', label: 'Toggle' },
+        {
+          name: 'toggleField',
+          type: 'toggleField',
+          label: 'Switchable field',
+          labels: ['Use email instead', 'Use text instead'],
+          fields: [
+            { name: 'alternateText', type: 'text', label: 'Text variant' },
+            { name: 'alternateEmail', type: 'email', label: 'Email variant' },
+          ],
+        },
+        { name: 'range', type: 'range', label: 'Range', min: 0, max: 100, step: 5 },
+        { name: 'rating', type: 'rating', label: 'Rating', max: 5 },
+      ],
+    },
+  };
 
-const buildConfig = (type: CustomerType): FormConfig => ({
+const buildConfig = (size: ExampleSize): FormConfig => ({
   theme: 'dark',
   accent: 'lime',
   sections: [
     {
-      name: 'intake',
+      name: size === 'all' ? 'field types' : 'example',
       submitLabel: 'Save example',
-      fields: [...intakeData.common, ...intakeData.byCustomerType[type].fields],
+      fields: examples[size].fields,
     },
   ],
 });
 
-let currentType: CustomerType = 'person';
+let currentSize: ExampleSize = 'small';
 let currentTab: ExampleTab = 'form';
 const code = document.querySelector<HTMLElement>('#code-example');
 const description = document.querySelector<HTMLElement>('#form-description');
+const formLabel = document.querySelector<HTMLElement>('#form-label');
 const codeDescription = document.querySelector<HTMLElement>('#code-description');
 const feedback = document.querySelector<HTMLElement>('#demo-feedback');
 const copyButton = document.querySelector<HTMLButtonElement>('#copy-code');
 
-function updateExample(type: CustomerType) {
-  currentType = type;
-  const config = buildConfig(type);
-  // A fresh instance keeps the two sample customer records independent.
+function updateExample(size: ExampleSize) {
+  currentSize = size;
+  const config = buildConfig(size);
+  // Each selection has its own config and a fresh component instance.
   const oldForm = document.querySelector('#example-form');
   if (oldForm) {
     const form = new deform();
@@ -144,13 +174,15 @@ function updateExample(type: CustomerType) {
     };
     oldForm.replaceWith(form);
   }
-  if (description) description.textContent = intakeData.byCustomerType[type].description;
+  if (formLabel) formLabel.textContent = examples[size].label;
+  if (description) description.textContent = examples[size].description;
   if (codeDescription)
-    codeDescription.textContent = `Generated for ${type === 'person' ? 'an individual' : 'an organisation'} from the selected application state.`;
+    codeDescription.textContent = `Configuration for ${examples[size].label.toLowerCase()} only.`;
   if (code) code.textContent = JSON.stringify(config, null, 2);
+  if (copyButton) copyButton.textContent = 'Copy configuration';
   if (feedback) feedback.textContent = 'This is a local example. Nothing is submitted to a server.';
   document.querySelectorAll<HTMLButtonElement>('[data-context]').forEach((button) => {
-    button.setAttribute('aria-pressed', String(button.dataset.context === type));
+    button.setAttribute('aria-pressed', String(button.dataset.context === size));
   });
 }
 
@@ -187,7 +219,11 @@ document.querySelector('.demo-tabs')?.addEventListener('keydown', (event) => {
 });
 document.querySelectorAll<HTMLButtonElement>('[data-context]').forEach((button) => {
   button.addEventListener('click', () => {
-    if (button.dataset.context === 'person' || button.dataset.context === 'organisation') {
+    if (
+      button.dataset.context === 'small' ||
+      button.dataset.context === 'big' ||
+      button.dataset.context === 'all'
+    ) {
       updateExample(button.dataset.context);
     }
   });
@@ -205,4 +241,4 @@ copyButton?.addEventListener('click', async () => {
   }
 });
 
-updateExample(currentType);
+updateExample(currentSize);
