@@ -370,8 +370,87 @@ button:focus-visible {
   font-family: "IBM Plex Mono", monospace;
   font-size: 0.9em;
 }
+.field-types {
+  padding-top: 145px;
+}
+.field-types-heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 55px;
+  padding: 47px 0 55px;
+}
+.field-types h2 {
+  font-size: clamp(42px, 5.3vw, 76px);
+  line-height: 1.05;
+  letter-spacing: -0.06em;
+  font-weight: 600;
+  margin: 0;
+}
+.field-types h2 span {
+  color: var(--blue);
+}
+.field-types-heading p {
+  max-width: 365px;
+  color: var(--muted);
+  font-size: 17px;
+  line-height: 1.6;
+  margin: 0;
+}
+.field-type-groups {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0 36px;
+}
+.field-type-group {
+  border-top: 1px solid var(--purple);
+  min-width: 0;
+}
+.field-type-group h3 {
+  color: var(--yellow);
+  font:
+    500 12px / 1.5 "IBM Plex Mono",
+    monospace;
+  text-transform: uppercase;
+  margin: 20px 0 17px;
+}
+.field-type-group ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.field-type-group li {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  border-bottom: 1px solid var(--rule);
+  padding: 14px 0;
+  font-size: 17px;
+}
+.field-type-group li code {
+  color: var(--purple);
+  font:
+    12px "IBM Plex Mono",
+    monospace;
+  overflow-wrap: anywhere;
+  text-align: right;
+}
+.field-type-group > p {
+  color: var(--muted);
+  font-size: 15px;
+  line-height: 1.6;
+  margin: 32px 0 0;
+  max-width: 270px;
+}
+.field-type-group > p code {
+  color: var(--ink);
+  font:
+    0.9em "IBM Plex Mono",
+    monospace;
+}
 .approach {
-  padding-block: 155px 145px;
+  padding-block: 125px 145px;
 }
 .approach-grid {
   display: grid;
@@ -506,6 +585,26 @@ button:focus-visible {
   }
 }
 @media (max-width: 680px) {
+  .field-types {
+    padding-top: 95px;
+  }
+  .field-types-heading {
+    display: block;
+    padding: 32px 0 35px;
+  }
+  .field-types-heading p {
+    margin-top: 20px;
+    font-size: 15px;
+  }
+  .field-type-groups {
+    grid-template-columns: 1fr;
+  }
+  .field-type-group + .field-type-group {
+    margin-top: 35px;
+  }
+  .field-type-group > p {
+    margin-top: 24px;
+  }
   .shell {
     width: calc(100% - 36px);
   }
