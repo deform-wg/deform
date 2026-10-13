@@ -1,4 +1,4 @@
-name: Deploy form-builder to Pages
+name: Deploy landing and form-builder to Pages
 
 on:
   push:
@@ -34,8 +34,17 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Build form-builder site
-        run: npm run form-builder:build
+      - name: Build landing and form-builder sites
+        run: |
+          npm run landing:build
+          npm run form-builder:build
+
+      - name: Assemble Pages site
+        run: |
+          mkdir -p pages-site/form-builder
+          cp -a landing/dist/. pages-site/
+          cp -a form-builder/dist/. pages-site/form-builder/
+          printf 'deform.now\n' > pages-site/CNAME
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
@@ -43,7 +52,7 @@ jobs:
       - name: Upload built artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: form-builder/dist
+          path: pages-site
 
       - name: Deploy to GitHub Pages
         id: deployment
