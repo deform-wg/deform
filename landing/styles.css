@@ -565,6 +565,24 @@ button:focus-visible {
   gap: 28px;
 }
 @media (max-width: 900px) {
+  .demo-context {
+    display: block;
+  }
+  .demo-context > span {
+    display: block;
+    margin-bottom: 12px;
+  }
+  .state-switch {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    width: 100%;
+  }
+  .state-switch button:nth-child(3) {
+    border-left: 0;
+  }
+  .state-switch button:nth-child(n + 3) {
+    border-top: 1px solid var(--purple);
+  }
   .introduction {
     grid-template-columns: 1fr;
     gap: 30px;
@@ -675,7 +693,7 @@ button:focus-visible {
     margin-bottom: 12px;
   }
   .state-switch {
-    width: max-content;
+    width: 100%;
     max-width: 100%;
   }
   .state-switch button {

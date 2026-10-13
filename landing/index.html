@@ -37,8 +37,8 @@
     </section>
 
     <section class="workbench shell" id="example" aria-labelledby="example-title">
-      <div class="section-label"><span>Try it</span><span>THREE FORMS, ONE COMPONENT</span></div>
-      <div class="workbench-heading"><h2 id="example-title">The same component.<br>Different questions.</h2><p>Try a small form, a bigger intake with a conditional question, or all 15 field types shown below. Switch to Code to see the configuration for the form you selected.</p></div>
+      <div class="section-label"><span>Try it</span><span>FOUR EXAMPLES, ONE COMPONENT</span></div>
+      <div class="workbench-heading"><h2 id="example-title">The same component.<br>Different questions.</h2><p>Try a simple form, a conditional intake, a form split into sections, or all 15 field types shown below. Switch to Code to see the configuration for the example you selected.</p></div>
       <div class="demo">
         <div class="demo-toolbar">
           <div class="demo-tabs" role="tablist" aria-label="Example view">
@@ -48,19 +48,21 @@
           <span class="demo-caption">Interactive example · No data is sent</span>
         </div>
         <div class="demo-context">
-          <div class="state-switch" role="group" aria-label="Form example">
-            <button type="button" data-context="small" aria-pressed="true">Small form</button>
-            <button type="button" data-context="big" aria-pressed="false">Big form</button>
+          <span>Examples</span>
+          <div class="state-switch" role="group" aria-label="Examples">
+            <button type="button" data-context="simple" aria-pressed="true">Simple</button>
+            <button type="button" data-context="complicated" aria-pressed="false">Complicated</button>
+            <button type="button" data-context="split" aria-pressed="false">Split sections</button>
             <button type="button" data-context="all" aria-pressed="false">All fields</button>
           </div>
         </div>
         <div class="demo-panel" id="panel-form" role="tabpanel" aria-labelledby="tab-form">
-          <div class="form-note"><span id="form-label">Small form</span><p id="form-description">Three questions, one concise configuration.</p></div>
+          <div class="form-note"><span id="form-label">Simple</span><p id="form-description">Three questions, one concise configuration.</p></div>
           <de-form id="example-form"></de-form>
           <p id="demo-feedback" class="demo-feedback" role="status" aria-live="polite">This is a local example. Nothing is submitted to a server.</p>
         </div>
         <div class="demo-panel code-panel" id="panel-code" role="tabpanel" aria-labelledby="tab-code" hidden>
-          <div class="code-heading"><div><strong>What the component receives</strong><p id="code-description">Configuration for small form only.</p></div><button id="copy-code" type="button">Copy configuration</button></div>
+          <div class="code-heading"><div><strong>What the component receives</strong><p id="code-description">Configuration for simple only.</p></div><button id="copy-code" type="button">Copy configuration</button></div>
           <pre><code id="code-example"></code></pre>
           <p class="code-foot">The JSON above is the actual configuration passed to <code>&lt;de-form&gt;</code> in this example.</p>
         </div>
