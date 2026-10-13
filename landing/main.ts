@@ -110,8 +110,8 @@ const intakeData: {
 };
 
 const buildConfig = (type: CustomerType): FormConfig => ({
-  theme: 'light',
-  accent: 'sky',
+  theme: 'dark',
+  accent: 'lime',
   sections: [
     {
       name: 'intake',

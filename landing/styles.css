@@ -1,11 +1,13 @@
 @import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap");
 :root {
-  --paper: #f7f7f2;
-  --ink: #172124;
-  --muted: #566266;
-  --rule: #c9d0ce;
-  --blue: #0277b2;
-  --white: #fff;
+  --paper: #111218;
+  --ink: #f4f1ea;
+  --muted: #b6b6c2;
+  --rule: #53505d;
+  --blue: #d3ff5a;
+  --yellow: #ffdb45;
+  --purple: #b58aff;
+  --white: #1b1b25;
   font-family: "IBM Plex Sans", Arial, sans-serif;
   color: var(--ink);
   background: var(--paper);
@@ -31,7 +33,8 @@ button:focus-visible {
   outline-offset: 3px;
 }
 ::selection {
-  background: #afd6e8;
+  background: var(--yellow);
+  color: var(--paper);
 }
 .shell {
   width: min(100% - 72px, 1240px);
@@ -41,7 +44,8 @@ button:focus-visible {
   position: absolute;
   left: 16px;
   top: -80px;
-  background: #fff;
+  background: var(--yellow);
+  color: var(--paper);
   padding: 12px;
   z-index: 20;
 }
@@ -64,6 +68,7 @@ button:focus-visible {
   display: block;
   width: 122px;
   height: auto;
+  filter: brightness(0) invert(1);
 }
 .site-header nav {
   display: flex;
@@ -82,7 +87,7 @@ button:focus-visible {
   text-underline-offset: 4px;
 }
 .header-link {
-  border-bottom: 2px solid var(--ink);
+  border-bottom: 2px solid var(--yellow);
   padding-block: 8px;
   font-weight: 600;
   white-space: nowrap;
@@ -110,7 +115,7 @@ button:focus-visible {
   letter-spacing: 0.02em;
 }
 .kicker {
-  color: var(--blue);
+  color: var(--purple);
   margin: 0 0 32px;
 }
 .introduction h1 {
@@ -119,6 +124,7 @@ button:focus-visible {
   line-height: 1.04;
   margin: 0;
   font-weight: 600;
+  color: var(--yellow);
 }
 .introduction h1 span {
   color: var(--blue);
@@ -148,11 +154,15 @@ button:focus-visible {
 .integration-links a:hover {
   color: var(--blue);
 }
+.intro-links a:first-child,
+.integration-links a:first-child {
+  color: var(--yellow);
+}
 .section-label {
   display: flex;
   justify-content: space-between;
   gap: 24px;
-  border-top: 1px solid var(--ink);
+  border-top: 1px solid var(--purple);
   padding-top: 13px;
   color: var(--muted);
   text-transform: uppercase;
@@ -184,7 +194,7 @@ button:focus-visible {
   margin: 0;
 }
 .demo {
-  border: 1px solid var(--ink);
+  border: 1px solid var(--purple);
   background: var(--white);
 }
 .demo-toolbar {
@@ -193,7 +203,7 @@ button:focus-visible {
   justify-content: space-between;
   align-items: stretch;
   gap: 20px;
-  border-bottom: 1px solid var(--ink);
+  border-bottom: 1px solid var(--rule);
   padding-inline: 25px;
 }
 .demo-tabs {
@@ -212,7 +222,7 @@ button:focus-visible {
   font-weight: 500;
 }
 .demo-tabs button[aria-selected="true"] {
-  border-color: var(--blue);
+  border-color: var(--yellow);
   color: var(--ink);
   font-weight: 700;
 }
@@ -229,7 +239,7 @@ button:focus-visible {
   align-items: center;
   gap: 26px;
   padding: 20px 34px;
-  background: #edf1f0;
+  background: #2b2340;
   border-bottom: 1px solid var(--rule);
 }
 .demo-context > span {
@@ -238,7 +248,7 @@ button:focus-visible {
 .state-switch {
   display: flex;
   gap: 0;
-  border: 1px solid var(--ink);
+  border: 1px solid var(--purple);
 }
 .state-switch button {
   min-height: 42px;
@@ -247,16 +257,17 @@ button:focus-visible {
   padding: 0 20px;
   cursor: pointer;
   font-size: 14px;
+  color: var(--ink);
 }
 .state-switch button + button {
-  border-left: 1px solid var(--ink);
+  border-left: 1px solid var(--purple);
 }
 .state-switch button[aria-pressed="true"] {
-  background: var(--ink);
-  color: #fff;
+  background: var(--blue);
+  color: var(--paper);
 }
 .state-switch button:not([aria-pressed="true"]):hover {
-  background: #d9e2e2;
+  background: #43355e;
 }
 .demo-panel#panel-form {
   display: grid;
@@ -286,6 +297,18 @@ button:focus-visible {
   display: block;
   min-width: 0;
   --submit-btn-anchor: flex-start;
+  /* The host theme's primary tokens otherwise override the component accent. */
+  --sl-color-primary-50: var(--sl-color-lime-50);
+  --sl-color-primary-100: var(--sl-color-lime-100);
+  --sl-color-primary-200: var(--sl-color-lime-200);
+  --sl-color-primary-300: var(--sl-color-lime-300);
+  --sl-color-primary-400: var(--sl-color-lime-400);
+  --sl-color-primary-500: var(--sl-color-lime-500);
+  --sl-color-primary-600: var(--sl-color-lime-600);
+  --sl-color-primary-700: var(--sl-color-lime-700);
+  --sl-color-primary-800: var(--sl-color-lime-800);
+  --sl-color-primary-900: var(--sl-color-lime-900);
+  --sl-color-primary-950: var(--sl-color-lime-950);
 }
 .demo-feedback {
   grid-column: 2;
@@ -313,9 +336,9 @@ button:focus-visible {
   margin: 5px 0 0;
 }
 .code-heading button {
-  background: var(--ink);
-  color: white;
-  border: 1px solid var(--ink);
+  background: var(--yellow);
+  color: var(--paper);
+  border: 1px solid var(--yellow);
   padding: 10px 16px;
   min-height: 44px;
   cursor: pointer;
@@ -326,8 +349,8 @@ button:focus-visible {
   border-color: var(--blue);
 }
 .code-panel pre {
-  background: #1b292e;
-  color: #e6f0ef;
+  background: #111018;
+  color: #e9e5f4;
   margin: 0;
   padding: 26px;
   max-height: 590px;
@@ -371,7 +394,7 @@ button:focus-visible {
   margin-top: 65px;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  border-block: 1px solid var(--ink);
+  border-block: 1px solid var(--purple);
 }
 .flow > div {
   padding: 22px 30px 27px;
@@ -385,7 +408,7 @@ button:focus-visible {
   font:
     12px "IBM Plex Mono",
     monospace;
-  color: var(--blue);
+  color: var(--yellow);
   margin-bottom: 19px;
 }
 .flow strong {
@@ -395,7 +418,7 @@ button:focus-visible {
   letter-spacing: -0.03em;
 }
 .integration {
-  background: #e5ebea;
+  background: #261e37;
   padding-block: 100px 115px;
 }
 .integration-grid {
@@ -421,8 +444,8 @@ button:focus-visible {
 }
 .install {
   margin-top: 55px;
-  background: #fff;
-  border: 1px solid var(--ink);
+  background: #16141f;
+  border: 1px solid var(--purple);
   padding: 27px 30px 22px;
 }
 .install > span {
