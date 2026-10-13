@@ -4,7 +4,7 @@ import type { FieldConfig, FormConfig, FormSection } from '../src/typedefs/index
 
 type ExampleId = 'simple' | 'advanced' | 'split' | 'all';
 type ExampleTab = 'form' | 'code';
-type Example = { label: string; description: string; features?: string[] } & (
+type Example = { label: string; description: string; features?: string[]; prompt?: string } & (
   | { fields: FieldConfig[] }
   | { sections: FormSection[] }
 );
@@ -12,7 +12,13 @@ type Example = { label: string; description: string; features?: string[] } & (
 const examples: Record<ExampleId, Example> = {
   simple: {
     label: 'Simple',
-    description: 'A profile form. Choose phone to reveal a number field.',
+    description: 'Make a simple form,',
+    features: [
+      "set what's mandatory/optional",
+      'reveal further questions based on values',
+      'sensible validation out of the box',
+    ],
+    prompt: 'Try selecting "Phone"',
     fields: [
       {
         name: 'name',
@@ -268,6 +274,7 @@ let currentTab: ExampleTab = 'form';
 const code = document.querySelector<HTMLElement>('#code-example');
 const description = document.querySelector<HTMLElement>('#form-description');
 const featureList = document.querySelector<HTMLUListElement>('#form-features');
+const prompt = document.querySelector<HTMLElement>('#form-prompt');
 const formLabel = document.querySelector<HTMLElement>('#form-label');
 const codeDescription = document.querySelector<HTMLElement>('#code-description');
 const feedback = document.querySelector<HTMLElement>('#demo-feedback');
@@ -309,6 +316,10 @@ function updateExample(choice: ExampleId) {
       }),
     );
     featureList.hidden = !examples[choice].features?.length;
+  }
+  if (prompt) {
+    prompt.textContent = examples[choice].prompt ?? '';
+    prompt.hidden = !examples[choice].prompt;
   }
   if (codeDescription)
     codeDescription.textContent = `Configuration for ${examples[choice].label.toLowerCase()} only.`;

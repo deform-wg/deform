@@ -307,7 +307,17 @@ button:focus-visible {
   margin-top: 9px;
 }
 .form-note #form-features li::marker {
-  color: var(--lime);
+  color: var(--blue);
+}
+.form-note #form-prompt {
+  color: var(--blue);
+  font-size: 14px;
+  letter-spacing: 0;
+  line-height: 1.5;
+  margin: 18px 0 0;
+}
+.form-note #form-prompt[hidden] {
+  display: none;
 }
 .demo-panel de-form {
   display: block;
@@ -725,6 +735,10 @@ button:focus-visible {
     margin: 9px 0 24px;
   }
   .form-note #form-features:not([hidden]) {
+    margin-bottom: 28px;
+  }
+  .form-note #form-prompt:not([hidden]) {
+    margin-top: 0;
     margin-bottom: 28px;
   }
   .demo-feedback {
