@@ -38,7 +38,7 @@
 
     <section class="workbench shell" id="example" aria-labelledby="example-title">
       <div class="section-label"><span>Try it</span><span>FOUR EXAMPLES, ONE COMPONENT</span></div>
-      <div class="workbench-heading"><h2 id="example-title">The same component.<br>Different questions.</h2><p>Try a simple form, a conditional intake, a form split into sections, or all 15 field types shown below. Switch to Code to see the configuration for the example you selected.</p></div>
+      <div class="workbench-heading"><h2 id="example-title">The same component.<br>Different questions.</h2><p>Try a profile form with a conditional field, a longer intake, top-tabbed sections, or all 15 field types in side-tabbed sections. Switch to Code for that example's configuration and Lit usage.</p></div>
       <div class="demo">
         <div class="demo-toolbar">
           <div class="demo-tabs" role="tablist" aria-label="Example view">
@@ -57,14 +57,14 @@
           </div>
         </div>
         <div class="demo-panel" id="panel-form" role="tabpanel" aria-labelledby="tab-form">
-          <div class="form-note"><span id="form-label">Simple</span><p id="form-description">Three questions, one concise configuration.</p></div>
+          <div class="form-note"><span id="form-label">Simple</span><p id="form-description">A profile form. Choose phone to reveal a number field.</p></div>
           <de-form id="example-form"></de-form>
           <p id="demo-feedback" class="demo-feedback" role="status" aria-live="polite">This is a local example. Nothing is submitted to a server.</p>
         </div>
         <div class="demo-panel code-panel" id="panel-code" role="tabpanel" aria-labelledby="tab-code" hidden>
           <div class="code-heading"><div><strong>What the component receives</strong><p id="code-description">Configuration for simple only.</p></div><button id="copy-code" type="button">Copy configuration</button></div>
           <pre><code id="code-example"></code></pre>
-          <p class="code-foot">The JSON above is the actual configuration passed to <code>&lt;de-form&gt;</code> in this example.</p>
+          <p class="code-foot">The configuration above is passed to the live form. The Lit template shows how to bind it and your own saved values; <code>currentStateFromDB</code> is a placeholder for your data.</p>
         </div>
       </div>
     </section>

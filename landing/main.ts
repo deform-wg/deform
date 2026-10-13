@@ -12,14 +12,14 @@ type Example = { label: string; description: string } & (
 const examples: Record<ExampleId, Example> = {
   simple: {
     label: 'Simple',
-    description: 'Three questions, one concise configuration.',
+    description: 'A profile form. Choose phone to reveal a number field.',
     fields: [
       {
         name: 'name',
         type: 'text',
-        label: 'Your name',
+        label: 'Full name',
         required: true,
-        placeholder: 'Your name',
+        placeholder: 'Your full name',
       },
       {
         name: 'email',
@@ -28,16 +28,44 @@ const examples: Record<ExampleId, Example> = {
         required: true,
         placeholder: 'you@example.com',
       },
-      { name: 'message', type: 'textarea', label: 'Message', rows: 3, placeholder: 'Say hello' },
+      {
+        name: 'contactMethod',
+        type: 'select',
+        label: 'Preferred contact method',
+        value: 'email',
+        options: [
+          { value: 'email', label: 'Email' },
+          { value: 'phone', label: 'Phone' },
+        ],
+      },
+      {
+        name: 'phone',
+        type: 'text',
+        label: 'Phone number',
+        placeholder: '+61 400 000 000',
+        revealOn: ['contactMethod', '=', 'phone'],
+      },
     ],
   },
   complicated: {
     label: 'Complicated',
-    description: 'A fuller intake form that changes when you select Invoice.',
+    description: 'Account and project details. Invoice reveals a purchase order field.',
     fields: [
       { name: 'contact', type: 'text', label: 'Contact name', required: true },
       { name: 'email', type: 'email', label: 'Email address', required: true },
       { name: 'company', type: 'text', label: 'Organisation name', required: true },
+      {
+        name: 'password',
+        type: 'password',
+        label: 'Account password (demo only)',
+        help: '8–32 letters or numbers. This example never sends the password.',
+        required: true,
+        minlength: 8,
+        maxlength: 32,
+        pattern: '[A-Za-z0-9]{8,32}',
+        passwordToggle: true,
+        requireConfirmation: true,
+      },
       {
         name: 'team',
         type: 'select',
@@ -56,6 +84,14 @@ const examples: Record<ExampleId, Example> = {
           { value: 'website', label: 'A website' },
           { value: 'app', label: 'An application' },
         ],
+      },
+      {
+        name: 'expectedUsers',
+        type: 'number',
+        label: 'Expected users',
+        min: 1,
+        max: 10000,
+        step: 1,
       },
       {
         name: 'billing',
@@ -117,56 +153,79 @@ const examples: Record<ExampleId, Example> = {
   },
   all: {
     label: 'All fields',
-    description: 'Every field type shown below, rendered by the same component.',
-    fields: [
-      { name: 'text', type: 'text', label: 'Text', placeholder: 'A short answer' },
-      { name: 'email', type: 'email', label: 'Email', placeholder: 'you@example.com' },
-      { name: 'password', type: 'password', label: 'Password (demo only)', passwordToggle: true },
-      { name: 'number', type: 'number', label: 'Number', min: 0, max: 100 },
-      { name: 'textarea', type: 'textarea', label: 'Long text', rows: 2 },
-      { name: 'date', type: 'date', label: 'Date' },
-      { name: 'color', type: 'color', label: 'Color', defaultTo: '#d3ff5a' },
+    description: 'All 15 field types, grouped into sections with side tabs.',
+    sections: [
       {
-        name: 'select',
-        type: 'select',
-        label: 'Select',
-        options: [
-          { value: 'one', label: 'First option' },
-          { value: 'two', label: 'Second option' },
-        ],
-      },
-      {
-        name: 'radio',
-        type: 'radio',
-        label: 'Radio group',
-        options: [
-          { value: 'one', label: 'First choice' },
-          { value: 'two', label: 'Second choice' },
-        ],
-      },
-      {
-        name: 'radioButton',
-        type: 'radioButton',
-        label: 'Radio buttons',
-        options: [
-          { value: 'one', label: 'First' },
-          { value: 'two', label: 'Second' },
-        ],
-      },
-      { name: 'checkbox', type: 'checkbox', label: 'Checkbox' },
-      { name: 'toggle', type: 'toggle', label: 'Toggle' },
-      {
-        name: 'toggleField',
-        type: 'toggleField',
-        label: 'Switchable field',
-        labels: ['Use email instead', 'Use text instead'],
+        name: 'Inputs',
+        submitLabel: 'Save inputs',
         fields: [
-          { name: 'alternateText', type: 'text', label: 'Text variant' },
-          { name: 'alternateEmail', type: 'email', label: 'Email variant' },
+          { name: 'text', type: 'text', label: 'Text', placeholder: 'A short answer' },
+          { name: 'email', type: 'email', label: 'Email', placeholder: 'you@example.com' },
+          {
+            name: 'password',
+            type: 'password',
+            label: 'Password (demo only)',
+            passwordToggle: true,
+          },
+          { name: 'number', type: 'number', label: 'Number', min: 0, max: 100 },
+          { name: 'textarea', type: 'textarea', label: 'Long text', rows: 2 },
+          { name: 'date', type: 'date', label: 'Date' },
+          { name: 'color', type: 'color', label: 'Color', defaultTo: '#d3ff5a' },
         ],
       },
-      { name: 'range', type: 'range', label: 'Range', min: 0, max: 100, step: 5 },
-      { name: 'rating', type: 'rating', label: 'Rating', max: 5 },
+      {
+        name: 'Choices',
+        submitLabel: 'Save choices',
+        fields: [
+          {
+            name: 'select',
+            type: 'select',
+            label: 'Select',
+            options: [
+              { value: 'one', label: 'First option' },
+              { value: 'two', label: 'Second option' },
+            ],
+          },
+          {
+            name: 'radio',
+            type: 'radio',
+            label: 'Radio group',
+            options: [
+              { value: 'one', label: 'First choice' },
+              { value: 'two', label: 'Second choice' },
+            ],
+          },
+          {
+            name: 'radioButton',
+            type: 'radioButton',
+            label: 'Radio buttons',
+            options: [
+              { value: 'one', label: 'First' },
+              { value: 'two', label: 'Second' },
+            ],
+          },
+          { name: 'checkbox', type: 'checkbox', label: 'Checkbox' },
+          { name: 'toggle', type: 'toggle', label: 'Toggle' },
+        ],
+      },
+      {
+        name: 'Other',
+        submitLabel: 'Save other fields',
+        fields: [
+          {
+            name: 'toggleField',
+            type: 'toggleField',
+            label: 'Switchable field',
+            labels: ['Use email instead', 'Use text instead'],
+            fields: [
+              { name: 'alternateText', type: 'text', label: 'Text variant' },
+              { name: 'alternateEmail', type: 'email', label: 'Email variant' },
+            ],
+          },
+          { name: 'range', type: 'range', label: 'Range', min: 0, max: 100, step: 5 },
+          { name: 'rating', type: 'rating', label: 'Rating', max: 5 },
+        ],
+      },
     ],
   },
 };
@@ -176,7 +235,11 @@ const buildConfig = (choice: ExampleId): FormConfig => {
   return {
     theme: 'dark',
     accent: 'lime',
-    ...(choice === 'split' ? { orientation: 'portrait' as const } : {}),
+    ...(choice === 'split'
+      ? { orientation: 'portrait' as const }
+      : choice === 'all'
+        ? { orientation: 'landscape' as const }
+        : {}),
     sections:
       'sections' in example
         ? example.sections
@@ -228,7 +291,16 @@ function updateExample(choice: ExampleId) {
   if (description) description.textContent = examples[choice].description;
   if (codeDescription)
     codeDescription.textContent = `Configuration for ${examples[choice].label.toLowerCase()} only.`;
-  if (code) code.textContent = JSON.stringify(config, null, 2);
+  if (code)
+    code.textContent = `const config = ${JSON.stringify(config, null, 2)};
+
+// Usage (Lit template; currentStateFromDB is your saved values)
+html\`
+  <de-form
+    .fields=\${config}
+    .values=\${currentStateFromDB}
+  ></de-form>
+\`;`;
   if (copyButton) copyButton.textContent = 'Copy configuration';
   if (feedback) feedback.textContent = 'This is a local example. Nothing is submitted to a server.';
   document.querySelectorAll<HTMLButtonElement>('[data-context]').forEach((button) => {
