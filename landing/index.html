@@ -51,13 +51,13 @@
           <span>Examples</span>
           <div class="state-switch" role="group" aria-label="Examples">
             <button type="button" data-context="simple" aria-pressed="true">Simple</button>
-            <button type="button" data-context="complicated" aria-pressed="false">Complicated</button>
+            <button type="button" data-context="advanced" aria-pressed="false">Advanced</button>
             <button type="button" data-context="split" aria-pressed="false">Split sections</button>
             <button type="button" data-context="all" aria-pressed="false">All fields</button>
           </div>
         </div>
         <div class="demo-panel" id="panel-form" role="tabpanel" aria-labelledby="tab-form">
-          <div class="form-note"><span id="form-label">Simple</span><p id="form-description">A profile form. Choose phone to reveal a number field.</p></div>
+          <div class="form-note"><span id="form-label">Simple</span><p id="form-description">A profile form. Choose phone to reveal a number field.</p><ul id="form-features" hidden></ul></div>
           <de-form id="example-form"></de-form>
           <p id="demo-feedback" class="demo-feedback" role="status" aria-live="polite">This is a local example. Nothing is submitted to a server.</p>
         </div>

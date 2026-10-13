@@ -293,6 +293,22 @@ button:focus-visible {
   max-width: 250px;
   margin: 18px 0;
 }
+.form-note #form-features {
+  margin: 0;
+  padding-left: 20px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--ink);
+}
+.form-note #form-features[hidden] {
+  display: none;
+}
+.form-note #form-features li + li {
+  margin-top: 9px;
+}
+.form-note #form-features li::marker {
+  color: var(--lime);
+}
 .demo-panel de-form {
   display: block;
   min-width: 0;
@@ -707,6 +723,9 @@ button:focus-visible {
     font-size: 20px;
     max-width: none;
     margin: 9px 0 24px;
+  }
+  .form-note #form-features:not([hidden]) {
+    margin-bottom: 28px;
   }
   .demo-feedback {
     margin-top: 20px;

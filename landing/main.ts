@@ -2,9 +2,9 @@ import '../src/index.js';
 import { deform } from '../src/deform.js';
 import type { FieldConfig, FormConfig, FormSection } from '../src/typedefs/index.js';
 
-type ExampleId = 'simple' | 'complicated' | 'split' | 'all';
+type ExampleId = 'simple' | 'advanced' | 'split' | 'all';
 type ExampleTab = 'form' | 'code';
-type Example = { label: string; description: string } & (
+type Example = { label: string; description: string; features?: string[] } & (
   | { fields: FieldConfig[] }
   | { sections: FormSection[] }
 );
@@ -47,9 +47,16 @@ const examples: Record<ExampleId, Example> = {
       },
     ],
   },
-  complicated: {
-    label: 'Complicated',
-    description: 'Account and project details. Invoice reveals a purchase order field.',
+  advanced: {
+    label: 'Advanced',
+    description: 'Account and project details, with:',
+    features: [
+      'Change tracking and Discard changes',
+      'Field-level validation (required, length, and pattern)',
+      'Automatic detection of mismatched passwords',
+      'Min/max rules for expected users',
+      'Field reveal rules: Invoice shows the purchase order field',
+    ],
     fields: [
       { name: 'contact', type: 'text', label: 'Contact name', required: true },
       { name: 'email', type: 'email', label: 'Email address', required: true },
@@ -235,6 +242,9 @@ const buildConfig = (choice: ExampleId): FormConfig => {
   return {
     theme: 'dark',
     accent: 'lime',
+    ...(choice !== 'simple'
+      ? { markModifiedFields: true, showModifiedCount: true, allowDiscardChanges: true }
+      : {}),
     ...(choice === 'split'
       ? { orientation: 'portrait' as const }
       : choice === 'all'
@@ -257,6 +267,7 @@ let currentChoice: ExampleId = 'simple';
 let currentTab: ExampleTab = 'form';
 const code = document.querySelector<HTMLElement>('#code-example');
 const description = document.querySelector<HTMLElement>('#form-description');
+const featureList = document.querySelector<HTMLUListElement>('#form-features');
 const formLabel = document.querySelector<HTMLElement>('#form-label');
 const codeDescription = document.querySelector<HTMLElement>('#code-description');
 const feedback = document.querySelector<HTMLElement>('#demo-feedback');
@@ -289,6 +300,16 @@ function updateExample(choice: ExampleId) {
   }
   if (formLabel) formLabel.textContent = examples[choice].label;
   if (description) description.textContent = examples[choice].description;
+  if (featureList) {
+    featureList.replaceChildren(
+      ...(examples[choice].features ?? []).map((feature) => {
+        const item = document.createElement('li');
+        item.textContent = feature;
+        return item;
+      }),
+    );
+    featureList.hidden = !examples[choice].features?.length;
+  }
   if (codeDescription)
     codeDescription.textContent = `Configuration for ${examples[choice].label.toLowerCase()} only.`;
   if (code)
@@ -343,7 +364,7 @@ document.querySelectorAll<HTMLButtonElement>('[data-context]').forEach((button) 
   button.addEventListener('click', () => {
     if (
       button.dataset.context === 'simple' ||
-      button.dataset.context === 'complicated' ||
+      button.dataset.context === 'advanced' ||
       button.dataset.context === 'split' ||
       button.dataset.context === 'all'
     ) {
