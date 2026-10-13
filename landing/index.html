@@ -11,11 +11,16 @@
   <link rel="icon" type="image/svg+xml" href="./favicon.svg">
   <link rel="stylesheet" href="./styles.css">
   <script type="module" src="./main.ts"></script>
+  <script type="module" src="../form-builder/logo/logo.js"></script>
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to content</a>
   <header class="site-header shell">
-    <a class="brand" href="#top" aria-label="deForm home"><img src="../form-builder/logo/1.svg" alt="deForm"></a>
+    <a class="brand glitch-logo" href="#top" aria-label="deForm home">
+      <span id="logo1" class="glitch-logo__layer glitch-logo__layer--one" aria-hidden="true"><img src="../form-builder/logo/1.svg" alt=""></span>
+      <span id="logo2" class="glitch-logo__layer glitch-logo__layer--two" aria-hidden="true"></span>
+      <span id="logo3" class="glitch-logo__layer glitch-logo__layer--three" aria-hidden="true"></span>
+    </a>
     <nav aria-label="Main navigation">
       <a href="#example">Example</a>
       <a href="#approach">How it works</a>

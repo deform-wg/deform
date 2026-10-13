@@ -677,6 +677,9 @@ export const builderStyles = css`
     padding-inline: 36px;
   }
   .header-identity {
+    display: inline-flex;
+    align-items: center;
+    height: 38px;
     margin-left: 154px;
     padding-left: 18px;
     border-left: 1px solid var(--builder-rule);
@@ -703,6 +706,11 @@ export const builderStyles = css`
     min-height: 38px;
     padding-inline: 12px;
     font-weight: 600;
+  }
+  .header-actions sl-button::part(label) {
+    display: flex;
+    align-items: center;
+    line-height: 1;
   }
   .header-utilities sl-button::part(base) {
     background: transparent;
