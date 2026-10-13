@@ -6,30 +6,26 @@
     <link rel="icon" type="image/png" sizes="16x16" href="./favi/favicon-16x16.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta charset="UTF-8" />
+    <meta name="theme-color" content="#111218" />
     <title>deForm builder</title>
     <link rel="stylesheet" type="text/css" href="styles.css" />
 
     <!-- Shoelace theme stylesheets -->
     <link
       rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.19.1/cdn/themes/light.css"
+      href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.20.1/cdn/themes/light.css"
     />
     <link
       rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.19.1/cdn/themes/dark.css"
+      href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.20.1/cdn/themes/dark.css"
     />
 
     <!-- Shoelace initialization -->
     <script type="module" src="./init-shoelace.js"></script>
   </head>
-  <body>
-    <div class="pre-alpha-banner" role="status" aria-live="polite">
-      <div class="pre-alpha-banner__marquee" data-banner-text="Pre-alpha - Heavily under construction - stay tuned">
-        <span class="pre-alpha-banner__text" aria-hidden="true"></span>
-      </div>
-    </div>
+  <body class="sl-theme-dark">
     <div class="page">
-      <div class="glitch-logo" aria-hidden="true">
+      <a class="glitch-logo" href="/" aria-label="deForm home">
         <div
           id="logo1"
           class="glitch-logo__layer glitch-logo__layer--one"
@@ -45,32 +41,11 @@
           class="glitch-logo__layer glitch-logo__layer--three"
           data-src="./logo/3.svg"
         ></div>
-      </div>
+      </a>
       <form-builder></form-builder>
     </div>
 
     <script type="module" src="./builder/app.ts"></script>
     <script type="module" src="./logo/logo.js"></script>
-    <script>
-      const bannerMarquee = document.querySelector(".pre-alpha-banner__marquee");
-      if (bannerMarquee instanceof HTMLElement) {
-        const bannerText = bannerMarquee.dataset.bannerText?.trim() ?? "";
-        if (bannerText.length > 0) {
-          const wideDashSeparator = "\u00a0\u00a0\u00a0\u00a0-\u00a0\u00a0\u00a0\u00a0";
-          const spacedBannerText = bannerText.replaceAll(" - ", wideDashSeparator);
-          const repeatedText = `${spacedBannerText}${wideDashSeparator}`.repeat(12);
-          const firstRun = document.createElement("span");
-          firstRun.className = "pre-alpha-banner__text";
-          firstRun.textContent = repeatedText;
-
-          const secondRun = document.createElement("span");
-          secondRun.className = "pre-alpha-banner__text";
-          secondRun.textContent = repeatedText;
-          secondRun.setAttribute("aria-hidden", "true");
-
-          bannerMarquee.replaceChildren(firstRun, secondRun);
-        }
-      }
-    </script>
   </body>
 </html>

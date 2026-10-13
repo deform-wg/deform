@@ -17,6 +17,12 @@
       "distDir": "form-builder/dist",
       "context": "browser",
       "includeNodeModules": true
+    },
+    "landing": {
+      "source": "landing/index.html",
+      "distDir": "landing/dist",
+      "context": "browser",
+      "includeNodeModules": true
     }
   },
   "typings": "./dist/index.d.ts",
@@ -31,6 +37,7 @@
     "preform-builder:build": "npm run clean:form-builder",
     "form-builder": "npm run check:builder-field-types && parcel serve --target form-builder --dist-dir form-builder/dist --cache-dir .parcel-cache/form-builder --port 8000 --no-source-maps",
     "form-builder:build": "npm run check:builder-field-types && parcel build --target form-builder --cache-dir .parcel-cache/form-builder --public-url ./ --no-source-maps",
+    "landing:build": "parcel build --target landing --cache-dir .parcel-cache/landing --public-url ./ --no-source-maps",
     "type-check": "tsc --noEmit",
     "lint:biome": "biome check .",
     "lint:biome:fix": "biome check --write .",
