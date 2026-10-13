@@ -20,10 +20,15 @@ body.sl-theme-dark {
   --logo-accent-color: #f4f1ea;
   position: fixed;
   top: 0;
-  left: 16px;
-  width: 160px;
-  height: 64px;
+  left: max(36px, calc((100vw - 1240px) / 2));
+  width: 122px;
+  height: 82px;
   z-index: 10;
+}
+
+.glitch-logo:focus-visible {
+  outline: 3px solid #d3ff5a;
+  outline-offset: 3px;
 }
 
 .glitch-logo__layer {
@@ -49,4 +54,12 @@ body.sl-theme-dark {
 
 .glitch-logo__layer--one {
   display: block;
+}
+
+@media (max-width: 680px) {
+  .glitch-logo {
+    left: 18px;
+    width: 111px;
+    height: 70px;
+  }
 }

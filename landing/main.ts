@@ -76,7 +76,7 @@ const examples: Record<ExampleSize, { label: string; description: string; fields
     },
     all: {
       label: 'All fields',
-      description: 'Every supported field type, rendered by the same component.',
+      description: 'Every field type shown below, rendered by the same component.',
       fields: [
         { name: 'text', type: 'text', label: 'Text', placeholder: 'A short answer' },
         { name: 'email', type: 'email', label: 'Email', placeholder: 'you@example.com' },
@@ -85,14 +85,6 @@ const examples: Record<ExampleSize, { label: string; description: string; fields
         { name: 'textarea', type: 'textarea', label: 'Long text', rows: 2 },
         { name: 'date', type: 'date', label: 'Date' },
         { name: 'color', type: 'color', label: 'Color', defaultTo: '#d3ff5a' },
-        {
-          name: 'seedphrase',
-          type: 'seedphrase',
-          label: 'Seed phrase (disabled in demo)',
-          help: 'Never enter real recovery words into a demo.',
-          disabled: true,
-          rows: 2,
-        },
         {
           name: 'select',
           type: 'select',

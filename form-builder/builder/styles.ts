@@ -9,7 +9,7 @@ export const builderStyles = css`
     font-family: var(--sl-font-sans);
     --sidebar-width: 260px;
     --properties-width: 320px;
-    --header-height: 64px;
+    --header-height: 82px;
   }
 
   .header {
@@ -17,7 +17,7 @@ export const builderStyles = css`
     display: flex;
     align-items: center;
     justify-content: flex-end;
-    padding: 0 var(--sl-spacing-medium);
+    padding: 0 max(36px, calc((100vw - 1240px) / 2));
     background: var(--sl-color-neutral-0);
     border-bottom: 1px solid var(--sl-color-neutral-200);
   }
@@ -866,5 +866,13 @@ export const builderStyles = css`
   }
   sl-alert::part(base) {
     border-radius: 2px;
+  }
+  @media (max-width: 680px) {
+    :host {
+      --header-height: 70px;
+    }
+    .header {
+      padding-inline: 18px;
+    }
   }
 `;
