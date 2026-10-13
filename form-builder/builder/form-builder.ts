@@ -206,6 +206,7 @@ export class FormBuilder extends LitElement {
       <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.20.1/cdn/themes/light.css" />
       <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.20.1/cdn/themes/dark.css" />
       <div class="header">
+        <span class="header-identity" aria-hidden="true">FORM BUILDER</span>
         <div class="header-actions">
           ${
             this.statusMessage
@@ -255,6 +256,7 @@ export class FormBuilder extends LitElement {
 
   private renderDesktopHeaderActions(): TemplateResult {
     return html`
+      <div class="header-utilities">
       <sl-button size="small" @click=${this.handleClear}>
         <sl-icon slot="prefix" name="trash"></sl-icon>
         Clear
@@ -267,39 +269,31 @@ export class FormBuilder extends LitElement {
         <sl-icon slot="prefix" name="upload"></sl-icon>
         Import
       </sl-button>
-      <sl-button size="small" @click=${this.handleOpenCodeModal}>
-        <sl-icon slot="prefix" name="code"></sl-icon>
-        Code
-      </sl-button>
       <sl-button size="small" @click=${this.handleExport}>
         <sl-icon slot="prefix" name="download"></sl-icon>
         Export
       </sl-button>
-      <sl-button size="small" variant="primary" @click=${this.togglePreview}>
+      </div>
+      <div class="header-primary-actions">
+      <sl-button class="header-config-button" size="small" @click=${this.handleOpenCodeModal}>
+        <sl-icon slot="prefix" name="code"></sl-icon>
+        Config
+      </sl-button>
+      <sl-button class="header-preview-button" size="small" variant="primary" @click=${this.togglePreview}>
         <sl-icon slot="prefix" name=${this.showPreview ? 'pencil' : 'eye'}></sl-icon>
         ${this.showPreview ? 'Edit' : 'Preview'}
       </sl-button>
+      </div>
     `;
   }
 
   private renderMobileHeaderActions(): TemplateResult {
     return html`
-      ${
-        this.showPreview
-          ? nothing
-          : html`
-              <sl-button
-                size="small"
-                circle
-                class="mobile-header-button"
-                aria-label="Open settings"
-                @click=${this.openSettingsDrawer}
-              >
-                <sl-icon name="gear"></sl-icon>
-              </sl-button>
-            `
-      }
-      <sl-button size="small" variant="primary" @click=${this.togglePreview}>
+      <sl-button class="header-config-button mobile-config-button" size="small" @click=${this.handleOpenCodeModal}>
+        <sl-icon slot="prefix" name="code"></sl-icon>
+        <span class="mobile-config-label">Config</span>
+      </sl-button>
+      <sl-button class="header-preview-button" size="small" variant="primary" @click=${this.togglePreview}>
         <sl-icon slot="prefix" name=${this.showPreview ? 'pencil' : 'eye'}></sl-icon>
         ${this.showPreview ? 'Edit' : 'Preview'}
       </sl-button>
@@ -314,6 +308,14 @@ export class FormBuilder extends LitElement {
           <sl-icon name="three-dots-vertical"></sl-icon>
         </sl-button>
         <sl-menu>
+          ${
+            this.showPreview
+              ? nothing
+              : html`<sl-menu-item @click=${this.openSettingsDrawer}>
+                  <sl-icon slot="prefix" name="gear"></sl-icon>
+                  Settings
+                </sl-menu-item>`
+          }
           <sl-menu-item @click=${this.handleClear}>
             <sl-icon slot="prefix" name="trash"></sl-icon>
             Clear
@@ -326,10 +328,7 @@ export class FormBuilder extends LitElement {
             <sl-icon slot="prefix" name="upload"></sl-icon>
             Import
           </sl-menu-item>
-          <sl-menu-item @click=${this.handleOpenCodeModal}>
-            <sl-icon slot="prefix" name="code"></sl-icon>
-            Code
-          </sl-menu-item>
+
           <sl-menu-item @click=${this.handleExport}>
             <sl-icon slot="prefix" name="download"></sl-icon>
             Export
@@ -437,7 +436,7 @@ export class FormBuilder extends LitElement {
       validation?.status === 'error' ? validation.errors : (validation?.warnings ?? []);
     return html`
       <sl-dialog
-        label="Form JSON"
+        label="Form config"
         ?open=${this.showCodeModal}
         @sl-request-close=${this.handleCloseCodeModal}
         @sl-after-hide=${this.handleCloseCodeModal}

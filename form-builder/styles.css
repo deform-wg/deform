@@ -20,7 +20,7 @@ body.sl-theme-dark {
   --logo-accent-color: #f4f1ea;
   position: fixed;
   top: 0;
-  left: max(36px, calc((100vw - 1240px) / 2));
+  left: 36px;
   width: 122px;
   height: 82px;
   z-index: 10;

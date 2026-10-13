@@ -674,6 +674,60 @@ export const builderStyles = css`
   .header {
     background: var(--builder-paper);
     border-bottom: 1px solid var(--builder-rule);
+    padding-inline: 36px;
+  }
+  .header-identity {
+    margin-left: 154px;
+    padding-left: 18px;
+    border-left: 1px solid var(--builder-rule);
+    color: var(--builder-purple);
+    font: 500 11px / 1.4 var(--sl-font-mono);
+    letter-spacing: 0.12em;
+    white-space: nowrap;
+  }
+  .header-actions {
+    gap: 18px;
+    flex-wrap: nowrap;
+  }
+  .header-utilities,
+  .header-primary-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .header-primary-actions {
+    padding-left: 18px;
+    border-left: 1px solid var(--builder-rule);
+  }
+  .header-actions sl-button::part(base) {
+    min-height: 38px;
+    padding-inline: 12px;
+    font-weight: 600;
+  }
+  .header-utilities sl-button::part(base) {
+    background: transparent;
+    border-color: transparent;
+    color: var(--builder-muted);
+    font-weight: 500;
+  }
+  .header-utilities sl-button:hover::part(base) {
+    background: var(--builder-surface);
+    border-color: var(--builder-rule);
+    color: var(--builder-ink);
+  }
+  .header-actions .header-config-button::part(base) {
+    background: #322944;
+    border: 1px solid var(--builder-purple);
+    color: var(--builder-ink);
+  }
+  .header-actions .header-config-button:hover::part(base) {
+    background: #483360;
+    border-color: var(--builder-yellow);
+    color: var(--builder-ink);
+  }
+  .header-actions sl-button:focus-visible::part(base) {
+    outline: 2px solid var(--builder-yellow);
+    outline-offset: 2px;
   }
   .sidebar,
   .properties {
@@ -873,6 +927,40 @@ export const builderStyles = css`
     }
     .header {
       padding-inline: 18px;
+    }
+  }
+  @media (max-width: 1180px) {
+    .header-identity {
+      display: none;
+    }
+  }
+  @media (max-width: 960px) {
+    .header {
+      padding-inline: 36px;
+    }
+    .header-actions {
+      gap: 8px;
+    }
+  }
+  @media (max-width: 680px) {
+    .header {
+      padding-inline: 18px;
+    }
+    .header-actions sl-button::part(base) {
+      padding-inline: 9px;
+    }
+  }
+  @media (max-width: 385px) {
+    :host {
+      --header-height: 124px;
+    }
+    .header {
+      align-items: flex-end;
+      padding-bottom: 12px;
+    }
+    .header-actions {
+      width: 100%;
+      justify-content: flex-end;
     }
   }
 `;
